@@ -1,0 +1,1584 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Smartisax Portal</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f4f5f7;
+        --fg: #15171a;
+        --muted: #69717d;
+        --panel: #ffffff;
+        --line: #d8dde3;
+        --accent: #2266cc;
+        --good: #1f7a52;
+        --warn: #9c5c00;
+        --screen: #101317;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #111316;
+          --fg: #f3f5f7;
+          --muted: #a1a8b0;
+          --panel: #1c2025;
+          --line: #30363e;
+          --accent: #72a7ff;
+          --good: #5bc38e;
+          --warn: #e5aa55;
+          --screen: #050607;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      main {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 28px 18px;
+      }
+
+      h1,
+      h2,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 8px;
+        font-size: 28px;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin-bottom: 12px;
+        font-size: 18px;
+        letter-spacing: 0;
+      }
+
+      section {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 16px;
+        margin-top: 16px;
+      }
+
+      input,
+      button {
+        font: inherit;
+        min-height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0 12px;
+      }
+
+      input {
+        min-width: 160px;
+        background: var(--panel);
+        color: var(--fg);
+      }
+
+      button {
+        background: var(--panel);
+        color: var(--fg);
+      }
+
+      button.primary {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .tuningGrid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+        gap: 12px;
+      }
+
+      .tuneControl {
+        display: grid;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .tuneControl input[type="range"] {
+        width: 100%;
+        padding: 0;
+        min-height: 28px;
+      }
+
+      .tuneControl input[type="number"] {
+        width: 100%;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .ok {
+        color: var(--good);
+      }
+
+      .warn {
+        color: var(--warn);
+      }
+
+      .screen {
+        display: none;
+      }
+
+      .statusline {
+        margin: 10px 0 0;
+        min-height: 22px;
+        font-size: 13px;
+      }
+
+      .stage {
+        display: grid;
+        grid-template-columns: minmax(260px, 420px) minmax(260px, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .screenBox {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        background: var(--screen);
+      }
+
+      #mp4Video,
+      #screen,
+      #h264Canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+        min-height: 360px;
+        object-fit: contain;
+        touch-action: none;
+        user-select: none;
+        pointer-events: none;
+      }
+
+      #screen,
+      #h264Canvas {
+        display: none;
+      }
+
+      #touchOverlay {
+        position: absolute;
+        inset: 0;
+        display: none;
+        cursor: crosshair;
+        touch-action: none;
+        user-select: none;
+      }
+
+      #touchOverlay.active {
+        display: block;
+      }
+
+      #touchOverlay::after {
+        content: "";
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(114, 167, 255, 0.92);
+        border-radius: 50%;
+        opacity: 0;
+        transform: translate(-50%, -50%);
+        left: var(--touch-x, 50%);
+        top: var(--touch-y, 50%);
+        pointer-events: none;
+      }
+
+      #touchOverlay.pressing::after {
+        opacity: 1;
+      }
+
+      pre {
+        min-height: 160px;
+        max-height: 520px;
+        margin: 0;
+        overflow: auto;
+        border-radius: 8px;
+        background: #111316;
+        color: #f3f5f7;
+        padding: 12px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+        font-size: 12px;
+      }
+
+      @media (max-width: 760px) {
+        .stage {
+          grid-template-columns: 1fr;
+        }
+
+        .tuningGrid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body data-portal-mode="webrtc-default">
+    <main>
+      <h1>Smartisax Portal</h1>
+
+      <section>
+        <h2>Pair</h2>
+        <div class="row">
+          <input id="code" inputmode="numeric" autocomplete="one-time-code" placeholder="Pairing code">
+          <button id="pair" class="primary" type="button">Pair</button>
+          <button id="status" type="button">Status</button>
+          <button id="forgetSession" type="button">Forget Session</button>
+          <span id="pairState" class="muted">not paired</span>
+        </div>
+        <p id="sessionState" class="statusline muted">no local session</p>
+      </section>
+
+      <section id="remote" class="screen">
+        <h2>Remote Screen</h2>
+        <div class="row">
+          <button id="reconnectWebRtc" class="primary" type="button">Reconnect</button>
+          <button id="disconnectWebRtc" type="button">Disconnect</button>
+          <span id="remoteState" class="muted">idle</span>
+        </div>
+        <p id="liveMetrics" class="statusline muted">live idle</p>
+        <div class="stage">
+          <div class="screenBox">
+            <video id="mp4Video" muted playsinline autoplay></video>
+            <canvas id="h264Canvas" width="720" height="1568"></canvas>
+            <img id="screen" alt="R2 screen">
+            <div id="touchOverlay" aria-hidden="true"></div>
+          </div>
+          <pre id="out">Not paired.</pre>
+        </div>
+      </section>
+
+      <section id="tuningPanel" class="screen">
+        <h2>WebRTC Tuning</h2>
+        <div class="tuningGrid">
+          <label class="tuneControl">
+            Width
+            <input id="tuneWidth" type="range" min="240" max="1080" step="2">
+            <input id="tuneWidthValue" type="number" min="240" max="1080" step="2">
+          </label>
+          <label class="tuneControl">
+            FPS
+            <input id="tuneFps" type="range" min="1" max="60" step="1">
+            <input id="tuneFpsValue" type="number" min="1" max="60" step="1">
+          </label>
+          <label class="tuneControl">
+            Min Bitrate
+            <input id="tuneMinBitrate" type="range" min="250000" max="12000000" step="50000">
+            <input id="tuneMinBitrateValue" type="number" min="250000" max="12000000" step="50000">
+          </label>
+          <label class="tuneControl">
+            Target Bitrate
+            <input id="tuneTargetBitrate" type="range" min="250000" max="12000000" step="50000">
+            <input id="tuneTargetBitrateValue" type="number" min="250000" max="12000000" step="50000">
+          </label>
+          <label class="tuneControl">
+            Max Bitrate
+            <input id="tuneMaxBitrate" type="range" min="250000" max="12000000" step="50000">
+            <input id="tuneMaxBitrateValue" type="number" min="250000" max="12000000" step="50000">
+          </label>
+          <label class="tuneControl">
+            Capture
+            <select id="tuneCaptureBackend">
+              <option value="projection-auto">projection-auto</option>
+              <option value="projection-texture">projection-texture</option>
+              <option value="bitmap-i420">bitmap-i420</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <button id="applyTuning" class="primary" type="button">Apply</button>
+          <button id="stableTuning" type="button">1080/30</button>
+          <button id="sharpTuning" type="button">1080/60</button>
+          <button id="maxTuning" type="button">Max</button>
+          <button id="reloadTuning" type="button">Reload</button>
+          <button id="probeCapture" type="button">Probe</button>
+          <span id="tuningState" class="muted">stable</span>
+        </div>
+      </section>
+
+      <section>
+        <h2>Log</h2>
+        <pre id="fallbackOut">Not paired.</pre>
+      </section>
+    </main>
+
+    <script>
+      const out = document.querySelector("#out");
+      const fallbackOut = document.querySelector("#fallbackOut");
+      const remote = document.querySelector("#remote");
+      const screen = document.querySelector("#screen");
+      const canvas = document.querySelector("#h264Canvas");
+      const video = document.querySelector("#mp4Video");
+      const touchOverlay = document.querySelector("#touchOverlay");
+      const ctx = canvas.getContext("2d");
+      const remoteState = document.querySelector("#remoteState");
+      const pairState = document.querySelector("#pairState");
+      const sessionState = document.querySelector("#sessionState");
+      const liveMetrics = document.querySelector("#liveMetrics");
+      const codeInput = document.querySelector("#code");
+      const tuningPanel = document.querySelector("#tuningPanel");
+      const tuningState = document.querySelector("#tuningState");
+      const tuningControls = {
+        width: document.querySelector("#tuneWidth"),
+        widthValue: document.querySelector("#tuneWidthValue"),
+        fps: document.querySelector("#tuneFps"),
+        fpsValue: document.querySelector("#tuneFpsValue"),
+        minBitrate: document.querySelector("#tuneMinBitrate"),
+        minBitrateValue: document.querySelector("#tuneMinBitrateValue"),
+        targetBitrate: document.querySelector("#tuneTargetBitrate"),
+        targetBitrateValue: document.querySelector("#tuneTargetBitrateValue"),
+        maxBitrate: document.querySelector("#tuneMaxBitrate"),
+        maxBitrateValue: document.querySelector("#tuneMaxBitrateValue"),
+        captureBackend: document.querySelector("#tuneCaptureBackend"),
+      };
+      const stableTuningConfig = {
+        frameWidthPortrait: 1080,
+        frameWidthLandscape: 1080,
+        fps: 30,
+        minBitrateBps: 8000000,
+        targetBitrateBps: 12000000,
+        maxBitrateBps: 12000000,
+        captureBackend: "projection-auto",
+      };
+      const sharpTuningConfig = {
+        frameWidthPortrait: 1080,
+        frameWidthLandscape: 1080,
+        fps: 60,
+        minBitrateBps: 12000000,
+        targetBitrateBps: 12000000,
+        maxBitrateBps: 12000000,
+        captureBackend: "projection-auto",
+      };
+      const maxTuningConfig = {
+        frameWidthPortrait: 1080,
+        frameWidthLandscape: 1080,
+        fps: 60,
+        minBitrateBps: 12000000,
+        targetBitrateBps: 12000000,
+        maxBitrateBps: 12000000,
+        captureBackend: "projection-texture",
+      };
+      let token = localStorage.smartisaxToken || "";
+      let pngStream = false;
+      let mp4Playing = false;
+      let h264Playing = false;
+      let h264Decoder = null;
+      let h264Timestamp = 0;
+      let h264Frames = 0;
+      let webRtcPc = null;
+      let webRtcInputChannel = null;
+      let webRtcSessionId = "";
+      let webRtcStartedAt = 0;
+      let webRtcInputSeq = 0;
+      let webRtcConnecting = false;
+      let webRtcRuntimeConfig = Object.assign({}, stableTuningConfig);
+      let deviceDisplay = { width: 1080, height: 2340, rotation: 0 };
+      let lastUrl = "";
+      let lastVideoUrl = "";
+      let down = null;
+      let activePointerId = null;
+      let liveStats = {
+        clips: 0,
+        bytes: 0,
+        startedAt: 0,
+        lastClipMs: 0,
+        lastBlobBytes: 0,
+      };
+
+      function setLog(value) {
+        const text = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+        out.textContent = text;
+        fallbackOut.textContent = text;
+      }
+
+      function setState(text, tone) {
+        remoteState.textContent = text;
+        remoteState.className = tone || "muted";
+      }
+
+      function resetLiveStats() {
+        liveStats = {
+          clips: 0,
+          bytes: 0,
+          startedAt: Date.now(),
+          lastClipMs: 0,
+          lastBlobBytes: 0,
+        };
+        liveMetrics.textContent = "live starting";
+        liveMetrics.className = "statusline muted";
+      }
+
+      function updateLiveMetrics() {
+        const elapsed = Math.max(1, Date.now() - liveStats.startedAt);
+        const clipsPerSecond = liveStats.clips / (elapsed / 1000);
+        liveMetrics.textContent = [
+          "clips " + liveStats.clips,
+          "loop " + clipsPerSecond.toFixed(2) + "/s",
+          "last " + liveStats.lastClipMs + " ms",
+          "last " + liveStats.lastBlobBytes + " B",
+          "total " + liveStats.bytes + " B",
+        ].join(" · ");
+        liveMetrics.className = "statusline ok";
+      }
+
+      function formatDuration(ms) {
+        if (!Number.isFinite(ms) || ms <= 0) {
+          return "0s";
+        }
+        const seconds = Math.floor(ms / 1000);
+        if (seconds < 60) {
+          return seconds + "s";
+        }
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) {
+          return minutes + "m " + (seconds % 60) + "s";
+        }
+        const hours = Math.floor(minutes / 60);
+        return hours + "h " + (minutes % 60) + "m";
+      }
+
+      function setSessionState(session, tone = "muted") {
+        if (!sessionState) {
+          return;
+        }
+        if (!session) {
+          sessionState.textContent = token ? "local token saved" : "no local session";
+          sessionState.className = "statusline " + tone;
+          return;
+        }
+        const parts = [
+          session.accessControl || "bearer token",
+          "pairs " + (session.successfulPairs || 0),
+          "uptime " + formatDuration(session.uptimeMs || 0),
+        ];
+        if (session.pairingLocked) {
+          parts.push("locked " + formatDuration(session.pairingRetryAfterMs || 0));
+          tone = "warn";
+        }
+        sessionState.textContent = parts.join(" · ");
+        sessionState.className = "statusline " + tone;
+      }
+
+      function rememberDeviceInfo(value) {
+        if (!value || typeof value !== "object") {
+          return;
+        }
+        rememberWebRtcConfig(value);
+        const display = value.display || (value.screen && typeof value.screen === "object" ? value.screen : null);
+        if (!display || !Number.isFinite(Number(display.width)) || !Number.isFinite(Number(display.height))) {
+          return;
+        }
+        const width = Math.max(1, Math.round(Number(display.width)));
+        const height = Math.max(1, Math.round(Number(display.height)));
+        deviceDisplay = {
+          width,
+          height,
+          rotation: Number.isFinite(Number(display.rotation)) ? Math.round(Number(display.rotation)) : 0,
+        };
+      }
+
+      function updateTouchOverlay() {
+        const visible = screen.style.display === "block"
+          || canvas.style.display === "block"
+          || video.style.display === "block";
+        touchOverlay.classList.toggle("active", visible);
+      }
+
+      function clampValue(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+      }
+
+      function even(value) {
+        return Math.max(2, Math.round(value) & ~1);
+      }
+
+      function normalizeCaptureBackend(value) {
+        return value === "projection-texture" || value === "bitmap-i420" || value === "projection-auto"
+          ? value
+          : "projection-auto";
+      }
+
+      function normalizeTuningConfig(value) {
+        const source = value && typeof value === "object" ? value : {};
+        const target = clampValue(Number(source.targetBitrateBps || source.targetVideoBitrateBps || source.bitrateBps || stableTuningConfig.targetBitrateBps), 250000, 12000000);
+        const min = Math.min(target, clampValue(Number(source.minBitrateBps || source.minVideoBitrateBps || stableTuningConfig.minBitrateBps), 250000, 12000000));
+        const max = Math.max(target, clampValue(Number(source.maxBitrateBps || source.maxVideoBitrateBps || stableTuningConfig.maxBitrateBps), 250000, 12000000));
+        return {
+          frameWidthPortrait: even(clampValue(Number(source.frameWidthPortrait || source.widthPortrait || source.width || stableTuningConfig.frameWidthPortrait), 240, 1080)),
+          frameWidthLandscape: even(clampValue(Number(source.frameWidthLandscape || source.widthLandscape || source.frameWidthPortrait || source.width || stableTuningConfig.frameWidthLandscape), 240, 1080)),
+          fps: clampValue(Math.round(Number(source.fps || stableTuningConfig.fps)), 1, 60),
+          minBitrateBps: Math.round(min),
+          targetBitrateBps: Math.round(target),
+          maxBitrateBps: Math.round(max),
+          captureBackend: normalizeCaptureBackend(source.captureBackend || source.backend || stableTuningConfig.captureBackend),
+        };
+      }
+
+      function setTuningState(text, tone = "muted") {
+        tuningState.textContent = text;
+        tuningState.className = tone;
+      }
+
+      function syncPair(left, right, transform = (value) => value) {
+        const write = (source, target) => {
+          target.value = transform(source.value);
+        };
+        left.addEventListener("input", () => write(left, right));
+        right.addEventListener("input", () => write(right, left));
+      }
+
+      function bindTuningControls() {
+        syncPair(tuningControls.width, tuningControls.widthValue, (value) => even(Number(value)));
+        syncPair(tuningControls.fps, tuningControls.fpsValue, (value) => clampValue(Math.round(Number(value)), 1, 60));
+        syncPair(tuningControls.minBitrate, tuningControls.minBitrateValue, (value) => Math.round(Number(value)));
+        syncPair(tuningControls.targetBitrate, tuningControls.targetBitrateValue, (value) => Math.round(Number(value)));
+        syncPair(tuningControls.maxBitrate, tuningControls.maxBitrateValue, (value) => Math.round(Number(value)));
+      }
+
+      function populateTuningControls(config) {
+        const normalized = normalizeTuningConfig(config);
+        webRtcRuntimeConfig = normalized;
+        tuningControls.width.value = normalized.frameWidthPortrait;
+        tuningControls.widthValue.value = normalized.frameWidthPortrait;
+        tuningControls.fps.value = normalized.fps;
+        tuningControls.fpsValue.value = normalized.fps;
+        tuningControls.minBitrate.value = normalized.minBitrateBps;
+        tuningControls.minBitrateValue.value = normalized.minBitrateBps;
+        tuningControls.targetBitrate.value = normalized.targetBitrateBps;
+        tuningControls.targetBitrateValue.value = normalized.targetBitrateBps;
+        tuningControls.maxBitrate.value = normalized.maxBitrateBps;
+        tuningControls.maxBitrateValue.value = normalized.maxBitrateBps;
+        tuningControls.captureBackend.value = normalized.captureBackend;
+        setTuningState(normalized.frameWidthPortrait + "w · " + normalized.fps + "fps · " + Math.round(normalized.targetBitrateBps / 100000) / 10 + "Mbps · " + normalized.captureBackend, "muted");
+      }
+
+      function readTuningControls() {
+        const width = Number(tuningControls.widthValue.value || tuningControls.width.value);
+        return normalizeTuningConfig({
+          frameWidthPortrait: width,
+          frameWidthLandscape: Math.min(1080, width === 540 ? 720 : width),
+          fps: Number(tuningControls.fpsValue.value || tuningControls.fps.value),
+          minBitrateBps: Number(tuningControls.minBitrateValue.value || tuningControls.minBitrate.value),
+          targetBitrateBps: Number(tuningControls.targetBitrateValue.value || tuningControls.targetBitrate.value),
+          maxBitrateBps: Number(tuningControls.maxBitrateValue.value || tuningControls.maxBitrate.value),
+          captureBackend: tuningControls.captureBackend.value,
+        });
+      }
+
+      function rememberWebRtcConfig(value) {
+        if (!value || typeof value !== "object") {
+          return;
+        }
+        const nativeConfig = value.nativeWebRtc && value.nativeWebRtc.runtimeConfig;
+        const directConfig = value.webrtcRuntimeConfig;
+        const envelopeConfig = value.config && typeof value.config === "object" ? value.config : null;
+        const answerConfig = value.runtimeConfig;
+        const config = directConfig || nativeConfig || envelopeConfig || answerConfig;
+        if (config && typeof config === "object") {
+          populateTuningControls(config);
+        }
+      }
+
+      async function loadWebRtcConfig(verbose = true) {
+        if (!token) {
+          return null;
+        }
+        const r = await authed("/api/webrtc/config?ts=" + Date.now());
+        const text = await r.text();
+        let json = text;
+        try {
+          json = JSON.parse(text);
+        } catch (error) {
+        }
+        if (r.ok && json && typeof json === "object") {
+          rememberWebRtcConfig(json);
+          tuningPanel.style.display = "block";
+          if (verbose) {
+            setLog(json);
+          }
+          return json;
+        }
+        if (verbose) {
+          setLog(json);
+        }
+        return null;
+      }
+
+      async function applyTuning(config) {
+        if (!token) {
+          setTuningState("not paired", "warn");
+          return;
+        }
+        const normalized = normalizeTuningConfig(config || readTuningControls());
+        populateTuningControls(normalized);
+        setTuningState("applying", "muted");
+        const r = await authed("/api/webrtc/config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ config: normalized }),
+        });
+        const text = await r.text();
+        let json = text;
+        try {
+          json = JSON.parse(text);
+        } catch (error) {
+        }
+        if (!r.ok || !json || !json.ok) {
+          setTuningState("failed", "warn");
+          setLog(json);
+          return;
+        }
+        rememberWebRtcConfig(json);
+        setTuningState("applied", "ok");
+        stopWebRtc(true);
+        await startWebRtcNative();
+      }
+
+      async function probeCapture() {
+        if (!token) {
+          setTuningState("not paired", "warn");
+          return null;
+        }
+        setTuningState("probing", "muted");
+        const r = await authed("/api/webrtc/capture/probe?ts=" + Date.now());
+        const text = await r.text();
+        let json = text;
+        try {
+          json = JSON.parse(text);
+        } catch (error) {
+        }
+        setLog(json);
+        setTuningState(r.ok ? "probe done" : "probe failed", r.ok ? "ok" : "warn");
+        return json;
+      }
+
+      function forgetSession() {
+        stopWebRtc(false);
+        token = "";
+        delete localStorage.smartisaxToken;
+        pairState.textContent = "not paired";
+        pairState.className = "muted";
+        remote.style.display = "none";
+        tuningPanel.style.display = "none";
+        stopMp4Playback();
+        stopH264Playback();
+        stopPngStream();
+        setSessionState(null);
+        setLog("Local Portal session cleared.");
+      }
+
+      function auth() {
+        return { Authorization: "Bearer " + token };
+      }
+
+      async function authed(path, opts = {}) {
+        opts.headers = Object.assign({}, opts.headers || {}, auth());
+        return fetch(path, opts);
+      }
+
+      async function status(t = token) {
+        if (!t) {
+          setLog("Not paired.");
+          setSessionState(null);
+          return;
+        }
+        const r = await fetch("/api/status", { headers: { Authorization: "Bearer " + t } });
+        const text = await r.text();
+        setLog(text);
+        if (r.ok) {
+          let json = {};
+          try {
+            json = JSON.parse(text);
+          } catch (error) {
+          }
+          rememberDeviceInfo(json);
+          remote.style.display = "block";
+          tuningPanel.style.display = "block";
+          pairState.textContent = "paired";
+          pairState.className = "ok";
+          setSessionState(json.session, "ok");
+          await loadWebRtcConfig(false).catch(() => {});
+          ensureWebRtc().catch((error) => {
+            setState("WebRTC failed", "warn");
+            setLog(String(error));
+          });
+        } else {
+          delete localStorage.smartisaxToken;
+          token = "";
+          pairState.textContent = "pair expired";
+          pairState.className = "warn";
+          setSessionState(null, "warn");
+        }
+      }
+
+      async function pair() {
+        const code = codeInput.value.trim();
+        const r = await fetch("/api/pair", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code }),
+        });
+        const text = await r.text();
+        setLog(text);
+        try {
+          const json = JSON.parse(text);
+          if (json.token) {
+            token = json.token;
+            localStorage.smartisaxToken = token;
+            setSessionState(json.session, "ok");
+            await status(token);
+          }
+        } catch (error) {
+          setLog(String(error));
+        }
+      }
+
+      function codecCaps(api) {
+        try {
+          const caps = api && api.getCapabilities && api.getCapabilities("video");
+          return caps && caps.codecs
+            ? caps.codecs.map((item) => ({
+                mimeType: item.mimeType,
+                clockRate: item.clockRate,
+                sdpFmtpLine: item.sdpFmtpLine || "",
+              }))
+            : [];
+        } catch (error) {
+          return { error: String(error) };
+        }
+      }
+
+      function browserCaps() {
+        return {
+          userAgent: navigator.userAgent,
+          isSecureContext: window.isSecureContext,
+          webCodecs: {
+            VideoEncoder: "VideoEncoder" in window,
+            VideoDecoder: "VideoDecoder" in window,
+            EncodedVideoChunk: "EncodedVideoChunk" in window,
+          },
+          webrtc: {
+            sender: codecCaps(window.RTCRtpSender),
+            receiver: codecCaps(window.RTCRtpReceiver),
+          },
+        };
+      }
+
+      function codecSummary(sdp) {
+        const lines = String(sdp || "").split(/\r?\n/);
+        const videoMLine = lines.find((line) => line.startsWith("m=video ")) || "";
+        const payloads = videoMLine.split(/\s+/).slice(3);
+        const rtpmap = new Map();
+        for (const line of lines) {
+          const match = /^a=rtpmap:(\d+)\s+([^\s/]+)\//i.exec(line);
+          if (match) {
+            rtpmap.set(match[1], match[2]);
+          }
+        }
+        return {
+          selectedCodec: payloads.length ? (rtpmap.get(payloads[0]) || "") : "",
+          codecs: payloads.map((payload) => ({
+            payload,
+            codec: rtpmap.get(payload) || "",
+          })),
+        };
+      }
+
+      function preferVideoCodec(transceiver, codecName) {
+        const result = { requested: codecName, applied: false, codecs: [] };
+        try {
+          if (!codecName || !window.RTCRtpReceiver || !RTCRtpReceiver.getCapabilities || !transceiver.setCodecPreferences) {
+            return result;
+          }
+          const capabilities = RTCRtpReceiver.getCapabilities("video");
+          const codecs = capabilities && capabilities.codecs ? capabilities.codecs : [];
+          const wanted = codecs.filter((codec) => {
+            return String(codec.mimeType || "").toLowerCase() === ("video/" + codecName).toLowerCase();
+          });
+          if (!wanted.length) {
+            return result;
+          }
+          const wantedKeys = new Set(wanted.map((codec) => JSON.stringify({
+            mimeType: codec.mimeType,
+            clockRate: codec.clockRate,
+            sdpFmtpLine: codec.sdpFmtpLine || "",
+          })));
+          const rest = codecs.filter((codec) => !wantedKeys.has(JSON.stringify({
+            mimeType: codec.mimeType,
+            clockRate: codec.clockRate,
+            sdpFmtpLine: codec.sdpFmtpLine || "",
+          })));
+          transceiver.setCodecPreferences([...wanted, ...rest]);
+          result.applied = true;
+          result.codecs = wanted.map((codec) => ({
+            mimeType: codec.mimeType,
+            clockRate: codec.clockRate,
+            sdpFmtpLine: codec.sdpFmtpLine || "",
+          }));
+        } catch (error) {
+          result.error = String(error);
+        }
+        return result;
+      }
+
+      async function caps() {
+        const r = await authed("/api/media/capabilities");
+        const text = await r.text();
+        let device = text;
+        try {
+          device = JSON.parse(text);
+          rememberDeviceInfo(device);
+        } catch (error) {
+          device = { parseError: String(error), raw: text };
+        }
+        setLog({ browser: browserCaps(), device });
+      }
+
+      function startCodeLength(bytes, offset) {
+        if (bytes[offset] === 0 && bytes[offset + 1] === 0 && bytes[offset + 2] === 1) {
+          return 3;
+        }
+        if (bytes[offset] === 0 && bytes[offset + 1] === 0 && bytes[offset + 2] === 0 && bytes[offset + 3] === 1) {
+          return 4;
+        }
+        return 0;
+      }
+
+      function splitAnnexB(bytes) {
+        const starts = [];
+        for (let i = 0; i < bytes.length - 3; i += 1) {
+          const length = startCodeLength(bytes, i);
+          if (length) {
+            starts.push(i);
+            i += length - 1;
+          }
+        }
+        const nals = [];
+        for (let i = 0; i < starts.length; i += 1) {
+          const start = starts[i];
+          const end = i + 1 < starts.length ? starts[i + 1] : bytes.length;
+          nals.push(bytes.subarray(start, end));
+        }
+        return nals;
+      }
+
+      function nalType(unit) {
+        const length = startCodeLength(unit, 0);
+        return length && unit.length > length ? unit[length] & 0x1f : -1;
+      }
+
+      function concatUnits(units) {
+        const total = units.reduce((sum, unit) => sum + unit.length, 0);
+        const outBytes = new Uint8Array(total);
+        let offset = 0;
+        for (const unit of units) {
+          outBytes.set(unit, offset);
+          offset += unit.length;
+        }
+        return outBytes;
+      }
+
+      function accessUnits(nals) {
+        const groups = [];
+        let current = [];
+        let hasVcl = false;
+        for (const nal of nals) {
+          const type = nalType(nal);
+          const isVcl = type === 1 || type === 5;
+          if (isVcl && hasVcl) {
+            groups.push(current);
+            current = [];
+            hasVcl = false;
+          }
+          current.push(nal);
+          if (isVcl) {
+            hasVcl = true;
+          }
+        }
+        if (current.length) {
+          groups.push(current);
+        }
+        return groups;
+      }
+
+      async function chooseAvcConfig() {
+        const candidates = ["avc1.640020", "avc1.4D0020", "avc1.42E01F"];
+        for (const codec of candidates) {
+          const config = { codec, hardwareAcceleration: "prefer-hardware", optimizeForLatency: true };
+          if (!VideoDecoder.isConfigSupported) {
+            return config;
+          }
+          try {
+            const result = await VideoDecoder.isConfigSupported(config);
+            if (result.supported) {
+              return result.config || config;
+            }
+          } catch (error) {
+          }
+        }
+        return { codec: "avc1.42E01F", hardwareAcceleration: "prefer-hardware", optimizeForLatency: true };
+      }
+
+      async function createDecoder() {
+        if (!("VideoDecoder" in window) || !("EncodedVideoChunk" in window)) {
+          throw new Error("WebCodecs VideoDecoder is not exposed in this browser");
+        }
+        const decoder = new VideoDecoder({
+          output(frame) {
+            try {
+              if (canvas.width !== frame.displayWidth || canvas.height !== frame.displayHeight) {
+                canvas.width = frame.displayWidth;
+                canvas.height = frame.displayHeight;
+              }
+              ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+              h264Frames += 1;
+              setState("WebCodecs frames " + h264Frames, "ok");
+            } finally {
+              frame.close();
+            }
+          },
+          error(error) {
+            setState("WebCodecs error", "warn");
+            setLog(String(error));
+          },
+        });
+        decoder.configure(await chooseAvcConfig());
+        return decoder;
+      }
+
+      async function decodeBatch(decoder) {
+        const r = await authed("/api/video/h264?frames=8&fps=4&width=720&ts=" + Date.now());
+        if (!r.ok) {
+          throw new Error("H.264 stream HTTP " + r.status + ": " + (await r.text()));
+        }
+        const bytes = new Uint8Array(await r.arrayBuffer());
+        const nals = splitAnnexB(bytes);
+        const groups = accessUnits(nals);
+        let decoded = 0;
+        for (const group of groups) {
+          const types = group.map(nalType);
+          if (!types.some((type) => type === 1 || type === 5)) {
+            continue;
+          }
+          const chunk = new EncodedVideoChunk({
+            type: types.includes(5) ? "key" : "delta",
+            timestamp: h264Timestamp,
+            duration: 250000,
+            data: concatUnits(group),
+          });
+          h264Timestamp += 250000;
+          decoder.decode(chunk);
+          decoded += 1;
+        }
+        await decoder.flush();
+        return { bytes: bytes.byteLength, nals: nals.length, accessUnits: groups.length, decoded };
+      }
+
+      async function h264Loop() {
+        while (h264Playing && h264Decoder) {
+          try {
+            const result = await decodeBatch(h264Decoder);
+            setLog({ playback: "webcodecs-canvas-batch", frames: h264Frames, batch: result });
+          } catch (error) {
+            setState("H.264 failed", "warn");
+            setLog(String(error));
+            h264Playing = false;
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 80));
+        }
+      }
+
+      async function startMp4Playback() {
+        stopPngStream();
+        stopH264Playback();
+        stopWebRtc(false);
+        if (mp4Playing) {
+          return;
+        }
+        screen.style.display = "none";
+        canvas.style.display = "none";
+        video.style.display = "block";
+        updateTouchOverlay();
+        mp4Playing = true;
+        resetLiveStats();
+        setState("starting MP4", "muted");
+        mp4Loop();
+      }
+
+      async function mp4Loop() {
+        while (mp4Playing) {
+          try {
+            const started = Date.now();
+            const r = await authed("/api/video/mp4?frames=10&fps=8&width=720&ts=" + started);
+            if (!r.ok) {
+              throw new Error("MP4 stream HTTP " + r.status + ": " + (await r.text()));
+            }
+            const blob = await r.blob();
+            liveStats.clips += 1;
+            liveStats.bytes += blob.size;
+            liveStats.lastClipMs = Date.now() - started;
+            liveStats.lastBlobBytes = blob.size;
+            if (lastVideoUrl) {
+              URL.revokeObjectURL(lastVideoUrl);
+            }
+            lastVideoUrl = URL.createObjectURL(blob);
+            video.src = lastVideoUrl;
+            await video.play();
+            setState("MP4 playing " + blob.size + " bytes", "ok");
+            updateLiveMetrics();
+            await new Promise((resolve) => {
+              let finished = false;
+              const done = () => {
+                if (finished) {
+                  return;
+                }
+                finished = true;
+                video.removeEventListener("ended", done);
+                video.removeEventListener("error", done);
+                resolve();
+              };
+              video.addEventListener("ended", done, { once: true });
+              video.addEventListener("error", done, { once: true });
+              setTimeout(done, 1800);
+            });
+          } catch (error) {
+            setState("MP4 failed", "warn");
+            setLog(String(error));
+            mp4Playing = false;
+          }
+        }
+      }
+
+      function stopMp4Playback() {
+        mp4Playing = false;
+        video.pause();
+        video.removeAttribute("src");
+        if (lastVideoUrl) {
+          URL.revokeObjectURL(lastVideoUrl);
+          lastVideoUrl = "";
+        }
+        setState("MP4 stopped", "muted");
+        liveMetrics.textContent = "live stopped";
+        liveMetrics.className = "statusline muted";
+        updateTouchOverlay();
+      }
+
+      function stopWebRtc(closeState = true) {
+        const sessionId = webRtcSessionId;
+        webRtcSessionId = "";
+        if (webRtcInputChannel) {
+          try {
+            webRtcInputChannel.close();
+          } catch (error) {
+          }
+          webRtcInputChannel = null;
+        }
+        if (webRtcPc) {
+          webRtcPc.close();
+          webRtcPc = null;
+        }
+        if (video.srcObject) {
+          const stream = video.srcObject;
+          if (stream && stream.getTracks) {
+            stream.getTracks().forEach((track) => track.stop());
+          }
+          video.srcObject = null;
+        }
+        if (sessionId && token) {
+          fetch("/api/webrtc/close", {
+            method: "POST",
+            headers: Object.assign({ "Content-Type": "application/json" }, auth()),
+            body: JSON.stringify({ sessionId }),
+            keepalive: true,
+          }).catch(() => {});
+        }
+        if (closeState) {
+          setState("WebRTC stopped", "muted");
+          liveMetrics.textContent = "webrtc stopped";
+          liveMetrics.className = "statusline muted";
+        }
+        updateTouchOverlay();
+      }
+
+      async function startH264Playback() {
+        stopPngStream();
+        stopWebRtc(false);
+        stopMp4Playback();
+        if (h264Playing) {
+          return;
+        }
+        screen.style.display = "none";
+        video.style.display = "none";
+        canvas.style.display = "block";
+        updateTouchOverlay();
+        if (!window.isSecureContext) {
+          throw new Error("WebCodecs requires a secure context; use MP4 playback for direct LAN HTTP");
+        }
+        setState("starting WebCodecs", "muted");
+        h264Frames = 0;
+        h264Timestamp = 0;
+        h264Decoder = await createDecoder();
+        h264Playing = true;
+        h264Loop();
+      }
+
+      function stopH264Playback() {
+        h264Playing = false;
+        if (h264Decoder) {
+          try {
+            h264Decoder.close();
+          } catch (error) {
+          }
+          h264Decoder = null;
+        }
+        setState("H.264 stopped", "muted");
+        updateTouchOverlay();
+      }
+
+      async function probeH264() {
+        setState("encoding H.264", "muted");
+        const r = await authed("/api/video/h264?frames=8&fps=4&width=720");
+        const bytes = new Uint8Array(await r.arrayBuffer());
+        const nals = splitAnnexB(bytes);
+        setLog({
+          ok: r.ok,
+          status: r.status,
+          contentType: r.headers.get("content-type"),
+          bytes: bytes.byteLength,
+          nalTypes: nals.map(nalType).slice(0, 24),
+          browser: browserCaps().webCodecs,
+        });
+        setState(r.ok ? "H.264 ready" : "H.264 " + r.status, r.ok ? "ok" : "warn");
+      }
+
+      function readU16(bytes, offset) {
+        return (bytes[offset] << 8) | bytes[offset + 1];
+      }
+
+      function readU32(bytes, offset) {
+        return ((bytes[offset] * 0x1000000)
+          + (bytes[offset + 1] << 16)
+          + (bytes[offset + 2] << 8)
+          + bytes[offset + 3]) >>> 0;
+      }
+
+      function parseRtpDump(bytes) {
+        const packets = [];
+        let offset = 0;
+        while (offset + 2 <= bytes.length) {
+          const length = readU16(bytes, offset);
+          offset += 2;
+          if (length < 12 || offset + length > bytes.length) {
+            throw new Error("bad RTP dump packet length " + length + " at " + (offset - 2));
+          }
+          const packet = bytes.subarray(offset, offset + length);
+          const payload = packet.subarray(12);
+          packets.push({
+            marker: !!(packet[1] & 0x80),
+            payloadType: packet[1] & 0x7f,
+            sequence: readU16(packet, 2),
+            timestamp: readU32(packet, 4),
+            ssrc: readU32(packet, 8),
+            nalType: payload.length ? payload[0] & 0x1f : -1,
+            fuType: payload.length > 1 && (payload[0] & 0x1f) === 28 ? payload[1] & 0x1f : -1,
+            bytes: packet.length,
+          });
+          offset += length;
+        }
+        return packets;
+      }
+
+      async function probeRtp() {
+        setState("packetizing RTP", "muted");
+        const r = await authed("/api/rtp/h264?frames=6&fps=6&width=720&payload=1200");
+        const bytes = new Uint8Array(await r.arrayBuffer());
+        let packets = [];
+        try {
+          packets = parseRtpDump(bytes);
+        } catch (error) {
+          setState("RTP parse failed", "warn");
+          setLog(String(error));
+          return;
+        }
+        const timestamps = Array.from(new Set(packets.map((packet) => packet.timestamp)));
+        setLog({
+          ok: r.ok,
+          status: r.status,
+          contentType: r.headers.get("content-type"),
+          bytes: bytes.byteLength,
+          packets: packets.length,
+          payloadTypes: Array.from(new Set(packets.map((packet) => packet.payloadType))),
+          markerPackets: packets.filter((packet) => packet.marker).length,
+          sequences: packets.length ? [packets[0].sequence, packets[packets.length - 1].sequence] : [],
+          timestamps: timestamps.slice(0, 12),
+          nalTypes: packets.map((packet) => packet.nalType === 28 ? "FU-A:" + packet.fuType : packet.nalType).slice(0, 24),
+        });
+        setState(r.ok ? "RTP packetized " + packets.length : "RTP " + r.status, r.ok ? "ok" : "warn");
+      }
+
+      function waitIceComplete(pc, timeoutMs = 3000) {
+        if (pc.iceGatheringState === "complete") {
+          return Promise.resolve();
+        }
+        return new Promise((resolve) => {
+          let done = false;
+          const finish = () => {
+            if (done) {
+              return;
+            }
+            done = true;
+            pc.removeEventListener("icegatheringstatechange", onChange);
+            resolve();
+          };
+          const onChange = () => {
+            if (pc.iceGatheringState === "complete") {
+              finish();
+            }
+          };
+          pc.addEventListener("icegatheringstatechange", onChange);
+          setTimeout(finish, timeoutMs);
+        });
+      }
+
+      async function startWebRtcNative() {
+        stopPngStream();
+        stopH264Playback();
+        stopMp4Playback();
+        stopWebRtc(false);
+        setState("creating native WebRTC offer", "muted");
+        screen.style.display = "none";
+        canvas.style.display = "none";
+        video.style.display = "block";
+        updateTouchOverlay();
+        const pc = new RTCPeerConnection({
+          iceServers: [],
+          bundlePolicy: "max-bundle",
+          rtcpMuxPolicy: "require",
+        });
+        webRtcPc = pc;
+        webRtcStartedAt = Date.now();
+        try {
+          webRtcInputChannel = pc.createDataChannel("smartisax-input", { ordered: true });
+          webRtcInputChannel.onopen = () => {
+            liveMetrics.textContent = "webrtc input channel open";
+            liveMetrics.className = "statusline ok";
+            input({ type: "ping" });
+          };
+          webRtcInputChannel.onclose = () => {
+            liveMetrics.textContent = "webrtc input channel closed";
+            liveMetrics.className = "statusline muted";
+          };
+          webRtcInputChannel.onerror = () => {
+            liveMetrics.textContent = "webrtc input channel error";
+            liveMetrics.className = "statusline warn";
+          };
+          webRtcInputChannel.onmessage = (event) => {
+            let message = event.data;
+            try {
+              message = JSON.parse(event.data);
+            } catch (error) {
+            }
+            if (message && typeof message === "object" && message.mode === "webrtc-datachannel-input") {
+              liveMetrics.textContent = message.ok
+                ? "input ack " + (message.type || "") + " #" + (message.seq || "")
+                : "input error " + (message.error || "");
+              liveMetrics.className = "statusline " + (message.ok ? "ok" : "warn");
+            }
+            setLog(message);
+          };
+          pc.ontrack = (event) => {
+            const stream = event.streams && event.streams[0]
+              ? event.streams[0]
+              : new MediaStream([event.track]);
+            video.srcObject = stream;
+            video.play().catch(() => {});
+            setState("WebRTC remote track", "ok");
+          };
+          pc.onconnectionstatechange = () => {
+            liveMetrics.textContent = [
+              "webrtc " + pc.connectionState,
+              "ice " + pc.iceConnectionState,
+              "elapsed " + formatDuration(Date.now() - webRtcStartedAt),
+            ].join(" · ");
+            liveMetrics.className = "statusline " + (pc.connectionState === "connected" ? "ok" : "muted");
+          };
+          pc.oniceconnectionstatechange = pc.onconnectionstatechange;
+          const transceiver = pc.addTransceiver("video", { direction: "recvonly" });
+          const codecPreference = preferVideoCodec(transceiver, "H264");
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          await waitIceComplete(pc);
+          const local = pc.localDescription || offer;
+          const localVideo = codecSummary(local.sdp);
+          const r = await authed("/api/webrtc/offer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              type: local.type,
+              sdp: local.sdp,
+              browser: browserCaps(),
+              runtimeConfig: webRtcRuntimeConfig,
+            }),
+          });
+          const text = await r.text();
+          let json = text;
+          try {
+            json = JSON.parse(text);
+          } catch (error) {
+          }
+          if (!r.ok || !json || !json.answer || !json.answer.sdp) {
+            throw new Error(typeof json === "string" ? json : JSON.stringify(json));
+          }
+          rememberDeviceInfo(json);
+          await pc.setRemoteDescription(json.answer);
+          webRtcSessionId = json.sessionId || "";
+          const answerVideo = codecSummary(json.answer.sdp);
+          setLog({
+            codecPreference,
+            offer: {
+              type: local.type,
+              sdpBytes: (local.sdp || "").length,
+              selectedCodec: localVideo.selectedCodec,
+              hasH264: /h264/i.test(local.sdp || ""),
+              hasIceUfrag: /a=ice-ufrag:/i.test(local.sdp || ""),
+              hasFingerprint: /a=fingerprint:/i.test(local.sdp || ""),
+            },
+            answer: {
+              selectedCodec: answerVideo.selectedCodec || json.selectedCodec || "",
+              sessionId: webRtcSessionId,
+            },
+            runtimeConfig: webRtcRuntimeConfig,
+            device: json,
+          });
+          setState("WebRTC " + (answerVideo.selectedCodec || json.selectedCodec || "answer") + " answer applied", "ok");
+        } catch (error) {
+          setState("WebRTC failed", "warn");
+          setLog(String(error));
+          stopWebRtc(false);
+        }
+      }
+
+      async function ensureWebRtc() {
+        if (!token || webRtcConnecting) {
+          return;
+        }
+        if (webRtcPc && !["closed", "failed", "disconnected"].includes(webRtcPc.connectionState || "")) {
+          return;
+        }
+        webRtcConnecting = true;
+        try {
+          await startWebRtcNative();
+        } finally {
+          webRtcConnecting = false;
+        }
+      }
+
+      async function frame() {
+        if (!pngStream || !token) {
+          return;
+        }
+        try {
+          const r = await authed("/api/screen.png?ts=" + Date.now());
+          if (r.ok) {
+            const blob = await r.blob();
+            if (lastUrl) {
+              URL.revokeObjectURL(lastUrl);
+            }
+            lastUrl = URL.createObjectURL(blob);
+            screen.src = lastUrl;
+            setState("PNG streaming", "ok");
+          } else {
+            setState("PNG " + r.status, "warn");
+            setLog(await r.text());
+          }
+        } catch (error) {
+          setState(String(error), "warn");
+        } finally {
+          if (pngStream) {
+            setTimeout(frame, 500);
+          }
+        }
+      }
+
+      function startPngStream() {
+        stopH264Playback();
+        stopMp4Playback();
+        stopWebRtc(false);
+        video.style.display = "none";
+        canvas.style.display = "none";
+        screen.style.display = "block";
+        updateTouchOverlay();
+        pngStream = true;
+        frame();
+      }
+
+      function stopPngStream() {
+        pngStream = false;
+        setState("PNG stopped", "muted");
+        updateTouchOverlay();
+      }
+
+      function point(event) {
+        const rect = touchOverlay.getBoundingClientRect();
+        const localX = Math.min(Math.max(event.clientX - rect.left, 0), rect.width || 1);
+        const localY = Math.min(Math.max(event.clientY - rect.top, 0), rect.height || 1);
+        touchOverlay.style.setProperty("--touch-x", ((localX / (rect.width || 1)) * 100).toFixed(2) + "%");
+        touchOverlay.style.setProperty("--touch-y", ((localY / (rect.height || 1)) * 100).toFixed(2) + "%");
+        return {
+          x: Math.round((localX / (rect.width || 1)) * deviceDisplay.width),
+          y: Math.round((localY / (rect.height || 1)) * deviceDisplay.height),
+          t: Date.now(),
+        };
+      }
+
+      async function input(payload) {
+        try {
+          if (!webRtcInputChannel || webRtcInputChannel.readyState !== "open") {
+            setState("WebRTC input not ready", "warn");
+            return;
+          }
+          webRtcInputSeq += 1;
+          const message = Object.assign({
+            seq: webRtcInputSeq,
+            ts: Date.now(),
+            displayWidth: deviceDisplay.width,
+            displayHeight: deviceDisplay.height,
+          }, payload);
+          webRtcInputChannel.send(JSON.stringify(message));
+          liveMetrics.textContent = "sent " + payload.type + " #" + webRtcInputSeq
+            + " @ " + (payload.x || payload.x1) + "," + (payload.y || payload.y1);
+          liveMetrics.className = "statusline muted";
+        } catch (error) {
+          setState("WebRTC input failed", "warn");
+          setLog(String(error));
+        }
+      }
+
+      function bindPointer() {
+        touchOverlay.addEventListener("pointerdown", (event) => {
+          event.preventDefault();
+          if (!touchOverlay.classList.contains("active")) {
+            return;
+          }
+          activePointerId = event.pointerId;
+          down = point(event);
+          touchOverlay.classList.add("pressing");
+          touchOverlay.setPointerCapture(event.pointerId);
+        });
+        touchOverlay.addEventListener("pointermove", (event) => {
+          if (activePointerId !== event.pointerId || !down) {
+            return;
+          }
+          event.preventDefault();
+          point(event);
+        });
+        touchOverlay.addEventListener("pointerup", (event) => {
+          event.preventDefault();
+          if (activePointerId !== event.pointerId || !down) {
+            return;
+          }
+          const up = point(event);
+          const dx = up.x - down.x;
+          const dy = up.y - down.y;
+          const duration = Math.max(50, up.t - down.t);
+          if (Math.hypot(dx, dy) < 18) {
+            input({ type: "tap", x: up.x, y: up.y });
+          } else {
+            input({
+              type: "swipe",
+              x1: down.x,
+              y1: down.y,
+              x2: up.x,
+              y2: up.y,
+              duration: Math.min(1200, duration),
+            });
+          }
+          down = null;
+          activePointerId = null;
+          touchOverlay.classList.remove("pressing");
+        });
+        touchOverlay.addEventListener("pointercancel", () => {
+          down = null;
+          activePointerId = null;
+          touchOverlay.classList.remove("pressing");
+        });
+      }
+
+      document.querySelector("#pair").onclick = () => pair("");
+      document.querySelector("#status").onclick = () => status();
+      document.querySelector("#forgetSession").onclick = () => forgetSession();
+      document.querySelector("#reconnectWebRtc").onclick = () => startWebRtcNative().catch((error) => {
+        setState("WebRTC failed", "warn");
+        setLog(String(error));
+      });
+      document.querySelector("#disconnectWebRtc").onclick = () => stopWebRtc();
+      document.querySelector("#applyTuning").onclick = () => applyTuning().catch((error) => {
+        setTuningState("failed", "warn");
+        setLog(String(error));
+      });
+      document.querySelector("#stableTuning").onclick = () => applyTuning(stableTuningConfig).catch((error) => {
+        setTuningState("failed", "warn");
+        setLog(String(error));
+      });
+      document.querySelector("#sharpTuning").onclick = () => applyTuning(sharpTuningConfig).catch((error) => {
+        setTuningState("failed", "warn");
+        setLog(String(error));
+      });
+      document.querySelector("#maxTuning").onclick = () => applyTuning(maxTuningConfig).catch((error) => {
+        setTuningState("failed", "warn");
+        setLog(String(error));
+      });
+      document.querySelector("#reloadTuning").onclick = () => loadWebRtcConfig().catch((error) => {
+        setTuningState("failed", "warn");
+        setLog(String(error));
+      });
+      document.querySelector("#probeCapture").onclick = () => probeCapture().catch((error) => {
+        setTuningState("failed", "warn");
+        setLog(String(error));
+      });
+      bindTuningControls();
+      populateTuningControls(stableTuningConfig);
+      bindPointer();
+      updateTouchOverlay();
+
+      const params = new URLSearchParams(location.search);
+      const autoCode = params.get("code");
+      if (autoCode) {
+        codeInput.value = autoCode;
+        pair();
+      } else if (localStorage.smartisaxToken) {
+        status(localStorage.smartisaxToken);
+      }
+    </script>
+  </body>
+</html>

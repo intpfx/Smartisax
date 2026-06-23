@@ -1,0 +1,6 @@
+id=smartisax_adb_usb_rescue
+name=Smartisax ADB USB Rescue
+version=0.1.0
+versionCode=1
+author=Smartisax
+description=Restores USB functions to mtp,adb on boot/action for Smartisan R2 rescue. No mounts, no system file replacement.

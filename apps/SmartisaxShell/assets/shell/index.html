@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Smartisax</title>
+    <link rel="stylesheet" href="./shell.css">
+  </head>
+  <body>
+    <main class="surface">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">Smartisax 0.6.7</p>
+          <h1>Browser shell</h1>
+        </div>
+        <button id="reloadStatus" type="button" aria-label="Refresh capability status">Refresh</button>
+      </section>
+
+      <form id="openForm" class="address" autocomplete="off">
+        <input id="addressInput" inputmode="url" spellcheck="false" aria-label="Address" placeholder="Search or enter a web address">
+        <button type="submit">Open</button>
+      </form>
+
+      <section class="grid" aria-label="Quick actions">
+        <button type="button" data-url="https://www.example.com">Example</button>
+        <button type="button" data-url="https://browserbench.org/MotionMark1.3.1/">MotionMark</button>
+        <button type="button" data-url="https://get.webgl.org/webgl2/">WebGL2 Test</button>
+        <button type="button" data-url="https://webgpureport.org/">WebGPU Report</button>
+      </section>
+
+      <section class="panel">
+        <h2>Runtime</h2>
+        <dl id="statusList"></dl>
+      </section>
+
+      <section class="panel">
+        <div class="panelHead">
+          <h2>Wireless ADB</h2>
+          <div class="actions">
+            <button type="button" data-adb-action="refresh">Refresh</button>
+            <button type="button" data-adb-action="enable">Enable</button>
+            <button type="button" data-adb-action="disable">Disable</button>
+          </div>
+        </div>
+        <dl id="wirelessAdbStatus"></dl>
+        <p id="wirelessAdbLog" class="logline"></p>
+      </section>
+
+      <section class="panel">
+        <div class="panelHead">
+          <h2>Device Portal</h2>
+          <div class="actions">
+            <button type="button" data-portal-action="refresh">Refresh</button>
+            <button type="button" data-portal-action="enable">Enable</button>
+            <button type="button" data-portal-action="disable">Disable</button>
+            <button type="button" data-portal-action="auto-on">Auto On</button>
+            <button type="button" data-portal-action="auto-off">Auto Off</button>
+          </div>
+        </div>
+        <dl id="portalStatus"></dl>
+        <p id="portalLog" class="logline"></p>
+      </section>
+    </main>
+    <script src="./shell.js"></script>
+  </body>
+</html>

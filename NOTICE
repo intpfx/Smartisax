@@ -1,0 +1,13 @@
+Smartisax
+Copyright 2026 Smartisax contributors
+
+This product is licensed under the Apache License, Version 2.0.
+
+Smartisax contains source code, scripts, and documentation for customizing
+Smartisan R2 devices. The public source distribution is intended to exclude
+generated ROM images, extracted OTA payloads, private keys, device backups,
+inspection dumps, and live-device logs containing private state.
+
+Android is a trademark of Google LLC. Smartisan and Smartisan OS are trademarks
+or registered trademarks of their respective owners. This project is not
+affiliated with, endorsed by, or sponsored by those trademark owners.

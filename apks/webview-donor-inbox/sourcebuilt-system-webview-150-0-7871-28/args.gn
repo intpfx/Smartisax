@@ -1,0 +1,10 @@
+target_os = "android"
+target_cpu = "arm64"
+is_debug = false
+is_official_build = true
+disable_fieldtrial_testing_config = true
+is_component_build = false
+is_chrome_branded = false
+use_official_google_api_keys = false
+android_channel = "stable"
+system_webview_package_name = "com.android.webview"

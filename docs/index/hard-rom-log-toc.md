@@ -1,0 +1,303 @@
+# Hard-ROM Evidence Log TOC
+
+Generated navigation for `docs/hard-rom-ota-trust.md`. The evidence log remains the append-only source of truth; this index exists so agents can find the relevant section without reading the full file. Line numbers are hints and should be regenerated after large edits.
+
+- L1: Hard ROM OTA Trust Bootstrap
+  - L5: Goal
+  - L15: Why V0.1 Does Not Patch SmartisanUpdater
+  - L26: What V0.1 Changes
+  - L90: Super Image Constraint
+  - L175: AVB State
+  - L188: No-Op OTA Validation
+  - L202: Self-Signed OTA Probe Result
+  - L288: Signed Payload Probe Result
+  - L367: Probe Metadata Restore
+  - L416: Full Dynamic No-Op OTA Validation
+  - L629: V0.3 Slot-Switch No-Op OTA Candidate
+  - L773: Dynamic Partition Truth Check
+  - L848: Deferred Goal: SmartisanUpdater Automatic OTA
+  - L870: Flash Boundary
+  - L894: V0.1 Flash Result
+  - L949: V0.2 No-AppStore Hard-ROM Candidate
+  - L1123: V0.3 Same-Package Browser Replacement Candidate
+  - L1372: V0.3.1 Official Browser Update To System Candidate
+  - L1590: Offline Graphify And Source Analysis After V0.3.1
+  - L1741: Offline Resource Chain Analysis
+  - L1917: Live V0.2 Icon Policy Probe
+  - L1994: V0.3/V0.3.1 Failure Replay And Resource Update Review
+  - L2085: V0.4 Debloat Candidate List
+  - L2223: V0.4 Debloat Build
+- L2315: 1. Flash v0.4 while the device is in bootloader fastboot.
+- L2320: 2. After v0.4 reaches the launcher and adb/root are available, preview again.
+- L2323: 3. If the preview still only selects removed-package launcher entries, apply it.
+  - L2335: V0.4 B-Slot Flash Result
+  - L2442: Project Docs And V0.5 Candidate Inventory
+  - L2474: Repository Light Cleanup
+  - L2498: App Inventory Report After APK Extractor Removal
+  - L2554: ROM Image Cold Archive Cleanup
+  - L2607: ROM Static Source Knowledge Base V1
+  - L2758: 2026-06-18 01:11 CST - ROM Static Knowledge Base V1.1 Index Fixes
+  - L2859: 2026-06-18 01:20 CST - ROM Static Knowledge Base V1.1 Completion
+  - L2908: 2026-06-18 02:00 CST - Modification-Critical Graph And Preflight Gate
+  - L2986: 2026-06-18 02:14 CST - Feature-Control Corpus And APK Repack Boundary
+  - L3121: 2026-06-18 03:05 CST - Feature-Control Deepening And Locale Inventory
+  - L3274: 2026-06-18 03:35 CST - SmartisaxControls Offline APK Build
+  - L3354: 2026-06-18 02:45 CST - v0.5-control Offline Super Build
+  - L3449: 2026-06-18 03:05 CST - Settings Control-Path Deepening
+  - L3537: 2026-06-18 03:50 CST - Core APK Signature Boundary Deepening
+  - L3652: 2026-06-18 04:13 CST - v0.6 SettingsSmartisan No-Op Offline Build
+  - L3772: 2026-06-18 03:33 CST - v0.7 SettingsSmartisan Locale-Filter Offline Build
+  - L3919: 2026-06-18 - Source Deepening For System Modification Confidence
+  - L4022: 2026-06-18 - v0.8 Dark-Mode Settings UI Offline Candidate
+  - L4151: 2026-06-18 - v0.9 Protips Locale Resource-Prune APK Probe
+  - L4282: 2026-06-18 - Generic APK Locale-Prune Tool Probe
+  - L4417: 2026-06-18 - Framework-Res Locale Resource Probe
+  - L4559: 2026-06-18 - Smartisan Framework Resource Binary Locale Probe
+  - L4735: 2026-06-18 - v0.10 Framework/Product Locale Hard-Prune ROM Candidate
+  - L4886: 2026-06-18 - v0.11 Native Dark-Mode Tile APK-Only Candidate
+  - L4987: 2026-06-18 - SmartisanSystemUI Asset-Add No-Op APK Probe (Superseded)
+  - L5072: 2026-06-18 - SmartisanSystemUI Same-Size No-Op ROM Gate
+  - L5186: 2026-06-18 - SettingsSmartisan Shared-Blocks-Safe Rebuild
+  - L5308: 2026-06-18 - Focused Graph/Source Audit For Settings Confidence
+  - L5385: 2026-06-18 - v0.11 Dark-Mode Integration APK Rebuilt And Audited
+  - L5474: 2026-06-18 - v0.10 Locale Prune Verification Gap Closed
+  - L5573: 2026-06-18 - v0.12 Framework-Res No-Op Gate Prepared
+  - L5654: 2026-06-18 - v0.12 Framework-Res No-Op System Image Built
+  - L5734: 2026-06-18 - v0.12 Flashable Sparse Built By Direct Sparse Rewrite
+  - L5839: 2026-06-18 - v0.10 Sparse Slice Verification Added
+  - L5898: 2026-06-18 - Settings/SystemUI Offline Verifiers Converted To Sparse Slice Checks
+  - L5965: 2026-06-18 - Live Flash Preflight And Cleanup Report Added
+  - L6027: 2026-06-18 - v0.11 Native Dark-Mode Verifier Strengthened
+  - L6091: 2026-06-18 - v0.7 Locale-Filter APK Semantic Verifier Added
+  - L6146: 2026-06-18 - Locale Hard-Prune Coverage Audit Added
+  - L6261: 2026-06-18 - System Modification Readiness Audit Added
+  - L6325: 2026-06-18 - Tier1a Locale-Prune APK Batch Built And Verified
+  - L6417: 2026-06-18 - v0.13 Tier1a Locale-Prune system_b Image Built And Verified
+  - L6572: 2026-06-18 - Dark Mode Source-Coupling Audit Added
+  - L6642: 2026-06-18 - Language Source-Coupling Audit Added
+  - L6717: 2026-06-18 - Dark Mode QS Strategy Audit Added
+  - L6806: 2026-06-18 - v0.14b HTMLViewer APK Locale-Prune Probe And Batch Verifier
+  - L6919: 2026-06-18 - Dark Mode Live-State Gate Added
+  - L7012: 2026-06-18 - v0.14a Audit Refresh
+  - L7077: 2026-06-18 - v0.14a LiveWallpapersPicker APK Locale-Prune Probe
+  - L7165: 2026-06-18 - Dark Mode QS Seeding/Restore Coupling Deepened
+  - L7254: 2026-06-18 - Dark Mode SettingsSmartisan Candidate Route Mapped
+  - L7352: 2026-06-18 - v0.17 APK-Only ROM Promotion Audit Added
+  - L7452: 2026-06-18 - v0.16a Confdialer APK-Only Prune And Full-Prune Audit Fix
+  - L7573: 2026-06-18 - Full English/Chinese Language-Prune Coverage Audit Added
+  - L7657: 2026-06-18 - System Modification Route Audit Added
+  - L7764: 2026-06-18 - Language Prune Integration Map And Live-State Audit Added
+  - L7908: 2026-06-18 - Native Dark Mode Integration Map And Live-State Audit Guard Strengthening
+  - L8048: 2026-06-18 - Resource Loading Model Deepened With Graphify And Static Source
+  - L8118: 2026-06-18 - APK-only Locale-Prune Manifest Expanded To Five Candidates
+  - L8263: 2026-06-18 - v0.11 NotificationCustomView Candidate Injection Proved Offline
+  - L8369: 2026-06-18 - Confdialer system_ext Same-Size In-Place Strategy Proved Offline
+  - L8535: 2026-06-18 - APK Locale-Prune Candidates Rebuilt With STORED resources.arsc
+  - L8662: 2026-06-18 - Dark Mode Persistence/Reset/Restore Audit
+  - L8748: 2026-06-18 - Local Intermediate Cleanup For v0.17 Space
+  - L8850: 2026-06-18 - v0.18a SimAppDialog APK-Only Language Prune
+  - L8958: 2026-06-18 - Language Next-Batch Plan
+  - L9037: 2026-06-18 - Language P1 Source-Review Audit
+  - L9118: 2026-06-18 - Current Tail State After Cleanup
+  - L9132: 2026-06-18 - v0.17a System APK-Only Language Prune Built After Cleanup
+  - L9234: 2026-06-18 - v0.17b Product/System_ext APK-Only Language Prune Built
+  - L9329: 2026-06-18 - Local Storage Cleanup After v0.17-all Build
+  - L9418: 2026-06-18 - v0.19a CompanionDeviceManager APK-Only Language Prune
+  - L9527: 2026-06-18 - Local Cleanup: Retire v0.17 Partition Intermediates
+  - L9602: 2026-06-18 - v0.20a SmartisanShareBrowser APK-Only Locale Prune
+  - L9740: 2026-06-18 - Local Cleanup: Work And Graph Cache
+  - L9799: 2026-06-18 - v0.21a TrackerSmartisan APK-Only Locale Prune
+  - L9913: 2026-06-18 - v0.22 All APK-Only Locale-Prune ROM Promotion
+  - L10014: 2026-06-18 - v0.22 Live Flash Preflight Added
+  - L10078: 2026-06-18 - v0.23a CleanerSmartisan APK-Only Binary Locale Prune
+  - L10219: 2026-06-18 - v0.24 CleanerSmartisan ROM Promotion And Live Baseline
+  - L10424: 2026-06-18 - v0.24 CleanerSmartisan ROM Flashed And Live-Verified
+  - L10580: 2026-06-18 - v0.25 SettingsSmartisan No-Op Gate Rebased On v0.24
+  - L10748: 2026-06-18 launcher-entry hide audit
+  - L10834: 2026-06-18 - Current-Base SmartisanSystemUI No-Op Gate
+  - L10982: 2026-06-18 - v0.25 SettingsSmartisan No-Op Live Flash
+  - L11136: 2026-06-18 - systemui-certprobe-noop-on-v0.24 Live Flash
+  - L11317: 2026-06-18 - v0.11 Native Dark-Mode ROM Built And Offline-Verified
+  - L11456: 2026-06-18 - v0.11 Native Dark-Mode Flashed To B Slot And Live-Verified
+  - L11680: 2026-06-18 - v0.11 Native Dark-Mode Reversible Functional Write Test Passed
+  - L11805: 2026-06-18 - v0.11 Settings Row Reachability Bug Found; v0.11.1 Offline Candidate Built
+  - L12005: 2026-06-18 - v0.11.1 Flashed to B Slot; Settings Row Visible on R2
+  - L12170: 2026-06-18 - v0.26a Launcher Entry Hide Offline Candidate Built
+  - L12348: 2026-06-18 - v0.26a Live Flash Failed Feature-Preserve Gate; v0.26a.1 v2cert Fix Prepared
+  - L12616: V0.26a.1 Live Result And V0.26a.2 Package-Cache Fix
+  - L13027: 2026-06-18 - v0.26b Sara Launcher Entry Hide Built Offline And Preflighted
+  - L13217: 2026-06-18 - v0.26b Sara Launcher Entry Hide Live Flash PASS
+  - L13360: 2026-06-18 - v0.26c Sidebar / One Step Source Gate, Offline Build, And Preflight PASS
+  - L13574: 2026-06-18 - v0.26c Sidebar / One Step Launcher Entry Hide Live Flash PASS
+  - L13737: 2026-06-18 - v0.27 Smartisan Cloud Service Debloat Offline PASS / Preflight PASS
+  - L13888: 2026-06-18 - v0.27 Smartisan Cloud Service Debloat Live PASS
+  - L14084: 2026-06-18 - Read-only Wallet + HandShaker pre-delete audit
+  - L14184: 2026-06-18 - v0.28 Wallet + HandShaker Debloat Offline PASS / Preflight PASS
+  - L14375: 2026-06-18 - v0.28 Wallet + HandShaker Debloat Live Pre-clean PASS
+  - L14527: 2026-06-18 - v0.28 Wallet /data Cleanup And Final PASS
+  - L14663: 2026-06-18 - v0.29 Sidebar / One Step Topbar Cleanup Offline PASS
+  - L14832: 2026-06-18 - v0.29 Sidebar / One Step Topbar Cleanup Live PASS
+  - L14965: 2026-06-18 - Quark Browser Magic-Mod Static Planning PASS
+  - L15063: 2026-06-19 - Quark Browser No-op v2signed APK Offline PASS
+  - L15204: 2026-06-19 - Mac-local Superseded Sparse Cleanup
+  - L15262: 2026-06-19 - Quark Intro Package Rename and First Large Prune
+  - L15342: 2026-06-19 - Quark Intro Entry-prune Candidate
+  - L15427: 2026-06-19 - Quark Magic-Mod Route Retired and Local Artifacts Removed
+  - L15475: 2026-06-19 - v0.30 Browser/WebView Modernization Offline Audit PASS
+  - L15601: 2026-06-19 - v0.30.1 WebView Donor Analyzer Offline Gate PASS
+  - L15706: 2026-06-19 - v0.30.2 Browser/WebView Live-State Capture Script Prepared
+  - L15766: 2026-06-19 - v0.31 WebView Stock Near-Noop Offline Image PASS
+  - L15904: 2026-06-19 - v0.30.3 WebView Donor Adaptation Audit Enhanced PASS
+  - L16050: 2026-06-19 - v0.30.4 WebView Donor Inbox Gate Prepared
+  - L16135: 2026-06-19 - v0.30.5 WebView Donor Source Plan Prepared
+  - L16231: 2026-06-19 - v0.30.6 Trichrome Bundle Audit Prepared
+  - L16362: 2026-06-19 - v0.30.7 WebView Integration Plan Prepared
+  - L16451: 2026-06-19 - v0.31 WebView Offline Verifier Extended PASS
+  - L16529: 2026-06-19 - WebView ROM Design Plan Prepared / Live-State Attempt Blocked By ADB
+  - L16652: 2026-06-19 - v0.32 BrowserChrome Stock Near-Noop Offline Image PASS
+  - L16827: 2026-06-19 - Browser/WebView Version Gap Audit PASS / ADB Repeat Loop Closed
+  - L16923: 2026-06-19 - WebView Framework Contract Audit PASS
+  - L17037: 2026-06-19 - WebView Donor Target Matrix PASS / ADB Repeat Loop Closed
+  - L17142: 2026-06-19 - WebView Route A Provider Spec PASS
+  - L17257: 2026-06-19 - WebView Route A Candidate Audit Baseline-Only PASS
+  - L17344: 2026-06-19 - ADB Recovery and Browser/WebView Live Baseline PASS
+  - L17413: 2026-06-19 - v0.31 WebView Stock Near-Noop Offline + Preflight PASS
+  - L17481: 2026-06-19 - v0.31 WebView Stock Near-Noop B-Slot Live PASS
+  - L17638: 2026-06-19 - WebView Source-Build Intake Plan PASS
+  - L17780: 2026-06-19 - WebView A-SIG-01 Signing Transition Plan BLOCKED
+  - L17864: 2026-06-19 - APK v2 Carrier Strip/Graft Tool Self-Test PASS
+  - L17921: 2026-06-19 - WebView Linux Builder Kit Prepared
+  - L18010: 2026-06-19 - WebView Source-Built Local Intake Dry-Run READY
+  - L18145: 2026-06-19 - WebView Source-Built Dist Provenance Gate READY
+  - L18257: 2026-06-19 - WebView GitHub/Self-Hosted Builder Workflow READY
+  - L18424: 2026-06-19 - Alibaba ECS WebView builder live run and SmartisanTech source audit
+  - L18725: 2026-06-19 - WebView application_class WARN resolved offline
+  - L18828: 2026-06-20 - WebView A-SIG PackageManager offline acceptance recorded
+  - L18985: 2026-06-20 - WebView Route A image capacity gate blocks current product_b-only candidate
+  - L19085: 2026-06-20 - WebView full-ABI system_b space-source audit recorded
+  - L19194: 2026-06-20 - WebView system_b space source corrected to protect TNT/projection
+  - L19313: 2026-06-20 - WebView space source updated for print-stack preservation
+  - L19410: 2026-06-20 01:39 - WebView space source and dynamic super capacity refresh
+  - L19513: 2026-06-20 02:02 - v0.33 system_b Partition/Footer Growth Offline PASS
+  - L19642: 2026-06-20 11:42 - v0.33 system_b Partition/Footer Growth B-Slot Live PASS
+  - L19763: 2026-06-20 11:50 - v0.34 system_b no-FEC Ext4 Capacity Offline PASS
+  - L19892: 2026-06-20 12:15 - Android FEC Tool + v0.34 FEC-preserving Ext4 Capacity Offline PASS
+  - L20045: 2026-06-20 12:23 - v0.34 FEC Live Preflight Wiring PASS
+  - L20141: 2026-06-20 12:33 - v0.34 FEC B-slot Flash and Live Verification PASS
+  - L20284: 2026-06-20 12:52 - v0.35 WebView M150 System-provider Offline Image PASS + Preflight PASS
+  - L20501: 2026-06-20 13:06 - v0.35 WebView M150 B-slot Flash and Read-only Live Verification PASS
+  - L20695: 2026-06-20 13:14 - v0.35 BrowserChrome White-loading Regression Captured
+  - L20741: 2026-06-20 13:23 - v0.35.1 BrowserChrome Deodex Candidate PASS Offline and Preflight
+  - L20822: 2026-06-20 13:38 - v0.35.1 BrowserChrome Deodex B-slot Flash and Live Regression PASS
+  - L20919: 2026-06-20 14:00 - v0.35.2 WebView Product Residue Cleanup Offline and Preflight PASS
+  - L21086: 2026-06-20 14:12 - v0.35.2 WebView Product Residue Cleanup B-slot Live PASS
+  - L21262: 2026-06-20 14:55 - v0.36 Smartisax Shell Debloat Offline Candidate
+  - L21459: 2026-06-20 v0.36 live flash and v0.36.1 Smartisax arsc-alignment follow-up
+  - L21655: 2026-06-20 v0.36.1 B-slot live flash and verification
+  - L21760: 2026-06-20 v0.36.1 Smartisax functional UX check
+  - L21874: 2026-06-20 v0.37a TextBoom live system-base candidate
+  - L22191: 2026-06-20 v0.37b TextBoom system libs/deodex candidate
+  - L22525: 2026-06-20 - TextBoom/Sidebar OCR backend map
+  - L22562: 2026-06-20 - Sidebar font OCR retirement APK candidate
+  - L22617: 2026-06-20 - v0.38 Sidebar font OCR disabled image candidate
+  - L22691: 2026-06-20 - v0.38 Sidebar font OCR disabled live flash and verification
+  - L22857: 2026-06-20 - OCR full-deletion and PP-OCR replacement plan
+  - L22932: 2026-06-20 - v0.39 Sidebar font OCR code-deletion APK and image candidate
+  - L23039: 2026-06-20 - PP-OCR to TextBoom pure mapping boundary
+  - L23100: 2026-06-20 - v0.39 Sidebar font OCR code-deletion live flash and verification
+  - L23280: 2026-06-20 - TextBoom PP-OCR offline benchmark harness
+  - L23357: 2026-06-20 - TextBoom PP-OCR live capture gate: keyguard-blocked probe
+  - L23431: 2026-06-20 - TextBoom PP-OCR live capture gate: unlocked CsOcr baseline
+  - L23556: 2026-06-20 - TextBoom PP-OCR local SDK/NDK route selected
+  - L23634: 2026-06-20 - TextBoom PP-OCR standalone benchmark APK skeleton
+  - L23727: 2026-06-21 - TextBoom PP-OCR standalone benchmark APK live stub smoke
+  - L23829: 2026-06-21 - TextBoom PP-OCR standalone benchmark native Paddle Lite smoke
+  - L23958: 2026-06-21 - PP-OCRv6 ONNX conversion and native/WebView smoke APK
+  - L24107: 2026-06-21 - PP-OCR route correction to official ppocr-android
+  - L24187: 2026-06-21 - Official PP-OCRv6 small benchmark APK built offline
+  - L24309: 2026-06-21 - Official PP-OCRv6 small benchmark live smoke and OpenCV fix
+  - L24421: 2026-06-21 - TextBoom OCR baseline corpus and PP-OCR adapter design
+  - L24526: 2026-06-21 - Documentation, Skill, Memory, And Knowledge Index Cleanup
+  - L24601: 2026-06-21 - v0.40 TextBoom PP-OCR no-op adapter candidate
+  - L24773: 2026-06-21 - v0.40 TextBoom PP-OCR no-op adapter live flash and functional gate
+  - L24944: 2026-06-21 - v0.41 TextBoom PP-OCR runtime adapter candidate
+  - L25185: 2026-06-21 - v0.41 TextBoom PP-OCR runtime adapter live flash and ABI failure
+  - L25364: 2026-06-21 - v0.41.1 TextBoom PP-OCR runtime arm32 ABI fix candidate
+  - L25537: 2026-06-21 - v0.41.1 TextBoom PP-OCR runtime arm32 ABI fix live flash and first OCR pass
+  - L25773: 2026-06-21 - v0.41.1 broader TextBoom PP-OCR regression
+  - L25882: 2026-06-21 - v0.42 TextBoom preview-path offline candidate
+  - L25999: 2026-06-21 - v0.42 TextBoom preview-path live flash and preview failure
+  - L26069: 2026-06-21 - v0.42.1 TextBoom preview media-path offline candidate
+  - L26194: 2026-06-21 - v0.42.1 TextBoom preview media-path live flash and save-missing failure
+  - L26310: 2026-06-21 - v0.42.2 TextBoom preview save-before-OCR offline candidate
+  - L26442: 2026-06-21 - v0.42.2 TextBoom preview save-before-OCR live flash and preview PASS
+  - L26557: 2026-06-21 - v0.43a TextBoom CsOcr/Intsig deletion live rejection
+  - L26765: 2026-06-21 - v0.43b TextBoom CsOcr/Intsig deletion repair live PASS
+  - L26940: 2026-06-21 - v0.43c TextBoom force-arm32 ABI offline + preflight PASS
+  - L27091: 2026-06-21 - v0.43c TextBoom force-arm32 ABI B-slot flash and live rejection
+  - L27275: 2026-06-21 - v0.43d TextBoom codePath ABI offline candidate PASS
+  - L27470: 2026-06-22 - v0.43d TextBoom codePath ABI B-slot flash and live rejection
+  - L27674: 2026-06-22 - v0.43e TextBoom codePath arm64 runtime repair offline candidate PASS
+  - L27851: 2026-06-22 - v0.43e TextBoom codePath arm64 runtime repair B-slot live PASS
+  - L28020: 2026-06-22 - v0.44 TextBoom legacy OCR cleanup APK-only candidate
+  - L28146: 2026-06-22 - PackageManager policy map and v0.pm0 services.jar no-op gate
+  - L28262: 2026-06-22 - v0.pm0 services.jar no-op system_b image gate
+  - L28375: 2026-06-22 - v0.pm0 sparse super pack and live preflight PASS
+  - L28504: 2026-06-22 - v0.pm0 services.jar no-op B-slot flash and live PASS
+  - L28681: 2026-06-22 - PackageManager pm1 cache policy design selected
+  - L28769: 2026-06-22 - USB mass_storage source audit after HandShaker deletion
+  - L28827: 2026-06-22 - v0.pm1 PMS cache allowlist offline + preflight PASS
+  - L29036: 2026-06-22 - v0.pm1 PMS cache allowlist B-slot flash and live PASS
+  - L29196: 2026-06-22 - v0.kg1 Smartisax Skip Keyguard Offline Candidate
+  - L29311: 2026-06-22 - v0.kg1 Smartisax Skip Keyguard B-slot Live PASS
+  - L29438: 2026-06-22 - v0.usb1 Smartisan virtual CD-ROM removal offline + preflight PASS
+  - L29609: 2026-06-22 - v0.usb1 Smartisan virtual CD-ROM removal B-slot live PASS
+  - L29762: 2026-06-22 - v0.usb2 physical CD-ROM ISO removal offline + preflight PASS
+  - L29900: 2026-06-22 - v0.usb2 physical CD-ROM ISO removal B-slot live PASS
+    - L30054: 2026-06-22 - v0.wadb1 Smartisax priv-app + wireless ADB entry candidate
+    - L30214: 2026-06-22: v0.wadb2 Smartisax Wireless ADB Current-Wi-Fi Repair
+    - L30386: 2026-06-22: v0.wadb2.1 Smartisax Wireless ADB Reflection And PM Cache Repair
+    - L30544: 2026-06-22: v0.wadb2.2 Smartisax Wireless ADB Binder Transact Repair
+    - L30723: 2026-06-22: v0.mirror0 scrcpy HandShaker Replacement Live Proof
+    - L30873: 2026-06-22: v0.portal0 Smartisax Device Portal Design
+    - L30937: 2026-06-22: v0.portal1 Smartisax LAN Portal Noop Build And Preflight
+    - L31053: 2026-06-22: v0.portal1 Smartisax LAN Portal Noop B-slot Live PASS
+    - L31210: 2026-06-22: v0.portal2 Smartisax Remote Screen Control Build And Preflight PASS
+    - L31377: 2026-06-22: v0.portal2 Smartisax Remote Screen Control B-slot Flash And kp Failure
+    - L31497: 2026-06-22: v0.portal2.1 Smartisax Remote Screen Control PrivAPI Repair Build And Preflight PASS
+    - L31621: 2026-06-22: v0.portal2.1 Smartisax PrivAPI Remote Control B-slot Flash And Partial Reject
+    - L31729: 2026-06-22: v0.portal2.2 Smartisax ScreenshotGraphicBuffer Conversion Candidate
+    - L31834: 2026-06-22: v0.portal2.2 Smartisax Bufferfix B-slot Flash And SurfaceControl Null Reject
+    - L31951: 2026-06-22: v0.portal2.3 Smartisax READ_FRAME_BUFFER Narrow Grant Candidate
+    - L32088: 2026-06-22: v0.portal2.3 Smartisax Framebuffer Grant B-slot Flash And Portal PASS
+    - L32214: 2026-06-23: v0.portal3a Smartisax WebRTC Capability Probe Candidate Ready
+    - L32419: 2026-06-23: v0.portal3a Smartisax WebRTC Capability Probe B-slot Flash And Portal PASS
+    - L32594: 2026-06-23: v0.portal3b Smartisax H.264 HTTP Stream Prototype B-slot PASS
+    - L32790: 2026-06-23: v0.portal3c Smartisax MP4 Browser Playback Candidate Ready
+    - L33095: 2026-06-23: v0.portal4a Smartisax WebRTC/RTP Probe Candidate Ready
+    - L33412: 2026-06-23: v0.portal4b Smartisax Start Live MP4 Control Polish Candidate Ready
+    - L33509: 2026-06-23: v0.portal4b Smartisax Start Live MP4 Control Polish Flashed And Live-Verified
+    - L33744: 2026-06-23: v0.portal4c Smartisax Portal Session Hardening Candidate Ready
+    - L33895: 2026-06-23: v0.portal4c Preflight Evidence Refreshed
+    - L33950: 2026-06-23: v0.portal4c Flashed And Live-Proven
+    - L34137: 2026-06-23: v0.portal4d Autostart Policy APK Draft
+    - L34191: 2026-06-23: v0.portal5a Native WebRTC Runtime Live Gate
+    - L34279: 2026-06-23: v0.portal5b Native WebRTC System Libs Candidate
+    - L34443: 2026-06-23: v0.portal5c WebRTC Software Bitmap Frames Candidate
+    - L34603: 2026-06-23: v0.portal5d WebRTC Bitmap.copy Frames Candidate
+    - L34845: 2026-06-23: v0.portal5e WebRTC H.264 Session-Control Candidate And Live Result
+    - L35133: 2026-06-23: v0.portal5f WebRTC DataChannel Input Candidate And Live Result
+    - L35345: 2026-06-23: v0.portal5g WebRTC Touch Overlay Quality Candidate
+    - L35615: 2026-06-23: v0.portal5h WebRTC Bitrate Quality Candidate
+    - L35719: 2026-06-23: v0.portal5h WebRTC Bitrate Quality B-slot Live PASS
+    - L35938: 2026-06-23: v0.portal5i WebRTC Runtime Tuning Candidate
+    - L36036: 2026-06-23: v0.portal5i WebRTC Runtime Tuning B-slot Live Read-only PASS
+    - L36121: 2026-06-23: v0.portal5i Portal Runtime Tuning Smoke PASS
+    - L36225: 2026-06-23: v0.portal5j MediaProjection texture capture candidate
+    - L36302: 2026-06-23: v0.portal5j Live Permission Failure And v0.portal5j.1 Services Permission Repair Candidate
+    - L36425: 2026-06-23: v0.portal5j.1 Projection Permission Repair B-slot Live PASS
+    - L36485: 2026-06-23: v0.portal5j.1 Projection Capture Probe FAIL
+    - L36561: 2026-06-23: v0.portal5j.2 Projection Binder Transact Build PASS
+    - L36682: 2026-06-23: v0.portal5j.2 Projection Binder Transact B-slot Live PASS
+    - L36780: 2026-06-23: v0.portal5j.2 Raw Binder Capture Probe PASS
+    - L36860: 2026-06-23: v0.portal5j.2 Projection Texture WebRTC Smoke RUN

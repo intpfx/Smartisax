@@ -1,0 +1,75 @@
+# macOS/editor noise
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Local secrets and device-specific credentials
+.apatch-superkey
+*.pem
+*.pk8
+*.p12
+*.keystore
+*.jks
+hard-rom/keys/
+hard-rom/build/trust-anchor/
+
+# Python/runtime caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# ROM images, APKs, OTAs, payloads, and other large binary artifacts
+*.apk
+*.apex
+*.apks
+*.img
+*.sparse.img
+*.bin
+*.zip
+*.xz
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+*.zip.*
+
+# Build/extraction/work products
+dist/
+apps/*/build/
+backups/
+data/
+hard-rom/build/
+hard-rom/extracted/
+hard-rom/tools/
+hard-rom/work/
+hard-rom/preflight/
+hard-rom/verify/live-after-flash/
+reports/
+stock-ota/
+updates/*/payload/
+
+# Keep text evidence out of Git unless intentionally promoted into docs/research.
+hard-rom/inspect/
+hard-rom/live-ota-logs/
+docs/session-handoff-*.md
+
+# Reverse-engineering bulk outputs and third-party source/tool drops
+reverse/SmartisanUpdater-source-legacy/
+reverse/SmartisanUpdater-jadx/
+reverse/smartisan-8.5.3-rom-static/graph-corpus/
+reverse/smartisan-8.5.3-rom-static/indexes/
+reverse/smartisan-8.5.3-rom-static/jadx/
+reverse/smartisan-8.5.3-rom-static/logs/
+reverse/smartisan-8.5.3-rom-static/raw/
+reverse/smartisan-8.5.3-rom-static/review/
+third_party/*
+!third_party/aosp-system-extras-fec/
+third_party/aosp-system-extras-fec/*
+!third_party/aosp-system-extras-fec/README.md
+!third_party/aosp-system-extras-fec/build-fec.sh
+!third_party/aosp-system-extras-fec/fec-minimal.c
+
+# Generated manifest tables can be regenerated from scripts and static inputs.
+reverse/smartisan-8.5.3-rom-static/manifest/*.tsv
+reverse/smartisan-8.5.3-rom-static/manifest/*.json

@@ -1,0 +1,21 @@
+!!brut.androlib.meta.MetaInfo
+apkFileName: SmartisaxAdbRescue.apk
+compressionType: false
+doNotCompress:
+- resources.arsc
+isFrameworkApk: false
+packageInfo:
+  forcedPackageId: 127
+sdkInfo:
+  minSdkVersion: 30
+  targetSdkVersion: 30
+sharedLibrary: false
+unknownFiles: {}
+usesFramework:
+  ids:
+  - 1
+  tag: null
+version: 3.0.2
+versionInfo:
+  versionCode: 1
+  versionName: 0.1.0

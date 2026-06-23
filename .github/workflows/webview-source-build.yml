@@ -1,0 +1,99 @@
+name: WebView Source Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "preflight only, or run the full Chromium/WebView build"
+        required: true
+        default: "preflight"
+        type: choice
+        options:
+          - preflight
+          - build
+      runner_labels_json:
+        description: "JSON array for a large self-hosted or larger Ubuntu runner"
+        required: true
+        default: '["self-hosted","linux","x64","webview-builder"]'
+      build_root:
+        description: "Large no-space path for Chromium checkout/build output"
+        required: true
+        default: "/mnt/webview-build"
+      min_free_gb:
+        description: "Minimum free disk in GB before Chromium fetch/build"
+        required: true
+        default: "250"
+      min_ram_gb:
+        description: "Minimum RAM in GB before Chromium fetch/build"
+        required: true
+        default: "16"
+
+jobs:
+  webview-source-build:
+    name: WebView source build
+    runs-on: ${{ fromJSON(inputs.runner_labels_json) }}
+    timeout-minutes: 1440
+    env:
+      WEBVIEW_KIT_DIR: hard-rom/inspect/browser-webview-linux-builder-kit/kit
+      WEBVIEW_BUILD_ROOT: ${{ inputs.build_root }}
+      MIN_FREE_GB: ${{ inputs.min_free_gb }}
+      MIN_RAM_GB: ${{ inputs.min_ram_gb }}
+
+    steps:
+      - name: Checkout Smartisax workspace
+        uses: actions/checkout@v4
+
+      - name: Generate WebView builder kit
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/r2-webview-linux-builder-kit.py
+
+      - name: Validate builder scripts
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n \
+            "$WEBVIEW_KIT_DIR/preflight-linux-builder.sh" \
+            "$WEBVIEW_KIT_DIR/build-system-webview.sh" \
+            "$WEBVIEW_KIT_DIR/collect-system-webview-artifact.sh" \
+            "$WEBVIEW_KIT_DIR/local-intake-after-copy.sh"
+
+      - name: Preflight Linux builder capacity
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$WEBVIEW_KIT_DIR/preflight-linux-builder.sh"
+
+      - name: Stop after preflight
+        if: ${{ inputs.mode == 'preflight' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "mode=preflight"
+          echo "Preflight passed. Re-run with mode=build on a large runner to fetch/build Chromium WebView."
+
+      - name: Build Chromium SystemWebView.apk
+        if: ${{ inputs.mode == 'build' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$WEBVIEW_KIT_DIR/build-system-webview.sh"
+
+      - name: Collect source-built WebView dist
+        if: ${{ inputs.mode == 'build' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$WEBVIEW_KIT_DIR/collect-system-webview-artifact.sh"
+
+      - name: Upload WebView dist
+        if: ${{ inputs.mode == 'build' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: sourcebuilt-system-webview
+          path: |
+            hard-rom/inspect/browser-webview-linux-builder-kit/kit/dist/sourcebuilt-system-webview-*
+            hard-rom/inspect/browser-webview-linux-builder-kit/kit/logs/*.log
+          if-no-files-found: error
+          retention-days: 7

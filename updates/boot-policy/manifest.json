@@ -1,0 +1,23 @@
+{
+  "id": "boot-policy",
+  "version": "1.0.0",
+  "name": "Boot Policy",
+  "description": "Install a low-risk APatch boot-completed policy runner for Smartisax systemless updates.",
+  "apatchModule": {
+    "id": "smartisax_boot_policy",
+    "name": "Smartisax Boot Policy",
+    "version": "1.0.0",
+    "versionCode": "1"
+  },
+  "apatchRuntime": {
+    "source": "APatch_11142_166daa0_on_HEAD-release-signed.apk",
+    "versionCode": "11142",
+    "versionName": "166daa0",
+    "payloadSha256": {
+      "apd": "607f41abb3e795e23faea495a26db6adc79c5b7b03d2e035edb13642fe2410d0",
+      "busybox": "4d60ab3f5a59ebb2ca863f2f514e6924401b581e9b64f602665c008177626651",
+      "magiskpolicy": "a514efa37ec0c329b33905868258dbca8a92dd6d2e6adf404aa16bfda8f7615d",
+      "resetprop": "3756566bfd8c420946e4cfb50781c96dc7825ccac00824d11d9723d9551b758c"
+    }
+  }
+}

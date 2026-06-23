@@ -1,0 +1,12 @@
+{
+  "id": "hello-marker",
+  "name": "Hello Marker",
+  "version": "1.0.0",
+  "description": "Harmless Smartisax update-framework smoke test. It writes a marker under /data/adb/smartisax and removes it on uninstall.",
+  "type": "systemless-test",
+  "requires": {
+    "root": "apatch-kp",
+    "device": "SMARTISAN DT2002C",
+    "android": "11"
+  }
+}

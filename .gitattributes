@@ -1,0 +1,16 @@
+*.sh text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.tsv text eol=lf
+*.json text eol=lf
+
+# Prevent accidental text diffs for generated/binary Android artifacts.
+*.apk binary
+*.apex binary
+*.apks binary
+*.img binary
+*.sparse.img binary
+*.bin binary
+*.zip binary
+

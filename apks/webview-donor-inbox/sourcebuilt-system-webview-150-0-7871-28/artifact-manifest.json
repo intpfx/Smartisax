@@ -1,0 +1,20 @@
+{
+  "apk": "SystemWebView.apk",
+  "artifact_kind": "sourcebuilt_system_webview",
+  "chromium_revision": "48db307645dcbaa0bb5ccee0cd096cf22971bb84",
+  "files": [
+    "SHA256SUMS.txt",
+    "SystemWebView.apk",
+    "args.gn",
+    "chromium-revision.txt",
+    "chromium-status.txt",
+    "gn-args-expanded.txt",
+    "webview-apk-paths.txt"
+  ],
+  "generated_on_builder": true,
+  "gn_target": "system_webview_apk",
+  "out_dir": "out/SmartisaxWebView",
+  "package_target": "com.android.webview",
+  "sha256s": "SHA256SUMS.txt",
+  "version": "150.0.7871.28"
+}

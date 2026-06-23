@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<permissions>
+    <privapp-permissions package="com.smartisax.browser">
+        <permission name="android.permission.MANAGE_DEBUGGING" />
+        <permission name="android.permission.WRITE_SECURE_SETTINGS" />
+        <permission name="android.permission.READ_FRAME_BUFFER" />
+        <permission name="android.permission.CAPTURE_VIDEO_OUTPUT" />
+        <permission name="android.permission.MANAGE_MEDIA_PROJECTION" />
+        <permission name="android.permission.INJECT_EVENTS" />
+    </privapp-permissions>
+</permissions>

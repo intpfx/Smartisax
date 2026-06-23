@@ -1,0 +1,68 @@
+# Language P1 Source Review Audit
+
+Date: 2026-06-18.
+
+This read-only audit reviews the P1 small APK-only language-prune candidates from static ROM sources. It does not build APKs, rebuild images, flash, reboot, write settings, or touch `/data`.
+
+Input plan: `reverse/smartisan-8.5.3-rom-static/manifest/language-next-batch-plan.tsv`
+TSV output: `reverse/smartisan-8.5.3-rom-static/manifest/language-p1-source-review-audit.tsv`
+
+## Summary
+
+- candidates: 10
+- P1c_defer_focused_package_review: 10
+- library_source_marker_candidate_count: 7
+- library_source_marker_hits: 662
+- direct_asset_locale_api_candidate_count: 2
+- dynamic_resource_lookup_candidate_count: 5
+- locale_change_event_candidate_count: 1
+- locale_runtime_api_candidate_count: 9
+- telephony_carrier_api_candidate_count: 4
+
+## Interpretation
+
+- P1a rows have no direct source-level locale/resource coupling in the static decompile and only low manifest exposure; they are the best APK-only mini-batch candidates.
+- P1b rows remain plausible APK-only candidates, but need a focused source note for the listed blockers before building.
+- P1c rows should wait behind package-specific source/graph review; they are still P1 in the global plan, but not the next safest mini-batch.
+- APK-only output is still not ROM coverage until inserted into a matching partition image and verified.
+
+## P1a Suggested First Mini-Batch
+
+| package | partition | exposure_score | non_target_dirs | source_gate | blockers |
+| --- | --- | --- | --- | --- | --- |
+
+## All P1 Rows
+
+| package | verdict | manifest_gate | source_gate | exposure_score | non_target_dirs | blockers |
+| --- | --- | --- | --- | --- | --- | --- |
+| com.android.carrierdefaultapp | P1c_defer_focused_package_review | HIGH_REVIEW | FOCUSED_REVIEW | 41 | 2 | 3 core intent entries; 1 sysconfig references; 1 locale-change event hits; 22 telephony/carrier API hits |
+| com.smartisanos.filepreview | P1c_defer_focused_package_review | HIGH_REVIEW | LIGHT_REVIEW | 43 | 2 | package-index status recoverable-errors; 1 core intent entries |
+| com.android.bips | P1c_defer_focused_package_review | MEDIUM_REVIEW | FOCUSED_REVIEW | 44 | 2 | 2 exported components; 15 permissions; 1 sysconfig references; 1 privapp-permission references; 1 direct asset locale API hits |
+| com.qualcomm.qti.simcontacts | P1c_defer_focused_package_review | HIGH_REVIEW | FOCUSED_REVIEW | 66 | 2 | package-index status recoverable-errors; 2 exported components; 2 core intent entries; 13 telephony/carrier API hits |
+| com.smartisanos.nodisturb | P1c_defer_focused_package_review | HIGH_REVIEW | LIGHT_REVIEW | 70 | 2 | 3 exported components; 1 providers; 11 permissions |
+| com.smartisanos.gamespeedup | P1c_defer_focused_package_review | HIGH_REVIEW | LIGHT_REVIEW | 74 | 2 | package-index status recoverable-errors; 2 exported components; 1 providers; 15 permissions |
+| com.smartisanos.setupwizard | P1c_defer_focused_package_review | HIGH_REVIEW | FOCUSED_REVIEW | 90 | 2 | 4 exported components; 2 core intent entries; 20 permissions; 1 direct asset locale API hits; high exposure score 90 |
+| com.android.exchange | P1c_defer_focused_package_review | HIGH_REVIEW | FOCUSED_REVIEW | 123 | 2 | package-index status recoverable-errors; 5 exported components; 1 providers; 23 permissions; 2 sysconfig references; 2 telephony/carrier API hits; high exposure score 123 |
+| com.smartisanos.bug2go | P1c_defer_focused_package_review | HIGH_REVIEW | FOCUSED_REVIEW | 149 | 2 | package-index status recoverable-errors; 3 exported components; 2 providers; 1 core intent entries; 32 permissions; 18 telephony/carrier API hits; high exposure score 149 |
+| com.android.egg | P1c_defer_focused_package_review | HIGH_REVIEW | LIGHT_REVIEW | 150 | 2 | package-index status recoverable-errors; 7 exported components; 1 providers; 4 core intent entries; high exposure score 150 |
+
+## Source Marker Examples
+
+| package | source_examples |
+| --- | --- |
+| com.android.carrierdefaultapp | telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__CarrierDefaultApp__CarrierDefaultApp.apk/sources/com/android/carrierdefaultapp/CaptivePortalLoginActivity.java:18; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__CarrierDefaultApp__CarrierDefaultApp.apk/sources/com/android/carrierdefaultapp/CaptivePortalLoginActivity.java:19; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__CarrierDefaultApp__CarrierDefaultApp.apk/sources/com/android/carrierdefaultapp/CaptivePortalLoginActivity.java:171; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__CarrierDefaultApp__CarrierDefaultApp.apk/sources/com/android/carrierdefaultapp/CarrierActionUtils.java:12; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__CarrierDefaultApp__CarrierDefaultApp.apk/sources/com/android/carrierdefaultapp/CarrierActionUtils.java:13; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__CarrierDefaultApp__CarrierDefaultApp.apk/sources/com/android/carrierdefaultapp/CarrierActionUtils.java:67; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__CarrierDefaultApp__CarrierDefaultApp.apk/sources/com/android/carrierdefaultapp/CarrierActionUtils.java:69; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__CarrierDefaultApp__CarrierDefaultApp.apk/sources/com/android/carrierdefaultapp/CarrierActionUtils.java:73 |
+| com.smartisanos.filepreview | locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__FilePreviewSmartisan__FilePreviewSmartisan.apk/sources/com/smartisanos/filepreview/FilePreviewApplication.java:25; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__FilePreviewSmartisan__FilePreviewSmartisan.apk/sources/com/smartisanos/filepreview/FilePreviewApplication.java:26; dynamic_resource_lookup:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__FilePreviewSmartisan__FilePreviewSmartisan.apk/sources/com/smartisanos/filepreview/PdfViewerActivity.java:74 |
+| com.android.bips | direct_asset_locale_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__BuiltInPrintService__BuiltInPrintService.apk/sources/com/android/bips/ImagePrintActivity.java:152; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__BuiltInPrintService__BuiltInPrintService.apk/sources/com/android/bips/ImagePrintActivity.java:152 |
+| com.qualcomm.qti.simcontacts | locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system_ext__app__SimContact__SimContact.apk/sources/com/android/contacts/ContactPhotoManager.java:311; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system_ext__app__SimContact__SimContact.apk/sources/com/android/contacts/database/SimContactDaoImpl.java:14; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system_ext__app__SimContact__SimContact.apk/sources/com/android/contacts/database/SimContactDaoImpl.java:15; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system_ext__app__SimContact__SimContact.apk/sources/com/android/contacts/database/SimContactDaoImpl.java:42; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system_ext__app__SimContact__SimContact.apk/sources/com/android/contacts/database/SimContactDaoImpl.java:52; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system_ext__app__SimContact__SimContact.apk/sources/com/android/contacts/database/SimContactDaoImpl.java:55; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system_ext__app__SimContact__SimContact.apk/sources/com/android/contacts/database/SimContactDaoImpl.java:58; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system_ext__app__SimContact__SimContact.apk/sources/com/android/contacts/database/SimContactDaoImpl.java:67 |
+| com.smartisanos.nodisturb | locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__NoDisturb__NoDisturb.apk/sources/com/smartisanos/nodisturb/NoDisturbApplication.java:175; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__NoDisturb__NoDisturb.apk/sources/com/smartisanos/nodisturb/NoDisturbApplication.java:176; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__NoDisturb__NoDisturb.apk/sources/com/smartisanos/nodisturb/NoDisturbApplication.java:179 |
+| com.smartisanos.gamespeedup | locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__GameSpeedUp__GameSpeedUp.apk/sources/cz/msebera/android/httpclient/A/c.java:30; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__GameSpeedUp__GameSpeedUp.apk/sources/cz/msebera/android/httpclient/message/g.java:38 |
+| com.smartisanos.setupwizard | locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SetupWizard__SetupWizard.apk/sources/com/smartisanos/setupwizard/LicenseActivity.java:37; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SetupWizard__SetupWizard.apk/sources/com/smartisanos/setupwizard/OneHandModeSettingsActivity.java:98; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SetupWizard__SetupWizard.apk/sources/com/smartisanos/setupwizard/SetupWizardActivity.java:6; direct_asset_locale_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SetupWizard__SetupWizard.apk/sources/com/smartisanos/setupwizard/SetupWizardActivity.java:21; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SetupWizard__SetupWizard.apk/sources/com/smartisanos/setupwizard/SetupWizardActivity.java:21; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SetupWizard__SetupWizard.apk/sources/com/smartisanos/setupwizard/SetupWizardActivity.java:34; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SetupWizard__SetupWizard.apk/sources/com/smartisanos/setupwizard/SetupWizardActivity.java:45; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SetupWizard__SetupWizard.apk/sources/com/smartisanos/setupwizard/SetupWizardActivity.java:46 |
+| com.android.exchange | dynamic_resource_lookup:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__Exchange2__Exchange2.apk/sources/com/android/emailcommon/VendorPolicyLoader.java:63; dynamic_resource_lookup:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__Exchange2__Exchange2.apk/sources/com/android/emailcommon/utility/AttachmentUtilities.java:207; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__Exchange2__Exchange2.apk/sources/com/android/emailcommon/utility/EmergencyLog.java:210; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__Exchange2__Exchange2.apk/sources/com/android/exchange/eas/EasOperation.java:11; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__Exchange2__Exchange2.apk/sources/com/android/exchange/eas/EasOperation.java:318 |
+| com.smartisanos.bug2go | locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SMTBugreport__SMTBugreport.apk/sources/com/smartisanos/bug2go/db/BugReportDAO.java:508; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SMTBugreport__SMTBugreport.apk/sources/com/smartisanos/bug2go/helper/DeviceUtil.java:10; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SMTBugreport__SMTBugreport.apk/sources/com/smartisanos/bug2go/helper/DeviceUtil.java:67; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SMTBugreport__SMTBugreport.apk/sources/com/smartisanos/bug2go/helper/DeviceUtil.java:77; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SMTBugreport__SMTBugreport.apk/sources/com/smartisanos/bug2go/helper/DeviceUtil.java:106; telephony_carrier_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SMTBugreport__SMTBugreport.apk/sources/com/smartisanos/bug2go/helper/DeviceUtil.java:122; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SMTBugreport__SMTBugreport.apk/sources/com/smartisanos/bug2go/helper/Notifications.java:79; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__SMTBugreport__SMTBugreport.apk/sources/com/smartisanos/bug2go/helper/Notifications.java:90 |
+| com.android.egg | locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__EasterEgg__EasterEgg.apk/sources/com/android/egg/paint/PaintActivity.java:262; locale_runtime_api:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__EasterEgg__EasterEgg.apk/sources/com/android/egg/paint/PaintActivity.java:263; dynamic_resource_lookup:reverse/smartisan-8.5.3-rom-static/jadx/system__system__app__EasterEgg__EasterEgg.apk/sources/com/android/egg/quares/QuaresActivity.java:135 |
+
+## Boundary
+
+- This is source-review evidence only; it does not build APKs or prove PackageManager/live boot behavior.
+- Same-package resource replacement still follows the ORANGE replace gate: preserve manifest, classes, signature-readable stock shell, ZIP method, and resource-table policy.
+- Run package preflight and the APK-only verifier for each selected package before promoting it beyond this review.
