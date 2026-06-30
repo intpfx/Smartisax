@@ -328,14 +328,73 @@ tools/r2-hardrom-build-v0.portal5j.1-projection-permission-grant.sh
 tools/r2-verify-v0.portal5j.1-projection-permission-grant.sh
 tools/r2-hardrom-build-v0.portal5j.2-projection-binder-transact.sh
 tools/r2-verify-v0.portal5j.2-projection-binder-transact.sh
+tools/r2-hardrom-build-v0.portal5k-frame-pump-continuity.sh
+tools/r2-verify-v0.portal5k-frame-pump-continuity.sh
+tools/r2-hardrom-build-v0.portal5k.1-frame-timestamp-retain.sh
+tools/r2-verify-v0.portal5k.1-frame-timestamp-retain.sh
+tools/r2-hardrom-build-v0.portal5l-touch-photon-move-stream.sh
+tools/r2-verify-v0.portal5l-touch-photon-move-stream.sh
 tools/r2-portal-smoke-v0.portal5a.sh
 tools/r2-portal5a-chrome-webrtc-smoke.mjs
 tools/r2-portal5i-runtime-tuning-smoke.sh
 tools/r2-portal5j2-projection-texture-smoke.sh
-hard-rom/build/super-otatrust-v0.portal5h-webrtc-bitrate-quality.sparse.img
-hard-rom/build/super-otatrust-v0.portal5i-webrtc-runtime-tuning.sparse.img
-hard-rom/build/super-otatrust-v0.portal5j.1-projection-permission-grant.sparse.img
-hard-rom/build/super-otatrust-v0.portal5j.2-projection-binder-transact.sparse.img
+tools/r2-portal5k-frame-pump-continuity-smoke.sh
+tools/r2-portal5k1-frame-timestamp-retain-smoke.sh
+tools/r2-portal5k1-latency-input-smoke.sh
+tools/r2-portal5l-touch-photon-move-stream-smoke.sh
+tools/r2-hardrom-build-v0.portal5m-latency-follow-rate.sh
+tools/r2-verify-v0.portal5m-latency-follow-rate.sh
+tools/r2-portal5m-latency-follow-rate-smoke.sh
+tools/r2-hardrom-build-v0.portal5n-latency-budget-queue-collapse.sh
+tools/r2-verify-v0.portal5n-latency-budget-queue-collapse.sh
+tools/r2-portal5n-latency-budget-queue-collapse-smoke.sh
+tools/r2-hardrom-build-v0.portal5o-input-frame-boost.sh
+tools/r2-verify-v0.portal5o-input-frame-boost.sh
+tools/r2-portal5o-input-frame-boost-smoke.sh
+tools/r2-hardrom-build-v0.portal5p-dual-phase-input-boost.sh
+tools/r2-verify-v0.portal5p-dual-phase-input-boost.sh
+tools/r2-portal5p-dual-phase-input-boost-smoke.sh
+tools/r2-hardrom-build-v0.portal5r-refresh-rate-60-90hz.sh
+tools/r2-verify-v0.portal5r-refresh-rate-60-90hz.sh
+tools/r2-portal5r-refresh-rate-60-90hz-smoke.sh
+tools/r2-hardrom-build-v0.portal5s-event-time-input-priority.sh
+tools/r2-verify-v0.portal5s-event-time-input-priority.sh
+tools/r2-portal5s-event-time-input-priority-smoke.sh
+tools/r2-hardrom-build-v0.portal5t-marker-burst-presentation.sh
+tools/r2-verify-v0.portal5t-marker-burst-presentation.sh
+tools/r2-portal5t-marker-burst-presentation-smoke.sh
+tools/r2-hardrom-build-v0.portal5u-burst-reschedule-presentation.sh
+tools/r2-verify-v0.portal5u-burst-reschedule-presentation.sh
+tools/r2-portal5u-burst-reschedule-presentation-smoke.sh
+tools/r2-hardrom-build-v0.portal5v-presentation-cadence.sh
+tools/r2-verify-v0.portal5v-presentation-cadence.sh
+tools/r2-portal5v-presentation-cadence-smoke.sh
+tools/r2-hardrom-build-v0.portal5w-quiet-presentation.sh
+tools/r2-verify-v0.portal5w-quiet-presentation.sh
+tools/r2-portal5w-quiet-presentation-smoke.sh
+tools/r2-hardrom-build-v0.portal5x-presenter-mode.sh
+tools/r2-verify-v0.portal5x-presenter-mode.sh
+tools/r2-portal5x-presenter-mode-smoke.sh
+tools/r2-hardrom-build-v0.portal5y-presentation-transport-pacing.sh
+tools/r2-verify-v0.portal5y-presentation-transport-pacing.sh
+tools/r2-portal5y-presentation-transport-pacing-smoke.sh
+tools/r2-hardrom-build-v0.portal5z-video-primary-roi-probe.sh
+tools/r2-verify-v0.portal5z-video-primary-roi-probe.sh
+tools/r2-portal5z-video-primary-roi-probe-smoke.sh
+tools/r2-live-flash-v0.portal5z-video-primary-roi-probe.sh
+tools/r2-hardrom-build-v0.portal6a-marker-draw-sync.sh
+tools/r2-verify-v0.portal6a-marker-draw-sync.sh
+tools/r2-portal6a-marker-draw-sync-smoke.sh
+tools/r2-live-flash-v0.portal6a-marker-draw-sync.sh
+hard-rom/build/super-otatrust-v0.4-debloat-exact-current.sparse.img
+hard-rom/build/super-otatrust-v0.portal5y-presentation-transport-pacing.sparse.img
+hard-rom/build/super-otatrust-v0.portal5z-video-primary-roi-probe.sparse.img
+hard-rom/build/super-otatrust-v0.portal6a-marker-draw-sync.sparse.img
+  Retained local flash/rollback images after the 2026-06-24 space recovery.
+  Superseded portal5h through portal5x sparse images, old raw system_b
+  intermediates, regenerated 5z raw/work files, `hard-rom/work/*`, and
+  `hard-rom/extracted` were removed locally; their scripts, checksum manifests,
+  docs, and inspect reports remain.
 hard-rom/build/framework/services-portal5j-smartisax-projection-permissions.jar
 hard-rom/inspect/v0.portal5f-webrtc-datachannel-input/
 hard-rom/inspect/v0.portal5g-webrtc-touch-quality/
@@ -346,6 +405,24 @@ hard-rom/inspect/v0.portal5j.1-projection-permission-grant/
 hard-rom/inspect/v0.portal5j.2-projection-binder-transact/
 hard-rom/inspect/v0.portal5j.2-projection-binder-transact/portal-projection-live-rawbinder/
 hard-rom/inspect/v0.portal5j.2-projection-binder-transact/portal-projection-texture-smoke-live/
+hard-rom/inspect/v0.portal5k-frame-pump-continuity/
+hard-rom/inspect/v0.portal5k-frame-pump-continuity/portal-frame-pump-continuity-smoke-live/
+hard-rom/inspect/v0.portal5k.1-frame-timestamp-retain/
+hard-rom/inspect/v0.portal5l-touch-photon-move-stream/
+hard-rom/inspect/v0.portal5m-latency-follow-rate/
+hard-rom/inspect/v0.portal5n-latency-budget-queue-collapse/
+hard-rom/inspect/v0.portal5o-input-frame-boost/
+hard-rom/inspect/v0.portal5p-dual-phase-input-boost/
+hard-rom/inspect/v0.portal5r-refresh-rate-60-90hz/
+hard-rom/inspect/v0.portal5s-event-time-input-priority/
+hard-rom/inspect/v0.portal5t-marker-burst-presentation/
+hard-rom/inspect/v0.portal5u-burst-reschedule-presentation/
+hard-rom/inspect/v0.portal5v-presentation-cadence/
+hard-rom/inspect/v0.portal5w-quiet-presentation/
+hard-rom/inspect/v0.portal5x-presenter-mode/
+hard-rom/inspect/v0.portal5y-presentation-transport-pacing/
+hard-rom/inspect/v0.portal5z-video-primary-roi-probe/
+hard-rom/inspect/v0.portal6a-marker-draw-sync/
   Builder/verifier chain, shared curl smoke, Chrome RTCPeerConnection smoke,
   flash evidence, and live reports for the native WebRTC Portal line. v0.portal5a
   adds the first libwebrtc runtime and proves browser SDP reaches the device but
@@ -396,9 +473,577 @@ hard-rom/inspect/v0.portal5j.2-projection-binder-transact/portal-projection-text
   Live smoke proves the path connects and controls at 1080x2340, but the
   stream stalls after the initial burst: 1080/30 decodes 27 frames at about
   1.1fps and 1080/60 decodes 18 frames at about 0.89fps over the 20s
-  observation window, both with zero packet-loss delta.
-  The superseded local v0.portal5j sparse image was removed after v0.portal5j.2
-  evidence was retained and free space remained below the 20 GiB threshold.
+  observation window, both with zero packet-loss delta. v0.portal5k is the
+  previous live-flashed continuity repair: it updates Smartisax to
+  v0.6.10/versionCode 27, keeps the raw Binder MediaProjection token route and
+  Smartisax-only services.jar policy, and uses
+  `SurfaceTextureHelper.forceFrame()` cadence on the helper handler. Its smoke
+  wrapper reuses the projection-texture profile flow and records device-side
+  `continuityFrameRequests`, `continuityFrames`, `droppedFrames`, source
+  frames, browser fps, bitrate, packet loss, memory, CPU, logcat, and
+  DataChannel tap/swipe evidence. Live 1080/30 smoke proves the device-side pump
+  counters continue, but browser decode still stalls at 26 frames, about
+  0.83fps, so 1080/30 remains unaccepted and 1080/60 was not run. v0.portal5k.1
+  is the previous live-flashed fresh-timestamp performance baseline: it updates Smartisax to
+  v0.6.11/versionCode 28, keeps the v0.portal5k forceFrame cadence, and wraps
+  retained texture frames with fresh `System.nanoTime()` timestamps before
+  WebRTC capture. Its combined smoke evidence proves 1080/30 at 29.7fps and
+  1080/60 at 60.15fps, both with H.264, 1080x2340, zero packet-loss delta,
+  timestamp rewrite counters, and `smartisax-input` tap/swipe PASS. The
+  v0.portal5k.1 latency/input smoke wrapper captures 1080/60 browser RVFC frame
+  cadence plus DataChannel ack latency and established the presentation-gap
+  baseline. v0.portal5l is the previous live flashed/read-only/smoke verified line: it updates Smartisax to
+  v0.6.12/versionCode 29, adds a device-side touch-to-photon marker with
+  marker metadata in status/acks, upgrades reverse control to
+  touchStart/touchMove/touchEnd move-stream injection, and extends the Chrome
+  smoke helper plus projection-texture wrapper with marker pixel detection and
+  move-stream ack summaries. It is built, offline-verified, live-preflighted,
+  flashed to B slot, booted, read-only verified, and smoke-proven at 1080/60:
+  decoded fps 60.05, packet-loss delta 0, move-stream 30/30 ack, marker
+  detection 2/2, and touch-to-photon p50 202.85ms/p95 286.59ms/max 295.9ms.
+  v0.portal5m is the previous live flashed/read-only/smoke-proven latency/follow-rate line: it updates
+  Smartisax to v0.6.13/versionCode 30, adds predictive marker status for Chrome
+  smoke, compact `touchMoveBatch` acks, frame-aligned Portal move batching,
+  injected-event move summaries, and throttled smoke logging. It is
+  built/offline-verified/live-preflighted/flashed/read-only verified with APK hash
+  `04b46c757e0cd0a0a5a2c58b1525ded25fc34a7dd13ff4d159123911f6bfad72`,
+  system_b hash
+  `b37ff12f06e5cc304810b7a718fc4b9b8dc501d11326a23bd7475ff463d1f7f2`,
+  and sparse hash
+  `8ea6074817bd376ae0d2d17aeaf1ddd9432c3fb294d63f914d6bc02b06b564e8`.
+  It is smoke-proven at 1080/30 plus 1080/60 under
+  `hard-rom/inspect/v0.portal5m-latency-follow-rate/portal-latency-follow-rate-smoke-live/`.
+  The summary artifacts are `projection-texture-summary.md` and
+  `projection-texture-summary.json`. 1080/30 passes at 29.81fps with
+  packet-loss delta 0, injected move events 30/30, and touch-to-photon p50/p95
+  192.4/193.03ms. 1080/60 passes at 59.94fps with packet-loss delta 0,
+  injected move events 30/30, ping ack p50/p95 15.25/97.04ms, RVFC 52.28fps,
+  and touch-to-photon p50/p95 154.45/158.1ms.
+  The no-flash modern codec cascade evidence lives under
+  `hard-rom/inspect/v0.portal5m-latency-follow-rate/portal-modern-codec-cascade-smoke-live/`.
+  Its summary artifacts prove `PREFER_CODECS=AV1,H265,VP9,H264` selects AV1
+  for both 1080/30 and 1080/60: 1080/30 passes at 29.98fps with T2P p95
+  158.9ms, while 1080/60 passes at 57.34fps with packet-loss delta 0, RVFC
+  45.65fps, 242 gaps over 34ms, and T2P p95 172.67ms.
+  Forced H265 and VP9 no-flash codec evidence lives under
+  `hard-rom/inspect/v0.portal5m-latency-follow-rate/portal-h265-forced-smoke-live/`
+  and
+  `hard-rom/inspect/v0.portal5m-latency-follow-rate/portal-vp9-forced-smoke-live/`.
+  H265 negotiates but leaves browser video at 0x0 with decoded frames 0 on both
+  profiles. VP9 displays 1080x2340 but decodes only 4.87fps at 1080/30 and
+  5.34fps at 1080/60, with 1080/60 T2P p95 251.68ms.
+  v0.portal5n-latency-budget-queue-collapse is the previous live
+  flashed/read-only and smoke-tested latency-budget line. It is built from
+  v0.portal5m, updates Smartisax to v0.6.14/versionCode 31, adds
+  latest-frame-only projection queue collapse, `smartisax-input-move`
+  low-retransmit move input, newest-point backpressure collapse, and smoke
+  dual-channel status reporting. Build result:
+  `PASS_BUILD_V0PORTAL5N_LATENCY_BUDGET_QUEUE_COLLAPSE`; offline result:
+  `PASS_OFFLINE_IMAGE_V0PORTAL5N_LATENCY_BUDGET_QUEUE_COLLAPSE`; live read-only
+  result: `PASS_READ_ONLY_V0PORTAL5N_LATENCY_BUDGET_QUEUE_COLLAPSE`. APK hash
+  `fb35e386649a51ff83eda8914fd02a9ffee3ca42c924d54b237b579c5abd6d7f`,
+  system_b hash
+  `502e18835efe3d7a085f5cd9ac3b063f02bf129128a6c3f0ae05c982f9f2fc70`,
+  sparse hash
+  `639e7cfcb7ca8c4f7a4b55fba18335714c291a9fa828951adf1e9363c7b11339`.
+  Device read-only evidence is in
+  `hard-rom/inspect/v0.portal5n-latency-budget-queue-collapse/verify-v0.portal5n-latency-budget-queue-collapse-device-read-only-20260624-162811.txt`;
+  smoke evidence is in
+  `hard-rom/inspect/v0.portal5n-latency-budget-queue-collapse/portal-latency-budget-queue-collapse-smoke-live/`.
+  1080/60 improves gap count versus v0.portal5m but regresses T2P to
+  p50/p95 205.85/208.6ms.
+  v0.portal5o-input-frame-boost is the previous live flashed/read-only
+  candidate; strict smoke was diagnostic rather than accepted. It updates Smartisax to
+  v0.6.15/versionCode 32 and adds input-triggered urgent projection forceFrame
+  boosts. Build result: `PASS_BUILD_V0PORTAL5O_INPUT_FRAME_BOOST`; offline
+  result: `PASS_OFFLINE_IMAGE_V0PORTAL5O_INPUT_FRAME_BOOST`; live read-only
+  result: `PASS_READ_ONLY_V0PORTAL5O_INPUT_FRAME_BOOST`; sparse
+  hash `1886be1676562e91e5860b14faeaf00d3cd4534b86b001596ff6a9638f60eec4`;
+  APK hash `05c30d70bd4ed0401d4cc7885f63086b8a511e30ee73f6deb2f49fb36860df38`;
+  system_b hash
+  `b0df788c0d548cb853c5ab22512e34499728b05876ac1f2ff3805d634d0af69d`.
+  Offline evidence is in
+  `hard-rom/inspect/v0.portal5o-input-frame-boost/verify-v0.portal5o-input-frame-boost-offline-image-20260624-165637.txt`.
+  Device read-only evidence is in
+  `hard-rom/inspect/v0.portal5o-input-frame-boost/verify-v0.portal5o-input-frame-boost-device-read-only-20260624-172412.txt`.
+  Smoke evidence is in
+  `hard-rom/inspect/v0.portal5o-input-frame-boost/portal-input-frame-boost-smoke-live/`,
+  `hard-rom/inspect/v0.portal5o-input-frame-boost/portal-input-frame-boost-smoke-rerun-60/`,
+  and
+  `hard-rom/inspect/v0.portal5o-input-frame-boost/portal-input-frame-boost-smoke-rerun-30/`.
+  The clean 1080/60 rerun passes with T2P p50/p95 133.25/138.51ms; the clean
+  1080/30 rerun fails the strict gate at T2P p95 205.66ms and 911 gaps over
+  34ms.
+  v0.portal5p-dual-phase-input-boost is a previous live flashed/read-only
+  candidate. It updates Smartisax to v0.6.16/versionCode 33, adds
+  `touch-marker-injected` first-phase boost while retaining marker-drawn boost,
+  and coalesces pending forceFrame work. Build result:
+  `PASS_BUILD_V0PORTAL5P_DUAL_PHASE_INPUT_BOOST`; offline result:
+  `PASS_OFFLINE_IMAGE_V0PORTAL5P_DUAL_PHASE_INPUT_BOOST`; sparse hash
+  `4c7d83fbb34a5f9aa76edd65cc5088f9decb190d341f1b14f302f46f86d1c1ef`;
+  APK hash
+  `d2c23440cdef4181422643520bfe5009f30b33df4903d6c65186a35f8961ac8a`;
+  system_b hash
+  `354246abbac4ee418b78580ef75682cc9bc089be067c57066a397e602821e58a`.
+  Build evidence is in
+  `hard-rom/inspect/v0.portal5p-dual-phase-input-boost/build-v0.portal5p-dual-phase-input-boost-20260624-175036.txt`;
+  offline evidence is in
+  `hard-rom/inspect/v0.portal5p-dual-phase-input-boost/verify-v0.portal5p-dual-phase-input-boost-offline-image-20260624-175325.txt`;
+  device read-only evidence is in
+  `hard-rom/inspect/v0.portal5p-dual-phase-input-boost/verify-v0.portal5p-dual-phase-input-boost-device-read-only-20260624-181204.txt`;
+  live read-only result:
+  `PASS_READ_ONLY_V0PORTAL5P_DUAL_PHASE_INPUT_BOOST`. It has no dedicated
+  Portal smoke result before being superseded by v0.portal5s.
+  v0.portal5r-refresh-rate-60-90hz is a built/offline/preflight-ready comparison
+  candidate. It updates Smartisax to v0.6.18/versionCode 35, changes the primary
+  profiles to 1080/60 plus 1080/90, raises runtime maxFps to 90 and max bitrate
+  to 18000000, defaults to 1080p90, and adds boost-token-retain semantics on top
+  of dual-phase input boost. Build result:
+  `PASS_BUILD_V0PORTAL5R_REFRESH_RATE_60_90HZ`; offline result:
+  `PASS_OFFLINE_IMAGE_V0PORTAL5R_REFRESH_RATE_60_90HZ`; live preflight result:
+  PASS. Sparse hash
+  `157c4ebb19b5331b13492a464a0d15a0074f22af3b9ac8ff0894b48afeb6bfd7`;
+  system_b hash
+  `28f2a293b578e2c61c1c1aa5d4c566590f6d8d07c6c5f985e1e00965831dba86`;
+  APK hash
+  `29fbc902ada4f8b309c6c5f93fa8f9eaf0780fa7e9ddb6ddd2fe0a8514ed2a02`.
+  Build evidence is in
+  `hard-rom/inspect/v0.portal5r-refresh-rate-60-90hz/build-v0.portal5r-refresh-rate-60-90hz-20260624-183329.txt`;
+  offline evidence is in
+  `hard-rom/inspect/v0.portal5r-refresh-rate-60-90hz/verify-v0.portal5r-refresh-rate-60-90hz-offline-image-20260624-183650.txt`;
+  live preflight evidence is in
+  `hard-rom/inspect/v0.portal5r-refresh-rate-60-90hz/preflight-v0.portal5r-refresh-rate-60-90hz-20260624-184000.txt`.
+  v0.portal5s-event-time-input-priority is a previous live flashed/read-only
+  candidate and a diagnostic smoke failure. It updates Smartisax to
+  v0.6.19/versionCode 36, keeps the 1080/60 plus 1080/90 target and
+  boost-token-retain behavior, adds event-time-preserving move-stream input, and
+  allows input-triggered projection frames to capture at a half-frame interval.
+  Build result: `PASS_BUILD_V0PORTAL5S_EVENT_TIME_INPUT_PRIORITY`; offline
+  result: `PASS_OFFLINE_IMAGE_V0PORTAL5S_EVENT_TIME_INPUT_PRIORITY`; live
+  preflight result: PASS; live read-only result:
+  `PASS_READ_ONLY_V0PORTAL5S_EVENT_TIME_INPUT_PRIORITY`. Sparse hash
+  `b947a9456c11284810b1f976691c689d2158798c5c3ed504865bfaecb851a5f2`;
+  system_b hash
+  `2ae129226d18c10e7e7331bc01842305b7ab32d794b20aad7d92f00ba6d23191`;
+  APK hash
+  `32727a16d70c15cbd7f4c20e0e953bf59555a57b91e96a22df03b7386992d6f0`.
+  Build evidence is in
+  `hard-rom/inspect/v0.portal5s-event-time-input-priority/build-v0.portal5s-event-time-input-priority-20260624-185418.txt`;
+  offline evidence is in
+  `hard-rom/inspect/v0.portal5s-event-time-input-priority/verify-v0.portal5s-event-time-input-priority-offline-image-20260624-185706.txt`;
+  live preflight evidence is in
+  `hard-rom/inspect/v0.portal5s-event-time-input-priority/preflight-v0.portal5s-event-time-input-priority-20260624-185843.txt`;
+  device read-only evidence is in
+  `hard-rom/inspect/v0.portal5s-event-time-input-priority/verify-v0.portal5s-event-time-input-priority-device-read-only-20260624-191453.txt`;
+  strict smoke diagnostic evidence is in
+  `hard-rom/inspect/v0.portal5s-event-time-input-priority/portal-event-time-input-priority-smoke-live/`;
+  clean single-profile 1080/60 rerun evidence is in
+  `hard-rom/inspect/v0.portal5s-event-time-input-priority/portal-event-time-input-priority-smoke-rerun-60/`.
+  The full smoke connects both H264 profiles with packet-loss delta 0,
+  move-stream PASS, and input-frame-boost PASS, but fails RVFC/T2P gates; the
+  clean 1080/60 rerun still fails RVFC 47.98fps and T2P p95 370.85ms.
+  v0.portal5t-marker-burst-presentation is the next prepared, unflashed
+  candidate. It updates Smartisax to v0.6.20/versionCode 37 on top of v0.portal5s
+  and adds marker-visible burst input-priority frames after marker draw. Build
+  result: `PASS_BUILD_V0PORTAL5T_MARKER_BURST_PRESENTATION`; offline result:
+  `PASS_OFFLINE_IMAGE_V0PORTAL5T_MARKER_BURST_PRESENTATION` with
+  `smartisax_marker_burst_boost=ok`; live preflight result: PASS. Sparse hash
+  `7417c6abcabca10dacf77d50e6dbdb84bf54414b074e23f7737c3ec929843bdd`;
+  system_b hash
+  `2ab359e6b6c16e0f0e8335c045df6a422c879c5da6b5294c334f815bbf76a1d6`;
+  APK hash
+  `4d55ff08af4e656b8a1218645b1e7e44746c550f126084d4b3ec165685606c31`.
+  Build evidence is in
+  `hard-rom/inspect/v0.portal5t-marker-burst-presentation/build-v0.portal5t-marker-burst-presentation-20260624-194836.txt`;
+  offline evidence is in
+  `hard-rom/inspect/v0.portal5t-marker-burst-presentation/verify-v0.portal5t-marker-burst-presentation-offline-image-20260624-195141.txt`.
+  Live preflight evidence is in
+  `hard-rom/inspect/v0.portal5t-marker-burst-presentation/preflight-v0.portal5t-marker-burst-presentation-20260624-195807.txt`
+  and confirmed the exact flash phrase:
+  `确认刷入 v0.portal5t-marker-burst-presentation B 槽`.
+  v0.portal5u-burst-reschedule-presentation is a previous live flashed and
+  read-only verified Portal latency candidate. It updates Smartisax to
+  v0.6.21/versionCode 38 on top of v0.portal5s, keeps marker-visible burst
+  input-priority frames, and reschedules burst frames until the projection
+  frame pump accepts each request. Build result:
+  `PASS_BUILD_V0PORTAL5U_BURST_RESCHEDULE_PRESENTATION`; offline result:
+  `PASS_OFFLINE_IMAGE_V0PORTAL5U_BURST_RESCHEDULE_PRESENTATION` with
+  `smartisax_marker_burst_reschedule=ok`; confirmed preflight result: PASS;
+  live result: `PASS_READ_ONLY_V0PORTAL5U_BURST_RESCHEDULE_PRESENTATION`.
+  Sparse hash
+  `4515ab16ff5dc443c91cd455c6361aeac3016fd728bc8abd9dbe70d3d7ac3db8`;
+  system_b hash
+  `7a0542497e74e323354bdfacd6ba366e929531d5e2678e995592fc6af796a5d5`;
+  APK hash
+  `31f75eb17d5800cf325e21d0d5e543d58b6234e5cbfc25422c0391a58bd3b6ed`.
+  Evidence is in
+  `hard-rom/inspect/v0.portal5u-burst-reschedule-presentation/build-v0.portal5u-burst-reschedule-presentation-20260624-201127.txt`,
+  `hard-rom/inspect/v0.portal5u-burst-reschedule-presentation/verify-v0.portal5u-burst-reschedule-presentation-offline-image-20260624-201420.txt`,
+  `hard-rom/inspect/v0.portal5u-burst-reschedule-presentation/preflight-v0.portal5u-burst-reschedule-presentation-20260624-confirmed-flash.txt`,
+  `hard-rom/inspect/v0.portal5u-burst-reschedule-presentation/flash-v0.portal5u-burst-reschedule-presentation-20260624-202724.txt`,
+  `hard-rom/inspect/v0.portal5u-burst-reschedule-presentation/boot-wait-v0.portal5u-burst-reschedule-presentation-20260624-203204.txt`,
+  `hard-rom/inspect/v0.portal5u-burst-reschedule-presentation/verify-v0.portal5u-burst-reschedule-presentation-device-read-only-20260624-203234.txt`,
+  and
+  `hard-rom/inspect/v0.portal5u-burst-reschedule-presentation/post-flash-focus-hash-v0.portal5u-burst-reschedule-presentation-20260624-203300.txt`.
+  Strict 1080/60 plus 1080/90 smoke evidence is in
+  `hard-rom/inspect/v0.portal5u-burst-reschedule-presentation/portal-burst-reschedule-presentation-smoke-live/projection-texture-summary.md`
+  and
+  `hard-rom/inspect/v0.portal5u-burst-reschedule-presentation/portal-burst-reschedule-presentation-smoke-live/projection-texture-summary.json`.
+  The strict smoke result is diagnostic FAIL: 1080/60 decoded 59.23fps but
+  failed RVFC/gap/T2P gates; 1080/90 decoded 85.4fps and passed T2P p95 at
+  134.61ms, but still failed RVFC/gap gates.
+  v0.portal5v-presentation-cadence is a previous prepared, unflashed Portal
+  candidate. It updates Smartisax to v0.6.22/versionCode 39, keeps
+  v0.portal5u's marker-burst-reschedule behavior, adds browser receiver
+  `playoutDelayHint=0`, `contentHint="motion"`, `disableRemotePlayback`, and
+  carries RTC playout/drop/freeze diagnostics into the smoke summary. Build
+  result: `PASS_BUILD_V0PORTAL5V_PRESENTATION_CADENCE`; offline result:
+  `PASS_OFFLINE_IMAGE_V0PORTAL5V_PRESENTATION_CADENCE` with
+  `smartisax_presentation_cadence=ok`; read-only preflight passed in the
+  current terminal run but was not persisted to a report file after the
+  tee/redirect escalation was rejected. Sparse hash
+  `9fbef52aee9ecffd146f0d949047107be6bbbfb1ca6ebb4762a00c7387742fff`;
+  system_b hash
+  `bd6f4f2d6a4ae028d1096a065942bfe7fb543b445c5b4ae6522cccec936470c5`;
+  APK hash
+  `3da3b86d74a4c78a3b98d0095bb7718a951f06c0feee96974d383207334e2509`.
+  Evidence is in
+  `hard-rom/inspect/v0.portal5v-presentation-cadence/build-v0.portal5v-presentation-cadence-20260624-210440.txt`
+  and
+  `hard-rom/inspect/v0.portal5v-presentation-cadence/verify-v0.portal5v-presentation-cadence-offline-image-20260624-210730.txt`.
+  It was superseded by the flashed v0.portal5w quiet-presentation line.
+  v0.portal5w-quiet-presentation is the previous live flashed and read-only
+  verified Portal candidate. It updates Smartisax to v0.6.23/versionCode 40, keeps
+  v0.portal5u/v0.portal5v presentation repairs, suppresses WebRTC DOM/log
+  churn in the Portal and strict smoke page, gives the video path
+  compositor/containment hints, and records RAF main-thread drift beside RVFC
+  cadence. Build result: `PASS_BUILD_V0PORTAL5W_QUIET_PRESENTATION`; offline
+  result: `PASS_OFFLINE_IMAGE_V0PORTAL5W_QUIET_PRESENTATION` with
+  `smartisax_quiet_presentation=ok`; live result:
+  `PASS_READ_ONLY_V0PORTAL5W_QUIET_PRESENTATION`; strict smoke result:
+  diagnostic FAIL. Sparse hash
+  `bf7145e79050d65cba96b1c0451c8b5c246957f8ef2fb9c513cc2966db77b593`;
+  system_b hash
+  `0c54440dcfde80c389dce5b40f854a94eae8e5c10f6c7634861063fbf35e823b`;
+  APK hash
+  `04c3e0ad784278ce82e31aecb89f9e1fe73b0dc312f9a6ad3f285ec5a6e1672d`.
+  Build/offline evidence is in
+  `hard-rom/inspect/v0.portal5w-quiet-presentation/build-v0.portal5w-quiet-presentation-20260624-212357.txt`
+  and
+  `hard-rom/inspect/v0.portal5w-quiet-presentation/verify-v0.portal5w-quiet-presentation-offline-image-20260624-212655.txt`.
+  Live/strict-smoke evidence is in
+  `hard-rom/inspect/v0.portal5w-quiet-presentation/flash-v0.portal5w-quiet-presentation-20260624-213938.txt`,
+  `hard-rom/inspect/v0.portal5w-quiet-presentation/verify-v0.portal5w-quiet-presentation-device-read-only-20260624-214443.txt`,
+  and
+  `hard-rom/inspect/v0.portal5w-quiet-presentation/portal-quiet-presentation-smoke-live/projection-texture-summary.md`.
+  It was superseded by the flashed v0.portal5x presenter-mode line.
+  v0.portal5x-presenter-mode is the previous live flashed and read-only verified
+  Portal candidate. It updates Smartisax to v0.6.24/versionCode 41 and adds a
+  canvas presenter mode for comparing video RVFC, RAF, canvas draw cadence,
+  canvas media-change cadence, and marker pixel detection source. Build result:
+  `PASS_BUILD_V0PORTAL5X_PRESENTER_MODE`; offline result:
+  `PASS_OFFLINE_IMAGE_V0PORTAL5X_PRESENTER_MODE` with
+  `smartisax_presenter_mode=ok`; live result:
+  `PASS_READ_ONLY_V0PORTAL5X_PRESENTER_MODE`; strict smoke result:
+  diagnostic FAIL. Sparse hash
+  `3d72fe25ae50542edca42edc0472f70f16deef320fc5dde0a8ecc6eebfad2f6d`;
+  system_b hash
+  `3dcdd89252b549184cb41bc044de7d64377987fc5e91b65347b685afcd97aa09`;
+  APK hash
+  `370090e6647d3e07e3defb7a459295413a5465bc729ee9c08452c902225ac450`.
+  Build/offline/preflight evidence is in
+  `hard-rom/inspect/v0.portal5x-presenter-mode/build-v0.portal5x-presenter-mode-20260624-215835.txt`,
+  `hard-rom/inspect/v0.portal5x-presenter-mode/verify-v0.portal5x-presenter-mode-offline-image-20260624-220414.txt`,
+  and
+  `hard-rom/inspect/v0.portal5x-presenter-mode/preflight-v0.portal5x-presenter-mode-20260624-222753.txt`.
+  Live/strict-smoke evidence is in
+  `hard-rom/inspect/v0.portal5x-presenter-mode/flash-v0.portal5x-presenter-mode-20260624-222855.txt`,
+  `hard-rom/inspect/v0.portal5x-presenter-mode/boot-wait-v0.portal5x-presenter-mode-20260624-223332.txt`,
+  `hard-rom/inspect/v0.portal5x-presenter-mode/verify-v0.portal5x-presenter-mode-device-read-only-20260624-223345.txt`,
+  `hard-rom/inspect/v0.portal5x-presenter-mode/post-flash-focus-hash-v0.portal5x-presenter-mode-20260624-223402.txt`,
+  and
+  `hard-rom/inspect/v0.portal5x-presenter-mode/portal-presenter-mode-smoke-live/projection-texture-summary.md`.
+  v0.portal5y-presentation-transport-pacing is the previous live flashed Portal
+  candidate. It updates Smartisax to v0.6.25/versionCode 42, keeps the 5x
+  canvas presenter feedback path, and paces 90Hz input semantics through 60fps
+  WebRTC video presentation/transport with lower 1080/90 bitrate. Build result:
+  `PASS_BUILD_V0PORTAL5Y_PRESENTATION_TRANSPORT_PACING`; offline result:
+  `PASS_OFFLINE_IMAGE_V0PORTAL5Y_PRESENTATION_TRANSPORT_PACING` with
+  `smartisax_presentation_transport_pacing=ok`; live preflight result: PASS;
+  live read-only result:
+  `PASS_READ_ONLY_V0PORTAL5Y_PRESENTATION_TRANSPORT_PACING`; strict smoke:
+  diagnostic FAIL, not accepted.
+  Sparse hash
+  `c20ad88972c3395b848f5941b5bf12f8b5674d00da3cf9ccd6fca673ca28e4dc`;
+  system_b hash
+  `05454c258274b9c1f3b69bf875b60bd5deea6957d6dc6ed1e2a6e1ab0d04cfcd`;
+  APK hash
+  `17221eab917d34b4327ce59385765211c91335e59d89d959bf9aefd672dabbe6`.
+  Build/offline/preflight evidence is in
+  `hard-rom/inspect/v0.portal5y-presentation-transport-pacing/build-v0.portal5y-presentation-transport-pacing-20260624-225845.txt`,
+  `hard-rom/inspect/v0.portal5y-presentation-transport-pacing/verify-v0.portal5y-presentation-transport-pacing-offline-image-20260624-230155.txt`,
+  and
+  `hard-rom/inspect/v0.portal5y-presentation-transport-pacing/preflight-v0.portal5y-presentation-transport-pacing-20260624-231831.txt`.
+  Flash/live/smoke evidence is in
+  `hard-rom/inspect/v0.portal5y-presentation-transport-pacing/flash-v0.portal5y-presentation-transport-pacing-20260624-231941.txt`,
+  `hard-rom/inspect/v0.portal5y-presentation-transport-pacing/boot-wait-v0.portal5y-presentation-transport-pacing-20260624-232452.txt`,
+  `hard-rom/inspect/v0.portal5y-presentation-transport-pacing/verify-v0.portal5y-presentation-transport-pacing-device-read-only-20260624-232732.txt`,
+  `hard-rom/inspect/v0.portal5y-presentation-transport-pacing/post-flash-focus-hash-v0.portal5y-presentation-transport-pacing-20260624-232744.txt`,
+  and
+  `hard-rom/inspect/v0.portal5y-presentation-transport-pacing/portal-presentation-transport-pacing-smoke-live/projection-texture-summary.md`.
+  v0.portal5z-video-primary-roi-probe is the previous live flashed/read-only
+  Portal candidate and current comparison boundary. It updates Smartisax to
+  v0.6.26/versionCode 43, preserves
+  v0.portal5y transport pacing, keeps video as the primary visible presenter in
+  `PRESENTER_MODE=probe`, samples only the marker ROI for touch-to-photon
+  detection, and enables RAF-driven pending-marker detection in the smoke
+  harness. Strict smoke is diagnostic FAIL, not accepted. Build result:
+  `PASS_BUILD_V0PORTAL5Z_VIDEO_PRIMARY_ROI_PROBE`;
+  offline result: `PASS_OFFLINE_IMAGE_V0PORTAL5Z_VIDEO_PRIMARY_ROI_PROBE` with
+  `smartisax_video_primary_roi_probe=ok` and
+  `smartisax_presentation_transport_pacing=ok`; live preflight result: PASS;
+  live read-only result: `PASS_READ_ONLY_V0PORTAL5Z_VIDEO_PRIMARY_ROI_PROBE`.
+  Sparse hash
+  `3a622e32a540c077075d0e9259a6245338e38a24b65342a09c212a6032fda0df`;
+  system_b hash
+  `930e1b9aad2794527d4e34871073654393fca8cd5636e9e1902851cf3a14a6ed`;
+  APK hash
+  `9a6280585c996d9f54d0fb03cd1c43b5d49d4487b40b52dbf1780cde76d718ad`.
+  Build/offline evidence is in
+  `hard-rom/inspect/v0.portal5z-video-primary-roi-probe/build-v0.portal5z-video-primary-roi-probe-20260624-235135.txt`
+  and
+  `hard-rom/inspect/v0.portal5z-video-primary-roi-probe/verify-v0.portal5z-video-primary-roi-probe-offline-image-20260624-235505.txt`.
+  Live preflight evidence is in
+  `hard-rom/inspect/v0.portal5z-video-primary-roi-probe/preflight-v0.portal5z-video-primary-roi-probe-20260625-000755.txt`.
+  Flash/live evidence is in
+  `hard-rom/inspect/v0.portal5z-video-primary-roi-probe/flash-v0.portal5z-video-primary-roi-probe-20260625-002052.txt`,
+  `hard-rom/inspect/v0.portal5z-video-primary-roi-probe/boot-wait-v0.portal5z-video-primary-roi-probe-20260625-002052.txt`,
+  `hard-rom/inspect/v0.portal5z-video-primary-roi-probe/verify-v0.portal5z-video-primary-roi-probe-device-read-only-20260625-002635.txt`,
+  and
+  `hard-rom/inspect/v0.portal5z-video-primary-roi-probe/post-flash-focus-v0.portal5z-video-primary-roi-probe-20260625-002052.txt`.
+  Strict and no-flash anti-throttle smoke evidence is in
+  `hard-rom/inspect/v0.portal5z-video-primary-roi-probe/portal-video-primary-roi-probe-smoke-live/projection-texture-summary.md`;
+  the original 1080/60 run failed RVFC, packet loss, gaps, and T2P p95 gates,
+  while 1080/90 kept packet-loss delta 0 and RAF near 60fps but still failed
+  RVFC, gaps, and T2P p95 gates. The later anti-throttle rerun kept
+  packet-loss delta 0 and RAF near 60fps on both profiles, classifying the
+  original 22s-class gap as host-window/background noise, but still failed video
+  RVFC cadence and marker-visible T2P tail gates.
+  `tools/r2-live-flash-v0.portal5z-video-primary-roi-probe.sh` is the
+  post-confirmation flash/verify harness used for the accepted B-slot run.
+  The host-side Chrome smoke now avoids duplicate touch-to-photon pixel
+  sampling from RVFC when RAF detection is enabled; 5z probe smoke samples the
+  marker through the RAF ROI path and keeps RVFC for cadence/gap metrics. The
+  harness also defaults to Chrome anti-throttle flags, fixed window sizing,
+  page lifecycle/RVFC/RAF timeline fields, compact summary JSON, and an
+  unvalidated Chrome foreground activation attempt for the next fresh pairing
+  run.
+  v0.portal6a-marker-draw-sync is the previous live flashed/read-only Portal
+  candidate. It updates Smartisax to v0.6.27/versionCode 44 and triggers marker
+  capture boost plus marker burst after the marker view reaches Android draw,
+  preserving v0.portal5z video-primary ROI probe and 60/90Hz transport pacing.
+  Build result is `PASS_BUILD_V0PORTAL6A_MARKER_DRAW_SYNC`; offline result is
+  `PASS_OFFLINE_IMAGE_V0PORTAL6A_MARKER_DRAW_SYNC` with
+  `smartisax_marker_draw_sync=ok`; live preflight and read-only verification
+  pass. Sparse hash
+  `b8d2bbe12c3d889fa83963ea8d8e31e2a47b2a460c075d11b29ba4d1676fcc2a`;
+  system_b hash
+  `a35a82f194eb06a7f6199562ff87ea9db4f5875ccf536275993d864fc917f5a0`;
+  APK hash
+  `25a4c9f05e61983911761668915cdfd9af6b0fe7e61cd68cd89bc8e7866ecd70`.
+  Evidence is in
+  `hard-rom/inspect/v0.portal6a-marker-draw-sync/build-v0.portal6a-marker-draw-sync-20260625-011529.txt`,
+  `hard-rom/inspect/v0.portal6a-marker-draw-sync/verify-v0.portal6a-marker-draw-sync-offline-image-20260625-012011.txt`,
+  `hard-rom/inspect/v0.portal6a-marker-draw-sync/preflight-v0.portal6a-marker-draw-sync-20260625-012222.txt`,
+  `hard-rom/inspect/v0.portal6a-marker-draw-sync/flash-v0.portal6a-marker-draw-sync-20260625-013740.txt`,
+  `hard-rom/inspect/v0.portal6a-marker-draw-sync/boot-wait-v0.portal6a-marker-draw-sync-20260625-013740.txt`,
+  `hard-rom/inspect/v0.portal6a-marker-draw-sync/verify-v0.portal6a-marker-draw-sync-device-read-only-20260625-014307.txt`,
+  and
+  `hard-rom/inspect/v0.portal6a-marker-draw-sync/post-flash-focus-v0.portal6a-marker-draw-sync-20260625-013740.txt`.
+  `tools/r2-live-flash-v0.portal6a-marker-draw-sync.sh` is the
+  post-confirmation flash/verify harness used for the B-slot run. Strict
+  1080/60 plus 1080/90 smoke is still pending.
+  v0.portal6b-draw-urgent-boost is the current live flashed/read-only Portal
+  candidate. It adds a draw-urgent input boost path on top of 6a so
+  `touch-marker-drawn-urgent` can bypass the ordinary half-frame input boost
+  spacing while preserving marker draw-sync diagnostics and burst retry limits.
+  Build result is
+  `PASS_BUILD_V0PORTAL6B_DRAW_URGENT_BOOST`; offline result is
+  `PASS_OFFLINE_IMAGE_V0PORTAL6B_DRAW_URGENT_BOOST` with
+  `smartisax_draw_urgent_boost=ok`; live result is
+  `PASS_READ_ONLY_V0PORTAL6B_DRAW_URGENT_BOOST`. Sparse hash
+  `057930f125ce07e5fc3c2940af4ac348102df7e8acbfe83d6a25467e4c3ee235`;
+  system_b hash
+  `3956bfcd006b5448008088af4fc839847cdd85ca4c12ada77bc436c29237161a`;
+  APK hash
+  `6484d7eb882f04e7a73ae7fb8539c070697abbd1235f1a598894b07230f9cc34`.
+  Build/offline evidence is in
+  `hard-rom/inspect/v0.portal6b-draw-urgent-boost/build-v0.portal6b-draw-urgent-boost-20260625-020852.txt`
+  and
+  `hard-rom/inspect/v0.portal6b-draw-urgent-boost/verify-v0.portal6b-draw-urgent-boost-offline-image-20260625-021233.txt`.
+  Flash/boot/read-only evidence is in
+  `hard-rom/inspect/v0.portal6b-draw-urgent-boost/flash-v0.portal6b-draw-urgent-boost-20260625-022145.txt`,
+  `hard-rom/inspect/v0.portal6b-draw-urgent-boost/boot-wait-v0.portal6b-draw-urgent-boost-20260625-022145.txt`,
+  `hard-rom/inspect/v0.portal6b-draw-urgent-boost/verify-v0.portal6b-draw-urgent-boost-device-read-only-20260625-022709.txt`,
+  and
+  `hard-rom/inspect/v0.portal6b-draw-urgent-boost/post-flash-focus-v0.portal6b-draw-urgent-boost-20260625-022145.txt`.
+  `tools/r2-hardrom-build-v0.portal6b-draw-urgent-boost.sh`,
+  `tools/r2-verify-v0.portal6b-draw-urgent-boost.sh`,
+  `tools/r2-portal6b-draw-urgent-boost-smoke.sh`, and
+  `tools/r2-live-flash-v0.portal6b-draw-urgent-boost.sh` are the 6b helper
+  entrypoints. Strict 1080/60 plus 1080/90 smoke is diagnostic FAIL, not
+  accepted, but proves marker draw-sync and draw-urgent counters. Summary:
+  `hard-rom/inspect/v0.portal6b-draw-urgent-boost/portal-draw-urgent-boost-smoke-live/projection-texture-summary.md`.
+  v0.portal6c-visible-screenbox is the previous live flashed/read-only Portal
+  UI visibility repair on top of 6b. It keeps the draw-urgent/WebRTC/input path
+  and repairs the real Portal `.screenBox` so Chrome/Safari do not clip the
+  video surface after pairing. Sparse hash
+  `df7912827b4201bcff601edcc300fe79654ffdc571dda860272eb6485a247a9a`;
+  system_b hash
+  `0854bd2deb455759baee791b4860f8be2cf1686675d32e662126c913a1c76c7c`;
+  APK hash
+  `d90161ce3a15a88b272ade654fdef131597114eb79a1f00ef32ca1d7cb12fe46`.
+  Build/offline evidence:
+  `hard-rom/inspect/v0.portal6c-visible-screenbox/build-v0.portal6c-visible-screenbox-20260625-134721.txt`
+  and
+  `hard-rom/inspect/v0.portal6c-visible-screenbox/verify-v0.portal6c-visible-screenbox-offline-image-20260625-135024.txt`.
+  Flash/boot/read-only evidence:
+  `hard-rom/inspect/v0.portal6c-visible-screenbox/flash-v0.portal6c-visible-screenbox-20260625-152802.txt`,
+  `hard-rom/inspect/v0.portal6c-visible-screenbox/boot-wait-v0.portal6c-visible-screenbox-20260625-152802.txt`,
+  `hard-rom/inspect/v0.portal6c-visible-screenbox/verify-v0.portal6c-visible-screenbox-device-read-only-20260625-153326.txt`,
+  and
+  `hard-rom/inspect/v0.portal6c-visible-screenbox/post-flash-focus-v0.portal6c-visible-screenbox-20260625-152802.txt`.
+  `tools/r2-hardrom-build-v0.portal6c-visible-screenbox.sh`,
+  `tools/r2-verify-v0.portal6c-visible-screenbox.sh`, and
+  `tools/r2-live-flash-v0.portal6c-visible-screenbox.sh` are the 6c helper
+  entrypoints. A real Portal Chrome visual smoke on 6c connected but returned
+  flat black pixels because the R2 display was asleep/off.
+  v0.portal6d-display-wake-guard is the current live flashed/read-only Portal
+  display wake repair on top of 6c. It adds `WAKE_LOCK`, ShellActivity
+  screen-on/turn-screen-on behavior, and a `Smartisax:PortalWebRtc` display
+  wake lock for active WebRTC runtime sessions. Sparse hash
+  `48f3329f3da1496e9c27ce3de7ff2f08fdd4d589f37ee5feaab74b8782bba0e4`;
+  system_b hash
+  `3c791ba52af85a8a6ed4bf7adc4ff7c194c1577f8782d98a945e063a6bb62718`;
+  APK hash
+  `30e7cab2c2900763a3b9e695c17ee37cd5601c4683f823aa570637bdc4d169b8`.
+  Build/offline evidence:
+  `hard-rom/inspect/v0.portal6d-display-wake-guard/build-v0.portal6d-display-wake-guard-20260625-155951.txt`
+  and
+  `hard-rom/inspect/v0.portal6d-display-wake-guard/verify-v0.portal6d-display-wake-guard-offline-image-20260625-160303.txt`.
+  Flash/boot/read-only/display evidence:
+  `hard-rom/inspect/v0.portal6d-display-wake-guard/flash-v0.portal6d-display-wake-guard-20260625-161338.txt`,
+  `hard-rom/inspect/v0.portal6d-display-wake-guard/boot-wait-v0.portal6d-display-wake-guard-20260625-161338.txt`,
+  `hard-rom/inspect/v0.portal6d-display-wake-guard/verify-v0.portal6d-display-wake-guard-device-read-only-20260625-161902.txt`,
+  `hard-rom/inspect/v0.portal6d-display-wake-guard/post-flash-focus-v0.portal6d-display-wake-guard-20260625-161338.txt`,
+  and
+  `hard-rom/inspect/v0.portal6d-display-wake-guard/display-wake-state-after-flash-20260625-161938.txt`.
+  `tools/r2-hardrom-build-v0.portal6d-display-wake-guard.sh`,
+  `tools/r2-verify-v0.portal6d-display-wake-guard.sh`, and
+  `tools/r2-live-flash-v0.portal6d-display-wake-guard.sh` are the 6d helper
+  entrypoints. Real Portal visual smoke on 6d now passes. Evidence:
+  `hard-rom/inspect/v0.portal6d-display-wake-guard/portal-real-ui-visual-smoke-live/real-portal-visual-smoke-v0.portal6d-display-wake-guard-20260625-083527.json`,
+  `hard-rom/inspect/v0.portal6d-display-wake-guard/portal-real-ui-visual-smoke-live/real-portal-visual-smoke-v0.portal6d-display-wake-guard-20260625-083527.png`,
+  and
+  `hard-rom/inspect/v0.portal6d-display-wake-guard/display-wake-state-after-real-portal-smoke-20260625-083527.txt`.
+  v0.portal6e-encoder-transport-burst is the previous live flashed/read-only
+  Portal line. It is the first returned 1080/60 plus 1080/90 performance
+  candidate after 6d real
+  Portal visibility PASS, targeting 1080/60 packet loss and encoder/transport
+  burst before RVFC/T2P work. It updates Smartisax to v0.6.31/versionCode 48,
+  clamps the 1080p60/90 sender bitrate window, applies `MAINTAIN_FRAMERATE`,
+  and late-starts the projection frame pump after local SDP while preserving
+  the 6d display wake guard. Sparse hash
+  `5c1a6d9885dcdff1f9ee0b7277419dc2280b4320cfe3551bd68e901eb4663f83`;
+  system_b hash
+  `04cfe9746848f5daee752a13efb18ba3cb938d8c7969d5b48333c965f319a6b7`;
+  APK hash
+  `90421ef5613f5dafa5491735848ebe6588e2fe5d95ffb79929bfe00329a921ef`.
+  Build/offline/preflight/flash/read-only evidence:
+  `hard-rom/inspect/v0.portal6e-encoder-transport-burst/build-v0.portal6e-encoder-transport-burst-20260625-165309.txt`,
+  `hard-rom/inspect/v0.portal6e-encoder-transport-burst/verify-v0.portal6e-encoder-transport-burst-offline-image-20260625-170017.txt`,
+  `hard-rom/inspect/v0.portal6e-encoder-transport-burst/preflight-v0.portal6e-encoder-transport-burst-20260625-170235.txt`,
+  `hard-rom/inspect/v0.portal6e-encoder-transport-burst/flash-v0.portal6e-encoder-transport-burst-20260625-171510.txt`,
+  `hard-rom/inspect/v0.portal6e-encoder-transport-burst/boot-wait-v0.portal6e-encoder-transport-burst-20260625-171510.txt`,
+  `hard-rom/inspect/v0.portal6e-encoder-transport-burst/verify-v0.portal6e-encoder-transport-burst-device-read-only-20260625-172037.txt`,
+  `hard-rom/inspect/v0.portal6e-encoder-transport-burst/post-flash-focus-v0.portal6e-encoder-transport-burst-20260625-171510.txt`,
+  and
+  `hard-rom/inspect/v0.portal6e-encoder-transport-burst/display-window-state-after-flash-20260625-172135.txt`.
+  `tools/r2-hardrom-build-v0.portal6e-encoder-transport-burst.sh`,
+  `tools/r2-verify-v0.portal6e-encoder-transport-burst.sh`,
+  `tools/r2-live-flash-v0.portal6e-encoder-transport-burst.sh`, and
+  `tools/r2-portal6e-encoder-transport-burst-smoke.sh` are the 6e helper
+  entrypoints. Strict smoke with code `666132` is diagnostic FAIL but proves
+  1080/60 packetLossDelta 0, leading to the current 6f presentation-tail line.
+  v0.portal6f-presentation-tail-cadence is the current live flashed/read-only
+  Portal line. It starts from 6e and targets RVFC/presentation cadence plus
+  1080/60 marker-visible T2P tail with full-frame marker-tail cadence, 1200ms
+  marker visibility, and receiver jitterBufferTarget/RVFC cadence-lite
+  diagnostics. Sparse hash
+  `d0bd5eb4653d8e019fdfea6fbe7815895c9ab57b87bc441b38ed7b8112465d9a`;
+  system_b hash
+  `0cd94324a512d5cb1fd9eed87f7aa82b49e586062033c08a81a96e7c0ab937b2`;
+  APK hash
+  `98b517b37cfcccce93f0724464b3d874c911efe9a6166e9775c345bceffb0db5`.
+  Build/offline/preflight/flash/read-only evidence:
+  `hard-rom/inspect/v0.portal6f-presentation-tail-cadence/build-v0.portal6f-presentation-tail-cadence-20260625-190344.txt`,
+  `hard-rom/inspect/v0.portal6f-presentation-tail-cadence/verify-v0.portal6f-presentation-tail-cadence-offline-image-20260625-190751.txt`,
+  `hard-rom/inspect/v0.portal6f-presentation-tail-cadence/preflight-v0.portal6f-presentation-tail-cadence-20260625-191141.txt`,
+  `hard-rom/inspect/v0.portal6f-presentation-tail-cadence/flash-v0.portal6f-presentation-tail-cadence-20260625-202928.txt`,
+  `hard-rom/inspect/v0.portal6f-presentation-tail-cadence/boot-wait-v0.portal6f-presentation-tail-cadence-20260625-202928.txt`,
+  `hard-rom/inspect/v0.portal6f-presentation-tail-cadence/verify-v0.portal6f-presentation-tail-cadence-device-read-only-20260625-203453.txt`,
+  `hard-rom/inspect/v0.portal6f-presentation-tail-cadence/post-flash-focus-v0.portal6f-presentation-tail-cadence-20260625-202928.txt`,
+  and
+  `hard-rom/inspect/v0.portal6f-presentation-tail-cadence/display-window-state-after-flash-20260625-203526.txt`.
+  Safari fallback strict smoke evidence:
+  `hard-rom/inspect/v0.portal6f-presentation-tail-cadence/portal-presentation-tail-cadence-smoke-safari-176725/projection-texture-summary.md`
+  and
+  `hard-rom/inspect/v0.portal6f-presentation-tail-cadence/portal-presentation-tail-cadence-smoke-safari-176725/projection-texture-summary.json`.
+  In-app browser Chrome-side cadence smoke evidence:
+  `hard-rom/inspect/v0.portal6f-presentation-tail-cadence/portal-presentation-tail-cadence-smoke-iab-998599/projection-texture-summary.md`
+  and
+  `hard-rom/inspect/v0.portal6f-presentation-tail-cadence/portal-presentation-tail-cadence-smoke-iab-998599/projection-texture-summary.json`.
+  `tools/r2-hardrom-build-v0.portal6f-presentation-tail-cadence.sh`,
+  `tools/r2-verify-v0.portal6f-presentation-tail-cadence.sh`,
+  `tools/r2-live-flash-v0.portal6f-presentation-tail-cadence.sh`, and
+  `tools/r2-portal6f-presentation-tail-cadence-smoke.sh` are the 6f helper
+  entrypoints. Safari fallback strict smoke with code `176725` passed both
+  1080/60 and 1080/90 H264 1080x2340 visibility/control/T2P gates. In-app
+  browser Chrome-side smoke with code `998599` passed 1080/90 and failed only
+  the 1080/60 RVFC gap gate: `frameGapsOver34ms=123` against `<=60`.
+  v0.portal6g-rvfc-media-tail is the current live flashed/read-only follow-up
+  for that 1080/60 RVFC/media callback tail gate. It starts from 6f, updates
+  Smartisax to v0.6.33/versionCode 50, makes the 1080/60 smoke profile
+  explicitly preserve `inputRefreshHz=90`, de-phases the exact 1080p60 sender
+  to 59fps, narrows the 60Hz sender window to 7Mbps, spaces continuity
+  forceFrame cadence at the full media-frame interval, and adds
+  `mediaCallbackTailRepair`/`mediaCallbackTailFrameSpacingMs` diagnostics.
+  Sparse hash
+  `d3a938546f197e54ea1f7c08bf300b8d61bf91b9c389bca92a9ddfa018a038fb`;
+  system_b hash
+  `941c660259f32270eaf4e3a8a5778b8518d4035e0f5efb73a8b704fd7d4b4241`;
+  APK hash
+  `442276dfaf1e70ecf0209818ed61b207bae72194fc490f8c601471b6a43f9f6a`.
+  Valid build/offline/preflight/flash/read-only evidence:
+  `hard-rom/inspect/v0.portal6g-rvfc-media-tail/build-v0.portal6g-rvfc-media-tail-20260629-202323.txt`,
+  `hard-rom/inspect/v0.portal6g-rvfc-media-tail/verify-v0.portal6g-rvfc-media-tail-offline-image-20260629-202657.txt`,
+  `hard-rom/inspect/v0.portal6g-rvfc-media-tail/preflight-v0.portal6g-rvfc-media-tail-20260629-202908.txt`,
+  `hard-rom/inspect/v0.portal6g-rvfc-media-tail/flash-v0.portal6g-rvfc-media-tail-20260629-203737.txt`,
+  `hard-rom/inspect/v0.portal6g-rvfc-media-tail/boot-wait-v0.portal6g-rvfc-media-tail-20260629-203737.txt`,
+  `hard-rom/inspect/v0.portal6g-rvfc-media-tail/verify-v0.portal6g-rvfc-media-tail-device-read-only-20260629-204302.txt`,
+  and
+  `hard-rom/inspect/v0.portal6g-rvfc-media-tail/display-window-state-after-flash-20260629-204340.txt`.
+  `tools/r2-hardrom-build-v0.portal6g-rvfc-media-tail.sh`,
+  `tools/r2-verify-v0.portal6g-rvfc-media-tail.sh`,
+  `tools/r2-live-flash-v0.portal6g-rvfc-media-tail.sh`, and
+  `tools/r2-portal6g-rvfc-media-tail-smoke.sh` are the 6g helper entrypoints.
+  Flash used the exact phrase `确认刷入 v0.portal6g-rvfc-media-tail B 槽`;
+  next, use a fresh code with the 6g strict smoke to
+  test whether 1080/60 `frameGapsOver34ms` is <=60.
+  The superseded local v0.portal5j, v0.portal5j.1, and v0.portal5j.2 sparse
+  images plus old v0.portal5k-through-v0.portal5o raw system_b intermediates
+  were removed after their evidence was retained and free space was needed for
+  the v0.portal5r build.
 
 tools/r2-build-services-kg1-skip-keyguard-jar.sh
 tools/r2-hardrom-build-v0.kg1-smartisax-skip-keyguard.sh

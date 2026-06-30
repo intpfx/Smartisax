@@ -301,3 +301,80 @@ Generated navigation for `docs/hard-rom-ota-trust.md`. The evidence log remains 
     - L36682: 2026-06-23: v0.portal5j.2 Projection Binder Transact B-slot Live PASS
     - L36780: 2026-06-23: v0.portal5j.2 Raw Binder Capture Probe PASS
     - L36860: 2026-06-23: v0.portal5j.2 Projection Texture WebRTC Smoke RUN
+    - L36932: 2026-06-24: v0.portal5k Frame Pump Continuity Build/Offline PASS
+    - L37036: 2026-06-24: v0.portal5k Frame Pump Continuity B-slot Live PASS
+    - L37094: 2026-06-24: v0.portal5k 1080/30 Projection Texture Smoke NOT ACCEPTED
+    - L37139: 2026-06-24: v0.portal5k.1 Frame Timestamp Retain Build/Offline PASS
+    - L37223: 2026-06-24: v0.portal5k.1 Frame Timestamp Retain B-slot Live And Smoke PASS
+    - L37334: 2026-06-24: v0.portal5k.1 1080/60 Latency And Input Metrics Smoke PASS
+    - L37418: 2026-06-24: v0.portal5l Touch Photon Marker And Move Stream Candidate PASS
+    - L37521: 2026-06-24: v0.portal5l Touch Photon Move Stream B-slot Live Read-only PASS
+    - L37618: 2026-06-24: v0.portal5l 1080/60 Touch Photon Move Stream Smoke PASS
+    - L37703: 2026-06-24: v0.portal5m Latency Follow-rate Candidate PASS
+    - L37813: 2026-06-24: v0.portal5m Latency Follow-rate B-slot Live Read-only PASS
+    - L37910: 2026-06-24: v0.portal5m 1080/30 And 1080/60 Latency Follow-rate Smoke PASS
+    - L38005: 2026-06-24: v0.portal5m Modern Codec Cascade No-flash Smoke PASS With AV1 Selected
+    - L38083: 2026-06-24: v0.portal5m Forced H265 And VP9 No-flash Codec Probes
+    - L38160: 2026-06-24: v0.portal5n Latency-budget Queue-collapse Offline Candidate
+    - L38240: 2026-06-24: v0.portal5n Live Preflight PASS And Smoke Gate Tightening
+    - L38291: 2026-06-24: v0.portal5n Latency-budget Queue-collapse B-slot Live Read-only PASS
+    - L38374: 2026-06-24: v0.portal5n Latency-budget Queue-collapse Smoke PASS With T2P Regression
+    - L38423: 2026-06-24: v0.portal5o Input-frame Boost Offline Candidate PASS And Preflight PASS
+    - L38516: 2026-06-24: v0.portal5o Input-frame Boost B-slot Live Read-only PASS
+    - L38599: 2026-06-24: v0.portal5o Input-frame Boost Smoke Diagnostic
+    - L38678: 2026-06-24: v0.portal5p Dual-phase Input Boost Offline Candidate And Preflight PASS
+    - L38754: 2026-06-24: v0.portal5p Dual-phase Input Boost B-slot Live Read-only PASS
+    - L38835: 2026-06-24: v0.portal5r Refresh-rate 60/90Hz Source APK Candidate
+    - L38908: 2026-06-24: v0.portal5r Refresh-rate 60/90Hz Build/Offline/Preflight PASS
+    - L39032: 2026-06-24: v0.portal5s Event-Time Input Priority Build/Offline/Preflight PASS
+    - L39149: 2026-06-24: v0.portal5s Event-Time Input Priority B-slot Live Read-only PASS
+    - L39231: 2026-06-24: v0.portal5s Event-Time Input Priority Smoke Diagnostic FAIL
+    - L39303: 2026-06-24: v0.portal5t Marker Burst Presentation Build/Offline/Preflight PASS
+    - L39399: 2026-06-24: v0.portal5u Burst Reschedule Presentation Build/Offline/Preflight PASS
+    - L39502: 2026-06-24: v0.portal5u Burst Reschedule Presentation B-slot Live Read-only PASS
+    - L39603: 2026-06-24: v0.portal5u Burst Reschedule Presentation Strict Smoke Diagnostic FAIL
+    - L39688: 2026-06-24: v0.portal5v Presentation Cadence Build/Offline/Preflight PASS
+    - L39785: 2026-06-24: v0.portal5w Quiet Presentation Build/Offline/Preflight PASS
+    - L39878: 2026-06-24: v0.portal5w Quiet Presentation B-slot Live Read-only PASS
+    - L39949: 2026-06-24: v0.portal5w Quiet Presentation Strict Smoke Diagnostic FAIL
+    - L40001: 2026-06-24: v0.portal5x Presenter Mode Build/Offline PASS
+    - L40075: 2026-06-24: v0.portal5x Presenter Mode Live Preflight PASS
+    - L40124: 2026-06-24: Local Space Recovery Above 50 GiB
+    - L40157: 2026-06-24: v0.portal5x Presenter Mode B-slot Live Read-only PASS
+    - L40229: 2026-06-24: v0.portal5x Presenter Mode Strict Smoke Diagnostic FAIL
+    - L40305: 2026-06-24: v0.portal5y Presentation Transport Pacing Build/Offline PASS
+    - L40371: 2026-06-24: v0.portal5y Presentation Transport Pacing Live Preflight PASS
+    - L40430: 2026-06-24: Local Space Recovery After v0.portal5y Build
+    - L40463: 2026-06-24: v0.portal5y Presentation Transport Pacing B-slot Live Read-only PASS
+    - L40569: 2026-06-24: v0.portal5y Presentation Transport Pacing Strict Smoke Diagnostic FAIL
+    - L40646: 2026-06-24: v0.portal5z Video Primary ROI Probe Build/Offline PASS
+    - L40728: 2026-06-25: v0.portal5z Video Primary ROI Probe Live Preflight PASS
+    - L40765: 2026-06-25: v0.portal5z Post-confirmation Flash Harness Prepared
+    - L40809: 2026-06-25: v0.portal5z Smoke Observation Overhead Tightening
+    - L40839: 2026-06-25: v0.portal5z Video Primary ROI Probe B-slot Live Read-only PASS
+    - L40916: 2026-06-25: v0.portal5z Video Primary ROI Probe Strict Smoke Diagnostic FAIL
+    - L40972: 2026-06-25: v0.portal5z Chrome Anti-throttle No-flash Smoke Diagnostic FAIL
+    - L41038: 2026-06-25: v0.portal6a Marker Draw-sync Build/Offline/Preflight PASS
+    - L41119: 2026-06-25: v0.portal6a Marker Draw-sync B-slot Live Read-only PASS
+    - L41201: 2026-06-25: v0.portal6b Draw-Urgent Boost Build/Offline/Preflight PASS
+    - L41311: 2026-06-25: v0.portal6b Draw-Urgent Boost B-slot Live Read-only PASS
+    - L41385: 2026-06-25: v0.portal6b Draw-Urgent Boost Strict Smoke Diagnostic FAIL
+    - L41455: 2026-06-25: v0.portal6c Visible ScreenBox Build/Offline/Preflight PASS
+    - L41536: 2026-06-25: v0.portal6c Visible ScreenBox B-slot Live Read-only PASS
+    - L41615: 2026-06-25: v0.portal6c Real Portal Visual Smoke FAIL And Display Sleep Root Cause
+    - L41711: 2026-06-25: v0.portal6d Display Wake Guard Build/Offline/Preflight PASS
+    - L41818: 2026-06-25: v0.portal6d Display Wake Guard B-slot Live Read-only PASS
+    - L41901: 2026-06-25: v0.portal6d Real Portal Visual Smoke PASS
+    - L41966: 2026-06-25: v0.portal6e Encoder Transport Burst Build/Offline/Preflight PASS
+    - L42067: 2026-06-25: v0.portal6e Encoder Transport Burst B-slot Live Read-only PASS
+    - L42155: 2026-06-25: v0.portal6e Encoder Transport Burst Strict Smoke Diagnostic FAIL
+    - L42263: 2026-06-25: v0.portal6f Presentation Tail Cadence Build/Offline/Preflight PASS
+    - L42367: 2026-06-25: v0.portal6f Presentation Tail Cadence B-slot Live Read-only PASS
+    - L42468: 2026-06-25: v0.portal6f Presentation Tail Cadence Safari Fallback Strict Smoke PASS
+    - L42592: 2026-06-25: v0.portal6f In-app Browser Chrome-side Cadence Smoke Diagnostic FAIL
+    - L42723: 2026-06-29: v0.portal6g RVFC Media Tail Build/Offline/Preflight PASS
+    - L42815: 2026-06-29: v0.portal6g RVFC Media Tail B-slot Live Read-only PASS
+    - L42893: 2026-06-30: v0.portal6g In-app Browser Smoke Control FAIL With Code 829543
+    - L42952: 2026-06-30: v0.portal6g In-app Browser Manual-open Smoke Control FAIL With Code 808364
+    - L43017: 2026-06-30: v0.portal6g Direct In-app Browser Portal Smoke Diagnostic
+    - L43074: 2026-06-30: v0.portal6g Safari Fresh-code Strict Smoke With Code 223229

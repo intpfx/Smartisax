@@ -165,6 +165,9 @@
         overflow: hidden;
         border-radius: 8px;
         background: var(--screen);
+        aspect-ratio: 1080 / 2340;
+        min-height: 360px;
+        contain: layout paint;
       }
 
       #mp4Video,
@@ -172,17 +175,54 @@
       #h264Canvas {
         display: block;
         width: 100%;
-        height: auto;
-        min-height: 360px;
+        height: 100%;
+        min-height: 0;
         object-fit: contain;
         touch-action: none;
         user-select: none;
         pointer-events: none;
+        contain: strict;
+        transform: translateZ(0);
+        will-change: transform;
       }
 
       #screen,
       #h264Canvas {
         display: none;
+      }
+
+      body.webRtcPresenterCanvas #mp4Video {
+        position: absolute;
+        inset: 0;
+        opacity: 0.001;
+      }
+
+      body.webRtcPresenterProbe #mp4Video {
+        opacity: 1;
+      }
+
+      body.webRtcPresenterDual #h264Canvas,
+      body.webRtcPresenterCanvas #h264Canvas {
+        display: block;
+      }
+
+      body.webRtcPresenterDual #h264Canvas {
+        position: absolute;
+        inset: 0;
+        opacity: 0.35;
+        mix-blend-mode: difference;
+      }
+
+      body.quietPresentation #out {
+        display: none;
+      }
+
+      body.quietPresentation .stage {
+        grid-template-columns: minmax(260px, 540px);
+      }
+
+      body.quietPresentation .screenBox {
+        max-width: min(100%, 540px);
       }
 
       #touchOverlay {
@@ -287,23 +327,23 @@
           </label>
           <label class="tuneControl">
             FPS
-            <input id="tuneFps" type="range" min="1" max="60" step="1">
-            <input id="tuneFpsValue" type="number" min="1" max="60" step="1">
+            <input id="tuneFps" type="range" min="1" max="90" step="1">
+            <input id="tuneFpsValue" type="number" min="1" max="90" step="1">
           </label>
           <label class="tuneControl">
             Min Bitrate
-            <input id="tuneMinBitrate" type="range" min="250000" max="12000000" step="50000">
-            <input id="tuneMinBitrateValue" type="number" min="250000" max="12000000" step="50000">
+            <input id="tuneMinBitrate" type="range" min="250000" max="18000000" step="50000">
+            <input id="tuneMinBitrateValue" type="number" min="250000" max="18000000" step="50000">
           </label>
           <label class="tuneControl">
             Target Bitrate
-            <input id="tuneTargetBitrate" type="range" min="250000" max="12000000" step="50000">
-            <input id="tuneTargetBitrateValue" type="number" min="250000" max="12000000" step="50000">
+            <input id="tuneTargetBitrate" type="range" min="250000" max="18000000" step="50000">
+            <input id="tuneTargetBitrateValue" type="number" min="250000" max="18000000" step="50000">
           </label>
           <label class="tuneControl">
             Max Bitrate
-            <input id="tuneMaxBitrate" type="range" min="250000" max="12000000" step="50000">
-            <input id="tuneMaxBitrateValue" type="number" min="250000" max="12000000" step="50000">
+            <input id="tuneMaxBitrate" type="range" min="250000" max="18000000" step="50000">
+            <input id="tuneMaxBitrateValue" type="number" min="250000" max="18000000" step="50000">
           </label>
           <label class="tuneControl">
             Capture
@@ -316,8 +356,8 @@
         </div>
         <div class="row">
           <button id="applyTuning" class="primary" type="button">Apply</button>
-          <button id="stableTuning" type="button">1080/30</button>
-          <button id="sharpTuning" type="button">1080/60</button>
+          <button id="stableTuning" type="button">1080/60</button>
+          <button id="sharpTuning" type="button">1080/90</button>
           <button id="maxTuning" type="button">Max</button>
           <button id="reloadTuning" type="button">Reload</button>
           <button id="probeCapture" type="button">Probe</button>
@@ -339,6 +379,10 @@
       const canvas = document.querySelector("#h264Canvas");
       const video = document.querySelector("#mp4Video");
       const touchOverlay = document.querySelector("#touchOverlay");
+      try {
+        video.disableRemotePlayback = true;
+      } catch (error) {
+      }
       const ctx = canvas.getContext("2d");
       const remoteState = document.querySelector("#remoteState");
       const pairState = document.querySelector("#pairState");
@@ -363,28 +407,35 @@
       const stableTuningConfig = {
         frameWidthPortrait: 1080,
         frameWidthLandscape: 1080,
-        fps: 30,
-        minBitrateBps: 8000000,
-        targetBitrateBps: 12000000,
-        maxBitrateBps: 12000000,
+        fps: 60,
+        presentationFps: 60,
+        inputRefreshHz: 60,
+        minBitrateBps: 4000000,
+        targetBitrateBps: 8000000,
+        maxBitrateBps: 9000000,
         captureBackend: "projection-auto",
       };
       const sharpTuningConfig = {
         frameWidthPortrait: 1080,
         frameWidthLandscape: 1080,
-        fps: 60,
-        minBitrateBps: 12000000,
-        targetBitrateBps: 12000000,
-        maxBitrateBps: 12000000,
+        fps: 90,
+        presentationFps: 60,
+        inputRefreshHz: 90,
+        minBitrateBps: 4000000,
+        targetBitrateBps: 8000000,
+        maxBitrateBps: 9000000,
         captureBackend: "projection-auto",
       };
+      const transportPacedTuningConfig = sharpTuningConfig;
       const maxTuningConfig = {
         frameWidthPortrait: 1080,
         frameWidthLandscape: 1080,
-        fps: 60,
-        minBitrateBps: 12000000,
-        targetBitrateBps: 12000000,
-        maxBitrateBps: 12000000,
+        fps: 90,
+        presentationFps: 60,
+        inputRefreshHz: 90,
+        minBitrateBps: 4000000,
+        targetBitrateBps: 8000000,
+        maxBitrateBps: 9000000,
         captureBackend: "projection-texture",
       };
       let token = localStorage.smartisaxToken || "";
@@ -396,16 +447,44 @@
       let h264Frames = 0;
       let webRtcPc = null;
       let webRtcInputChannel = null;
+      let webRtcMoveChannel = null;
       let webRtcSessionId = "";
       let webRtcStartedAt = 0;
       let webRtcInputSeq = 0;
       let webRtcConnecting = false;
       let webRtcRuntimeConfig = Object.assign({}, stableTuningConfig);
+      let webRtcReceiverPresentationHints = [];
+      let webRtcRvfcCadenceLite = true;
+      let webRtcQuietPresentation = false;
+      let webRtcPresenterMode = "video";
+      let webRtcCanvasPresenterRunning = false;
+      let webRtcCanvasPresenterSamples = [];
+      let lastWebRtcCanvasPresenterNowMs = 0;
+      let lastWebRtcCanvasPresenterMediaTime = 0;
+      let webRtcAnimationFrameSamples = [];
+      let webRtcAnimationFrameRunning = false;
+      let lastWebRtcAnimationFrameNowMs = 0;
       let deviceDisplay = { width: 1080, height: 2340, rotation: 0 };
       let lastUrl = "";
       let lastVideoUrl = "";
       let down = null;
       let activePointerId = null;
+      let lastMoveSentAt = 0;
+      let pendingMovePoints = [];
+      let pendingMoveFlushHandle = 0;
+      let pendingMoveFlushIsRaf = false;
+      const maxMoveBatchPoints = 4;
+      const moveChannelBufferedLimit = 8192;
+      const inputChannelBufferedLimit = 32768;
+      const modernCodecPreference = ["H264", "AV1", "VP9", "H265"];
+      let inputAckStats = {
+        sent: 0,
+        ack: 0,
+        movesSent: 0,
+        movesAcked: 0,
+        movesDropped: 0,
+        lastAck: "",
+      };
       let liveStats = {
         clips: 0,
         bytes: 0,
@@ -416,8 +495,118 @@
 
       function setLog(value) {
         const text = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+        if (webRtcQuietPresentation) {
+          fallbackOut.textContent = text;
+          return;
+        }
         out.textContent = text;
         fallbackOut.textContent = text;
+      }
+
+      function setQuietPresentation(enabled) {
+        webRtcQuietPresentation = !!enabled;
+        document.body.classList.toggle("quietPresentation", webRtcQuietPresentation);
+      }
+
+      function normalizePresenterMode(value) {
+        const mode = String(value || "").trim().toLowerCase();
+        return ["video", "canvas", "dual", "probe"].includes(mode) ? mode : "video";
+      }
+
+      function setWebRtcPresenterMode(mode) {
+        webRtcPresenterMode = normalizePresenterMode(mode);
+        document.body.classList.toggle("webRtcPresenterCanvas", webRtcPresenterMode === "canvas");
+        document.body.classList.toggle("webRtcPresenterDual", webRtcPresenterMode === "dual");
+        document.body.classList.toggle("webRtcPresenterProbe", webRtcPresenterMode === "probe");
+      }
+
+      function desiredWebRtcPresenterMode() {
+        try {
+          const params = new URLSearchParams(location.search);
+          return normalizePresenterMode(params.get("presenter") || localStorage.smartisaxPresenterMode || "video");
+        } catch (error) {
+          return "video";
+        }
+      }
+
+      function startWebRtcCanvasPresenter() {
+        webRtcCanvasPresenterSamples = [];
+        lastWebRtcCanvasPresenterNowMs = 0;
+        lastWebRtcCanvasPresenterMediaTime = 0;
+        webRtcCanvasPresenterRunning = webRtcPresenterMode === "canvas" || webRtcPresenterMode === "dual";
+        if (!webRtcCanvasPresenterRunning || typeof requestAnimationFrame !== "function") {
+          return;
+        }
+        const startedAt = performance.now();
+        const onFrame = (now) => {
+          if (!webRtcCanvasPresenterRunning) {
+            return;
+          }
+          if (video.videoWidth && video.videoHeight) {
+            if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+            }
+            const beforeDraw = performance.now();
+            try {
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            } catch (error) {
+            }
+            const mediaTime = Number.isFinite(video.currentTime) ? video.currentTime : 0;
+            if (webRtcCanvasPresenterSamples.length < 7200) {
+              webRtcCanvasPresenterSamples.push({
+                t: Math.round((now - startedAt) * 100) / 100,
+                deltaMs: lastWebRtcCanvasPresenterNowMs
+                  ? Math.round((now - lastWebRtcCanvasPresenterNowMs) * 100) / 100
+                  : null,
+                drawMs: Math.round((performance.now() - beforeDraw) * 100) / 100,
+                mediaDeltaMs: lastWebRtcCanvasPresenterMediaTime
+                  ? Math.round((mediaTime - lastWebRtcCanvasPresenterMediaTime) * 100000) / 100
+                  : null,
+              });
+            }
+            lastWebRtcCanvasPresenterNowMs = now;
+            lastWebRtcCanvasPresenterMediaTime = mediaTime;
+          }
+          requestAnimationFrame(onFrame);
+        };
+        requestAnimationFrame(onFrame);
+      }
+
+      function stopWebRtcCanvasPresenter() {
+        webRtcCanvasPresenterRunning = false;
+        setWebRtcPresenterMode("video");
+      }
+
+      function startWebRtcAnimationFrameProbe() {
+        webRtcAnimationFrameSamples = [];
+        lastWebRtcAnimationFrameNowMs = 0;
+        webRtcAnimationFrameRunning = "requestAnimationFrame" in window;
+        if (!webRtcAnimationFrameRunning) {
+          return;
+        }
+        const startedAt = performance.now();
+        const onFrame = (now) => {
+          if (!webRtcAnimationFrameRunning) {
+            return;
+          }
+          const deltaMs = lastWebRtcAnimationFrameNowMs
+            ? Math.round((now - lastWebRtcAnimationFrameNowMs) * 100) / 100
+            : null;
+          if (webRtcAnimationFrameSamples.length < 7200) {
+            webRtcAnimationFrameSamples.push({
+              t: Math.round((now - startedAt) * 100) / 100,
+              deltaMs,
+            });
+          }
+          lastWebRtcAnimationFrameNowMs = now;
+          requestAnimationFrame(onFrame);
+        };
+        requestAnimationFrame(onFrame);
+      }
+
+      function stopWebRtcAnimationFrameProbe() {
+        webRtcAnimationFrameRunning = false;
       }
 
       function setState(text, tone) {
@@ -464,6 +653,19 @@
         }
         const hours = Math.floor(minutes / 60);
         return hours + "h " + (minutes % 60) + "m";
+      }
+
+      function monotonicNowMs() {
+        return Math.round(performance.now() * 100) / 100;
+      }
+
+      function normalizedEventElapsedMs(event) {
+        const now = performance.now();
+        const stamp = Number(event && event.timeStamp);
+        if (!Number.isFinite(stamp) || stamp < 0 || stamp > now + 60000) {
+          return monotonicNowMs();
+        }
+        return Math.round(stamp * 100) / 100;
       }
 
       function setSessionState(session, tone = "muted") {
@@ -529,13 +731,19 @@
 
       function normalizeTuningConfig(value) {
         const source = value && typeof value === "object" ? value : {};
-        const target = clampValue(Number(source.targetBitrateBps || source.targetVideoBitrateBps || source.bitrateBps || stableTuningConfig.targetBitrateBps), 250000, 12000000);
-        const min = Math.min(target, clampValue(Number(source.minBitrateBps || source.minVideoBitrateBps || stableTuningConfig.minBitrateBps), 250000, 12000000));
-        const max = Math.max(target, clampValue(Number(source.maxBitrateBps || source.maxVideoBitrateBps || stableTuningConfig.maxBitrateBps), 250000, 12000000));
+        const target = clampValue(Number(source.targetBitrateBps || source.targetVideoBitrateBps || source.bitrateBps || stableTuningConfig.targetBitrateBps), 250000, 18000000);
+        const min = Math.min(target, clampValue(Number(source.minBitrateBps || source.minVideoBitrateBps || stableTuningConfig.minBitrateBps), 250000, 18000000));
+        const max = Math.max(target, clampValue(Number(source.maxBitrateBps || source.maxVideoBitrateBps || stableTuningConfig.maxBitrateBps), 250000, 18000000));
+        const requestedFps = clampValue(Math.round(Number(source.fps || source.requestedFps || stableTuningConfig.fps)), 1, 90);
+        const presentationFps = clampValue(Math.round(Number(source.presentationFps || source.transportFps || source.captureFps || Math.min(requestedFps, 60))), 1, 60);
+        const inputRefreshHz = clampValue(Math.round(Number(source.inputRefreshHz || source.refreshHz || requestedFps)), 1, 90);
         return {
           frameWidthPortrait: even(clampValue(Number(source.frameWidthPortrait || source.widthPortrait || source.width || stableTuningConfig.frameWidthPortrait), 240, 1080)),
           frameWidthLandscape: even(clampValue(Number(source.frameWidthLandscape || source.widthLandscape || source.frameWidthPortrait || source.width || stableTuningConfig.frameWidthLandscape), 240, 1080)),
-          fps: clampValue(Math.round(Number(source.fps || stableTuningConfig.fps)), 1, 60),
+          fps: requestedFps,
+          presentationFps,
+          transportFps: presentationFps,
+          inputRefreshHz,
           minBitrateBps: Math.round(min),
           targetBitrateBps: Math.round(target),
           maxBitrateBps: Math.round(max),
@@ -558,7 +766,7 @@
 
       function bindTuningControls() {
         syncPair(tuningControls.width, tuningControls.widthValue, (value) => even(Number(value)));
-        syncPair(tuningControls.fps, tuningControls.fpsValue, (value) => clampValue(Math.round(Number(value)), 1, 60));
+        syncPair(tuningControls.fps, tuningControls.fpsValue, (value) => clampValue(Math.round(Number(value)), 1, 90));
         syncPair(tuningControls.minBitrate, tuningControls.minBitrateValue, (value) => Math.round(Number(value)));
         syncPair(tuningControls.targetBitrate, tuningControls.targetBitrateValue, (value) => Math.round(Number(value)));
         syncPair(tuningControls.maxBitrate, tuningControls.maxBitrateValue, (value) => Math.round(Number(value)));
@@ -578,7 +786,10 @@
         tuningControls.maxBitrate.value = normalized.maxBitrateBps;
         tuningControls.maxBitrateValue.value = normalized.maxBitrateBps;
         tuningControls.captureBackend.value = normalized.captureBackend;
-        setTuningState(normalized.frameWidthPortrait + "w · " + normalized.fps + "fps · " + Math.round(normalized.targetBitrateBps / 100000) / 10 + "Mbps · " + normalized.captureBackend, "muted");
+        const paced = normalized.fps !== normalized.presentationFps || normalized.inputRefreshHz !== normalized.presentationFps;
+        setTuningState(normalized.frameWidthPortrait + "w · " + normalized.fps + "Hz input"
+          + (paced ? " · " + normalized.presentationFps + "fps video" : "")
+          + " · " + Math.round(normalized.targetBitrateBps / 100000) / 10 + "Mbps · " + normalized.captureBackend, "muted");
       }
 
       function readTuningControls() {
@@ -587,6 +798,8 @@
           frameWidthPortrait: width,
           frameWidthLandscape: Math.min(1080, width === 540 ? 720 : width),
           fps: Number(tuningControls.fpsValue.value || tuningControls.fps.value),
+          presentationFps: Math.min(60, Number(tuningControls.fpsValue.value || tuningControls.fps.value)),
+          inputRefreshHz: Number(tuningControls.fpsValue.value || tuningControls.fps.value),
           minBitrateBps: Number(tuningControls.minBitrateValue.value || tuningControls.minBitrate.value),
           targetBitrateBps: Number(tuningControls.targetBitrateValue.value || tuningControls.targetBitrate.value),
           maxBitrateBps: Number(tuningControls.maxBitrateValue.value || tuningControls.maxBitrate.value),
@@ -813,41 +1026,143 @@
         };
       }
 
-      function preferVideoCodec(transceiver, codecName) {
-        const result = { requested: codecName, applied: false, codecs: [] };
+      function codecKey(codec) {
+        return JSON.stringify({
+          mimeType: codec && codec.mimeType,
+          clockRate: codec && codec.clockRate,
+          sdpFmtpLine: (codec && codec.sdpFmtpLine) || "",
+        });
+      }
+
+      function codecAliases(codecName) {
+        const name = String(codecName || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+        if (!name) {
+          return [];
+        }
+        if (name === "HEVC" || name === "H265") {
+          return ["video/h265", "video/hevc"];
+        }
+        if (name === "H264" || name === "AVC") {
+          return ["video/h264", "video/avc"];
+        }
+        return ["video/" + name.toLowerCase()];
+      }
+
+      function preferVideoCodecs(transceiver, codecNames) {
+        const requested = Array.isArray(codecNames) ? codecNames.filter(Boolean) : [];
+        const result = { requested, applied: false, codecs: [], missing: [] };
         try {
-          if (!codecName || !window.RTCRtpReceiver || !RTCRtpReceiver.getCapabilities || !transceiver.setCodecPreferences) {
+          if (!requested.length || !window.RTCRtpReceiver || !RTCRtpReceiver.getCapabilities || !transceiver.setCodecPreferences) {
             return result;
           }
           const capabilities = RTCRtpReceiver.getCapabilities("video");
           const codecs = capabilities && capabilities.codecs ? capabilities.codecs : [];
-          const wanted = codecs.filter((codec) => {
-            return String(codec.mimeType || "").toLowerCase() === ("video/" + codecName).toLowerCase();
-          });
-          if (!wanted.length) {
+          const selected = [];
+          const selectedKeys = new Set();
+          for (const codecName of requested) {
+            const aliases = new Set(codecAliases(codecName));
+            const matches = codecs.filter((codec) => aliases.has(String(codec.mimeType || "").toLowerCase()));
+            if (!matches.length) {
+              result.missing.push(codecName);
+              continue;
+            }
+            for (const codec of matches) {
+              const key = codecKey(codec);
+              if (!selectedKeys.has(key)) {
+                selectedKeys.add(key);
+                selected.push(codec);
+                result.codecs.push({
+                  requested: codecName,
+                  mimeType: codec.mimeType,
+                  clockRate: codec.clockRate,
+                  sdpFmtpLine: codec.sdpFmtpLine || "",
+                });
+              }
+            }
+          }
+          if (!selected.length) {
             return result;
           }
-          const wantedKeys = new Set(wanted.map((codec) => JSON.stringify({
-            mimeType: codec.mimeType,
-            clockRate: codec.clockRate,
-            sdpFmtpLine: codec.sdpFmtpLine || "",
-          })));
-          const rest = codecs.filter((codec) => !wantedKeys.has(JSON.stringify({
-            mimeType: codec.mimeType,
-            clockRate: codec.clockRate,
-            sdpFmtpLine: codec.sdpFmtpLine || "",
-          })));
-          transceiver.setCodecPreferences([...wanted, ...rest]);
+          const rest = codecs.filter((codec) => !selectedKeys.has(codecKey(codec)));
+          transceiver.setCodecPreferences([...selected, ...rest]);
           result.applied = true;
-          result.codecs = wanted.map((codec) => ({
-            mimeType: codec.mimeType,
-            clockRate: codec.clockRate,
-            sdpFmtpLine: codec.sdpFmtpLine || "",
-          }));
         } catch (error) {
           result.error = String(error);
         }
         return result;
+      }
+
+      function applyReceiverPresentationHint(receiver, source) {
+        const entry = {
+          source,
+          receiverPlayoutDelayHint: "unsupported",
+          receiverJitterBufferTarget: "unsupported",
+          trackContentHint: "unsupported",
+          playoutDelayHintApplied: false,
+          jitterBufferTargetApplied: false,
+          contentHintApplied: false,
+        };
+        if (!receiver) {
+          webRtcReceiverPresentationHints.push(entry);
+          return entry;
+        }
+        try {
+          if ("playoutDelayHint" in receiver) {
+            receiver.playoutDelayHint = 0;
+            entry.receiverPlayoutDelayHint = receiver.playoutDelayHint;
+            entry.playoutDelayHintApplied = receiver.playoutDelayHint === 0;
+          }
+        } catch (error) {
+          entry.playoutDelayHintError = String(error);
+        }
+        try {
+          if ("jitterBufferTarget" in receiver) {
+            receiver.jitterBufferTarget = 0;
+            entry.receiverJitterBufferTarget = receiver.jitterBufferTarget;
+            entry.jitterBufferTargetApplied = receiver.jitterBufferTarget === 0;
+          }
+        } catch (error) {
+          entry.jitterBufferTargetError = String(error);
+        }
+        try {
+          const track = receiver.track;
+          if (track && "contentHint" in track) {
+            track.contentHint = "motion";
+            entry.trackContentHint = track.contentHint;
+            entry.contentHintApplied = track.contentHint === "motion";
+          }
+        } catch (error) {
+          entry.contentHintError = String(error);
+        }
+        webRtcReceiverPresentationHints.push(entry);
+        return entry;
+      }
+
+      function applyReceiverPresentationHints(pc, source) {
+        const hints = [];
+        const seen = new Set();
+        const visit = (receiver, itemSource) => {
+          if (!receiver || seen.has(receiver)) {
+            return;
+          }
+          seen.add(receiver);
+          hints.push(applyReceiverPresentationHint(receiver, itemSource));
+        };
+        try {
+          if (pc.getReceivers) {
+            pc.getReceivers().forEach((receiver) => visit(receiver, source + ":receiver"));
+          }
+        } catch (error) {
+          hints.push({ source, error: String(error) });
+        }
+        try {
+          if (pc.getTransceivers) {
+            pc.getTransceivers().forEach((transceiver) => visit(transceiver.receiver, source + ":transceiver"));
+          }
+        } catch (error) {
+          hints.push({ source, error: String(error) });
+        }
+        return hints;
       }
 
       async function caps() {
@@ -1103,10 +1418,20 @@
           }
           webRtcInputChannel = null;
         }
+        if (webRtcMoveChannel) {
+          try {
+            webRtcMoveChannel.close();
+          } catch (error) {
+          }
+          webRtcMoveChannel = null;
+        }
         if (webRtcPc) {
           webRtcPc.close();
           webRtcPc = null;
         }
+        stopWebRtcAnimationFrameProbe();
+        stopWebRtcCanvasPresenter();
+        setQuietPresentation(false);
         if (video.srcObject) {
           const stream = video.srcObject;
           if (stream && stream.getTracks) {
@@ -1270,14 +1595,63 @@
         });
       }
 
+      function handleWebRtcInputMessage(event) {
+        let message = event.data;
+        try {
+          message = JSON.parse(event.data);
+        } catch (error) {
+        }
+        if (message && typeof message === "object" && message.mode === "webrtc-datachannel-input") {
+          inputAckStats.ack += 1;
+          const ackType = message.type || (message.result && message.result.type) || "";
+          if (ackType === "touchMove" || ackType === "touchMoveBatch") {
+            const injected = message.result && Number(message.result.injectedEvents);
+            inputAckStats.movesAcked += Math.max(1, Number.isFinite(injected) ? injected : 1);
+          }
+          inputAckStats.lastAck = ackType + " #" + (message.seq || "");
+          liveMetrics.textContent = message.ok
+            ? "input ack " + inputAckStats.lastAck
+              + " · moves " + inputAckStats.movesAcked + "/" + inputAckStats.movesSent
+            : "input error " + (message.error || "");
+          liveMetrics.className = "statusline " + (message.ok ? "ok" : "warn");
+          if ((ackType === "touchMove" || ackType === "touchMoveBatch") && message.ok) {
+            return;
+          }
+        }
+        setLog(message);
+      }
+
+      function bindWebRtcInputChannel(channel, role) {
+        channel.onopen = () => {
+          liveMetrics.textContent = "webrtc " + role + " channel open";
+          liveMetrics.className = "statusline ok";
+          if (role === "input") {
+            input({ type: "ping" });
+          }
+        };
+        channel.onclose = () => {
+          liveMetrics.textContent = "webrtc " + role + " channel closed";
+          liveMetrics.className = "statusline muted";
+        };
+        channel.onerror = () => {
+          liveMetrics.textContent = "webrtc " + role + " channel error";
+          liveMetrics.className = "statusline warn";
+        };
+        channel.onmessage = handleWebRtcInputMessage;
+      }
+
       async function startWebRtcNative() {
         stopPngStream();
         stopH264Playback();
         stopMp4Playback();
         stopWebRtc(false);
         setState("creating native WebRTC offer", "muted");
+        setQuietPresentation(true);
+        setWebRtcPresenterMode(desiredWebRtcPresenterMode());
+        startWebRtcAnimationFrameProbe();
+        startWebRtcCanvasPresenter();
         screen.style.display = "none";
-        canvas.style.display = "none";
+        canvas.style.display = webRtcPresenterMode === "canvas" || webRtcPresenterMode === "dual" ? "block" : "none";
         video.style.display = "block";
         updateTouchOverlay();
         const pc = new RTCPeerConnection({
@@ -1287,36 +1661,17 @@
         });
         webRtcPc = pc;
         webRtcStartedAt = Date.now();
+        webRtcReceiverPresentationHints = [];
         try {
           webRtcInputChannel = pc.createDataChannel("smartisax-input", { ordered: true });
-          webRtcInputChannel.onopen = () => {
-            liveMetrics.textContent = "webrtc input channel open";
-            liveMetrics.className = "statusline ok";
-            input({ type: "ping" });
-          };
-          webRtcInputChannel.onclose = () => {
-            liveMetrics.textContent = "webrtc input channel closed";
-            liveMetrics.className = "statusline muted";
-          };
-          webRtcInputChannel.onerror = () => {
-            liveMetrics.textContent = "webrtc input channel error";
-            liveMetrics.className = "statusline warn";
-          };
-          webRtcInputChannel.onmessage = (event) => {
-            let message = event.data;
-            try {
-              message = JSON.parse(event.data);
-            } catch (error) {
-            }
-            if (message && typeof message === "object" && message.mode === "webrtc-datachannel-input") {
-              liveMetrics.textContent = message.ok
-                ? "input ack " + (message.type || "") + " #" + (message.seq || "")
-                : "input error " + (message.error || "");
-              liveMetrics.className = "statusline " + (message.ok ? "ok" : "warn");
-            }
-            setLog(message);
-          };
+          webRtcMoveChannel = pc.createDataChannel("smartisax-input-move", {
+            ordered: false,
+            maxRetransmits: 1,
+          });
+          bindWebRtcInputChannel(webRtcInputChannel, "input");
+          bindWebRtcInputChannel(webRtcMoveChannel, "move");
           pc.ontrack = (event) => {
+            applyReceiverPresentationHint(event.receiver, "ontrack");
             const stream = event.streams && event.streams[0]
               ? event.streams[0]
               : new MediaStream([event.track]);
@@ -1334,7 +1689,8 @@
           };
           pc.oniceconnectionstatechange = pc.onconnectionstatechange;
           const transceiver = pc.addTransceiver("video", { direction: "recvonly" });
-          const codecPreference = preferVideoCodec(transceiver, "H264");
+          applyReceiverPresentationHint(transceiver.receiver, "recvonly-transceiver");
+          const codecPreference = preferVideoCodecs(transceiver, modernCodecPreference);
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);
           await waitIceComplete(pc);
@@ -1361,6 +1717,7 @@
           }
           rememberDeviceInfo(json);
           await pc.setRemoteDescription(json.answer);
+          applyReceiverPresentationHints(pc, "remote-description");
           webRtcSessionId = json.sessionId || "";
           const answerVideo = codecSummary(json.answer.sdp);
           setLog({
@@ -1369,6 +1726,10 @@
               type: local.type,
               sdpBytes: (local.sdp || "").length,
               selectedCodec: localVideo.selectedCodec,
+              codecOrder: modernCodecPreference,
+              hasAV1: /av1/i.test(local.sdp || ""),
+              hasH265: /h265/i.test(local.sdp || ""),
+              hasVP9: /vp9/i.test(local.sdp || ""),
               hasH264: /h264/i.test(local.sdp || ""),
               hasIceUfrag: /a=ice-ufrag:/i.test(local.sdp || ""),
               hasFingerprint: /a=fingerprint:/i.test(local.sdp || ""),
@@ -1378,6 +1739,22 @@
               sessionId: webRtcSessionId,
             },
             runtimeConfig: webRtcRuntimeConfig,
+            transportPacing: "presentation-transport-pacing",
+            encoderTransportBurstRepair: "1080p60-target-window-bitrate+late-start-frame-pump+maintain-framerate-sender",
+            rvfcPresentationCadence: "rvfc-presentation-cadence-lite+marker-visible-tail-presentation-cadence",
+            rvfcCadenceLite: webRtcRvfcCadenceLite,
+            presenterMode: webRtcPresenterMode,
+            presentationProbe: "video-primary-roi-probe+raf-touch-photon-detect",
+            receiverPresentationHints: webRtcReceiverPresentationHints,
+            rafMainthreadDrift: {
+              mode: "raf-mainthread-drift",
+              samples: webRtcAnimationFrameSamples.length,
+            },
+            canvasPresenter: {
+              mode: "canvas-presenter-mode",
+              enabled: webRtcCanvasPresenterRunning,
+              samples: webRtcCanvasPresenterSamples.length,
+            },
             device: json,
           });
           setState("WebRTC " + (answerVideo.selectedCodec || json.selectedCodec || "answer") + " answer applied", "ok");
@@ -1458,30 +1835,158 @@
           x: Math.round((localX / (rect.width || 1)) * deviceDisplay.width),
           y: Math.round((localY / (rect.height || 1)) * deviceDisplay.height),
           t: Date.now(),
+          e: normalizedEventElapsedMs(event),
         };
       }
 
-      async function input(payload) {
+      function input(payload, options = {}) {
         try {
-          if (!webRtcInputChannel || webRtcInputChannel.readyState !== "open") {
+          const movePayload = isMovePayload(payload);
+          let channel = webRtcInputChannel;
+          if (movePayload && webRtcMoveChannel && webRtcMoveChannel.readyState === "open") {
+            channel = webRtcMoveChannel;
+          }
+          if (!channel || channel.readyState !== "open") {
             setState("WebRTC input not ready", "warn");
             return;
+          }
+          let sendPayload = payload;
+          let movePoints = payloadPointCount(sendPayload);
+          const bufferedLimit = movePayload ? moveChannelBufferedLimit : inputChannelBufferedLimit;
+          if (movePayload && channel.bufferedAmount > bufferedLimit) {
+            const lastPoint = payloadLastPoint(sendPayload);
+            if (!lastPoint) {
+              inputAckStats.movesDropped += Math.max(1, movePoints);
+              liveMetrics.textContent = "move buffered · dropped " + inputAckStats.movesDropped;
+              liveMetrics.className = "statusline warn";
+              return;
+            }
+            inputAckStats.movesDropped += Math.max(0, movePoints - 1);
+            sendPayload = {
+              type: "touchMoveBatch",
+              pointerId: sendPayload.pointerId || activePointerId || 1,
+              points: [{
+                x: lastPoint.x,
+                y: lastPoint.y,
+                t: lastPoint.t || Date.now(),
+                e: Number.isFinite(Number(lastPoint.e)) ? lastPoint.e : monotonicNowMs(),
+              }],
+              marker: false,
+            };
+            movePoints = 1;
           }
           webRtcInputSeq += 1;
           const message = Object.assign({
             seq: webRtcInputSeq,
             ts: Date.now(),
+            clientElapsedMs: monotonicNowMs(),
             displayWidth: deviceDisplay.width,
             displayHeight: deviceDisplay.height,
-          }, payload);
-          webRtcInputChannel.send(JSON.stringify(message));
-          liveMetrics.textContent = "sent " + payload.type + " #" + webRtcInputSeq
-            + " @ " + (payload.x || payload.x1) + "," + (payload.y || payload.y1);
+          }, sendPayload);
+          channel.send(JSON.stringify(message));
+          inputAckStats.sent += 1;
+          if (movePayload) {
+            inputAckStats.movesSent += Math.max(1, movePoints);
+            lastMoveSentAt = Date.now();
+          }
+          const shownPoint = payloadLastPoint(sendPayload);
+          liveMetrics.textContent = "sent " + sendPayload.type + " #" + webRtcInputSeq
+            + " @ " + (shownPoint ? shownPoint.x + "," + shownPoint.y : (sendPayload.x || sendPayload.x1) + "," + (sendPayload.y || sendPayload.y1));
           liveMetrics.className = "statusline muted";
+          return message;
         } catch (error) {
           setState("WebRTC input failed", "warn");
           setLog(String(error));
         }
+      }
+
+      function isMovePayload(payload) {
+        return payload && (payload.type === "touchMove" || payload.type === "touchMoveBatch");
+      }
+
+      function payloadPointCount(payload) {
+        if (!payload) {
+          return 0;
+        }
+        if (payload.type === "touchMoveBatch") {
+          return Array.isArray(payload.points) ? payload.points.length : 0;
+        }
+        return payload.type === "touchMove" ? 1 : 0;
+      }
+
+      function payloadLastPoint(payload) {
+        if (!payload) {
+          return null;
+        }
+        if (payload.type === "touchMoveBatch" && Array.isArray(payload.points) && payload.points.length) {
+          return payload.points[payload.points.length - 1];
+        }
+        if (payload.type === "touchMove") {
+          return payload;
+        }
+        return null;
+      }
+
+      function cancelPendingMoveFlush() {
+        if (!pendingMoveFlushHandle) {
+          return;
+        }
+        if (pendingMoveFlushIsRaf && typeof cancelAnimationFrame === "function") {
+          cancelAnimationFrame(pendingMoveFlushHandle);
+        } else {
+          clearTimeout(pendingMoveFlushHandle);
+        }
+        pendingMoveFlushHandle = 0;
+        pendingMoveFlushIsRaf = false;
+      }
+
+      function schedulePendingMoveFlush() {
+        if (pendingMoveFlushHandle) {
+          return;
+        }
+        const flush = () => {
+          pendingMoveFlushHandle = 0;
+          pendingMoveFlushIsRaf = false;
+          flushPendingMove();
+        };
+        if (typeof requestAnimationFrame === "function") {
+          pendingMoveFlushIsRaf = true;
+          pendingMoveFlushHandle = requestAnimationFrame(flush);
+        } else {
+          pendingMoveFlushIsRaf = false;
+          pendingMoveFlushHandle = setTimeout(flush, 16);
+        }
+      }
+
+      function sendMove(pointValue) {
+        if (!pointValue || !down) {
+          return;
+        }
+        pendingMovePoints.push(pointValue);
+        if (pendingMovePoints.length > maxMoveBatchPoints) {
+          pendingMovePoints = pendingMovePoints.slice(-maxMoveBatchPoints);
+        }
+        schedulePendingMoveFlush();
+      }
+
+      function flushPendingMove() {
+        cancelPendingMoveFlush();
+        if (!pendingMovePoints.length) {
+          return;
+        }
+        const points = pendingMovePoints.slice();
+        pendingMovePoints = [];
+        input({
+          type: "touchMoveBatch",
+          pointerId: activePointerId || 1,
+          points: points.map((item) => ({
+            x: item.x,
+            y: item.y,
+            t: item.t,
+            e: item.e,
+          })),
+          marker: false,
+        });
       }
 
       function bindPointer() {
@@ -1492,44 +1997,71 @@
           }
           activePointerId = event.pointerId;
           down = point(event);
+          lastMoveSentAt = 0;
+          pendingMovePoints = [];
+          cancelPendingMoveFlush();
           touchOverlay.classList.add("pressing");
           touchOverlay.setPointerCapture(event.pointerId);
+          input({
+            type: "touchStart",
+            pointerId: activePointerId,
+            x: down.x,
+            y: down.y,
+            clientEventElapsedMs: down.e,
+            marker: true,
+          });
         });
         touchOverlay.addEventListener("pointermove", (event) => {
           if (activePointerId !== event.pointerId || !down) {
             return;
           }
           event.preventDefault();
-          point(event);
+          const coalesced = typeof event.getCoalescedEvents === "function"
+            ? event.getCoalescedEvents()
+            : [];
+          if (coalesced.length) {
+            for (const item of coalesced) {
+              sendMove(point(item));
+            }
+          } else {
+            sendMove(point(event));
+          }
         });
         touchOverlay.addEventListener("pointerup", (event) => {
           event.preventDefault();
           if (activePointerId !== event.pointerId || !down) {
             return;
           }
+          flushPendingMove();
           const up = point(event);
-          const dx = up.x - down.x;
-          const dy = up.y - down.y;
-          const duration = Math.max(50, up.t - down.t);
-          if (Math.hypot(dx, dy) < 18) {
-            input({ type: "tap", x: up.x, y: up.y });
-          } else {
-            input({
-              type: "swipe",
-              x1: down.x,
-              y1: down.y,
-              x2: up.x,
-              y2: up.y,
-              duration: Math.min(1200, duration),
-            });
-          }
+          input({
+            type: "touchEnd",
+            pointerId: activePointerId,
+            x: up.x,
+            y: up.y,
+            clientEventElapsedMs: up.e,
+            marker: true,
+          });
           down = null;
           activePointerId = null;
           touchOverlay.classList.remove("pressing");
         });
-        touchOverlay.addEventListener("pointercancel", () => {
+        touchOverlay.addEventListener("pointercancel", (event) => {
+          const cancelPoint = down ? point(event) : null;
+          if (down && activePointerId === event.pointerId && cancelPoint) {
+            input({
+              type: "touchCancel",
+              pointerId: activePointerId,
+              x: cancelPoint.x,
+              y: cancelPoint.y,
+              clientEventElapsedMs: cancelPoint.e,
+              marker: true,
+            });
+          }
           down = null;
           activePointerId = null;
+          pendingMovePoints = [];
+          cancelPendingMoveFlush();
           touchOverlay.classList.remove("pressing");
         });
       }

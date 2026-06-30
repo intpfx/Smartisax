@@ -7,6 +7,7 @@ ROOT_HELPER="${ROOT_HELPER:-${ROOT_DIR}/tools/r2-root.sh}"
 
 variant="${1:-v0.12-framework-res-noop}"
 report_required_regex_extra=""
+report_required_regex_extra2=""
 
 die() {
   echo "error: $*" >&2
@@ -65,6 +66,9 @@ check_report() {
   fi
   if [ -n "${report_required_regex_extra:-}" ] && ! grep -Eq "$report_required_regex_extra" "$report"; then
     die "latest offline report is missing extra required evidence for ${label}: ${report}"
+  fi
+  if [ -n "${report_required_regex_extra2:-}" ] && ! grep -Eq "$report_required_regex_extra2" "$report"; then
+    die "latest offline report is missing second extra required evidence for ${label}: ${report}"
   fi
   printf 'OK   %-22s %s\n' "${label} evidence" "$report"
 }
@@ -167,6 +171,29 @@ Variants:
   v0.portal5j-projection-texture-probe Smartisax LAN Portal v0.portal5i follow-up adding MediaProjection texture capture probe and 1080p60 runtime tuning target
   v0.portal5j.1-projection-permission-grant v0.portal5j repair granting Smartisax-only MediaProjection signature permissions through services.jar policy
   v0.portal5j.2-projection-binder-transact v0.portal5j.1 repair replacing blocked IMediaProjectionManager Stub reflection with raw Binder transact token creation
+  v0.portal5k-frame-pump-continuity v0.portal5j.2 repair driving SurfaceTextureHelper.forceFrame cadence for projection-texture continuity
+  v0.portal5k.1-frame-timestamp-retain v0.portal5k repair wrapping retained texture frames with fresh timestamps before WebRTC capture
+  v0.portal5l-touch-photon-move-stream v0.portal5k.1 follow-up adding touch-to-photon marker detection and down/move/up move-stream input
+  v0.portal5m-latency-follow-rate v0.portal5l follow-up reducing touch-to-photon measurement skew, DataChannel ack jitter, and Chrome presentation gaps
+  v0.portal5n-latency-budget-queue-collapse v0.portal5m follow-up collapsing projection/input queues toward lower touch-to-photon latency
+  v0.portal5o-input-frame-boost v0.portal5n follow-up requesting urgent projection frames after touch marker draw and move input
+  v0.portal5p-dual-phase-input-boost v0.portal5o follow-up requesting input boosts at injection and marker-draw time
+  v0.portal5r-refresh-rate-60-90hz v0.portal5p follow-up moving Portal profiles to 1080/60 plus 1080/90 and retaining input boost tokens until capture
+  v0.portal5s-event-time-input-priority v0.portal5p follow-up keeping 60/90Hz while preserving browser pointer event times and prioritizing input-triggered frames
+  v0.portal5t-marker-burst-presentation v0.portal5s follow-up keeping a short marker-visible burst of input-priority frames for Chrome presentation/RVFC gap repair
+  v0.portal5u-burst-reschedule-presentation v0.portal5s follow-up rescheduling marker-visible burst frames until accepted by the projection frame pump
+  v0.portal5v-presentation-cadence v0.portal5u follow-up setting receiver playoutDelayHint=0, motion contentHint, and RTC playout diagnostics for Chrome presentation/RVFC gap repair
+  v0.portal5w-quiet-presentation v0.portal5v follow-up suppressing browser DOM/log churn during WebRTC playback and adding RAF main-thread drift diagnostics beside RVFC cadence
+  v0.portal5x-presenter-mode v0.portal5w follow-up adding video/canvas/dual presenter modes and canvas cadence diagnostics for Chrome presentation/RVFC gap repair
+  v0.portal5y-presentation-transport-pacing v0.portal5x follow-up preserving 90Hz input semantics while pacing VirtualDisplay/WebRTC video transport at 60fps
+  v0.portal5z-video-primary-roi-probe v0.portal5y follow-up keeping video as the primary visible presenter and sampling only a marker ROI for RAF touch-to-photon detection
+  v0.portal6a-marker-draw-sync v0.portal5z follow-up triggering marker capture boost after the marker view reaches the Android draw pass
+  v0.portal6b-draw-urgent-boost v0.portal6a follow-up letting draw-synced marker boosts bypass the normal half-frame input boost spacing
+  v0.portal6c-visible-screenbox v0.portal6b follow-up repairing the real Portal page screenBox so WebRTC video is not clipped by size containment
+  v0.portal6d-display-wake-guard v0.portal6c follow-up keeping the device display awake during real Portal WebRTC sessions so MediaProjection does not stream black frames
+  v0.portal6e-encoder-transport-burst v0.portal6d follow-up clamping 1080p60/90 sender bitrate bursts and late-starting the frame pump after local SDP
+  v0.portal6f-presentation-tail-cadence v0.portal6e follow-up repairing RVFC/presentation cadence and 1080/60 marker-visible touch-to-photon tail
+  v0.portal6g-rvfc-media-tail v0.portal6f follow-up reducing 1080/60 RVFC/media callback tail clustering with sender dephase and full-frame continuity spacing
   v0.24-cleaner-apk-only-locale-prune latest eleven APK-only language-prune candidate
   v0.25-settings-noop-on-v0.24  SettingsSmartisan no-op gate rebased on live-verified v0.24
   systemui-certprobe-noop-on-v0.24 SmartisanSystemUI no-op gate rebased on live-verified v0.24
@@ -958,6 +985,301 @@ case "$variant" in
     report_required_regex_extra='smartisax_apk_semantics=ok|smartisax_projection_permission_policy=ok|smartisax_system_webrtc_libs=ok'
     live_verify="tools/r2-verify-v0.portal5j.2-projection-binder-transact.sh --read-only"
     gate_note="Smartisax v0.6.9/versionCode 26 on top of v0.portal5j.1; keeps the Smartisax-only services.jar MediaProjection permission policy and replaces blocked IMediaProjectionManager Stub reflection with raw Binder transact token creation."
+    ;;
+  v0.portal5k|v0.portal5k-frame-pump-continuity)
+    variant="v0.portal5k-frame-pump-continuity"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5k-frame-pump-continuity.sparse.img"
+    image_hash="cc9f9921c510ce471d46a24ac786684b03b7e5bb5cf2d801865bd4d3f8dfe14a"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5k-frame-pump-continuity.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5k-frame-pump-continuity"
+    report_pattern="verify-v0.portal5k-frame-pump-continuity-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5K_FRAME_PUMP_CONTINUITY'
+    report_required_regex_extra='smartisax_apk_semantics=ok|smartisax_projection_permission_policy=ok|smartisax_system_webrtc_libs=ok'
+    live_verify="tools/r2-verify-v0.portal5k-frame-pump-continuity.sh --read-only"
+    gate_note="Smartisax v0.6.10/versionCode 27 on top of v0.portal5j.2; keeps raw Binder MediaProjection token creation and the Smartisax-only services.jar policy, then repairs projection-texture frame continuity by driving SurfaceTextureHelper.forceFrame cadence at the requested WebRTC fps."
+    ;;
+  v0.portal5k.1|v0.portal5k.1-frame-timestamp-retain)
+    variant="v0.portal5k.1-frame-timestamp-retain"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5k.1-frame-timestamp-retain.sparse.img"
+    image_hash="e60e756bc805190ea7e43244fac6c5701be2b4bf0891f3e90d20ac20b524d451"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5k.1-frame-timestamp-retain.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5k.1-frame-timestamp-retain"
+    report_pattern="verify-v0.portal5k.1-frame-timestamp-retain-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5K1_FRAME_TIMESTAMP_RETAIN'
+    report_required_regex_extra='smartisax_apk_semantics=ok|smartisax_projection_permission_policy=ok|smartisax_system_webrtc_libs=ok'
+    live_verify="tools/r2-verify-v0.portal5k.1-frame-timestamp-retain.sh --read-only"
+    gate_note="Smartisax v0.6.11/versionCode 28 on top of v0.portal5k; keeps forceFrame continuity and wraps retained projection texture frames with fresh System.nanoTime timestamps before WebRTC capture to repair the post-burst 1080/30 stall."
+    ;;
+  v0.portal5l|v0.portal5l-touch-photon-move-stream)
+    variant="v0.portal5l-touch-photon-move-stream"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5l-touch-photon-move-stream.sparse.img"
+    image_hash="680a8c78299706996a4a96ada98e4c24606d76df94e4683fadeb9ec8780886c9"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5l-touch-photon-move-stream.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5l-touch-photon-move-stream"
+    report_pattern="verify-v0.portal5l-touch-photon-move-stream-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5L_TOUCH_PHOTON_MOVE_STREAM'
+    report_required_regex_extra='smartisax_apk_semantics=ok|smartisax_system_webrtc_libs=ok'
+    live_verify="tools/r2-verify-v0.portal5l-touch-photon-move-stream.sh --read-only"
+    gate_note="Smartisax v0.6.12/versionCode 29 on top of live-proven v0.portal5k.1; adds a visible device-side touch-to-photon marker and upgrades Portal control from tap/swipe gestures to down/move/up move-stream injection for follow-rate validation."
+    ;;
+  v0.portal5m|v0.portal5m-latency-follow-rate)
+    variant="v0.portal5m-latency-follow-rate"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5m-latency-follow-rate.sparse.img"
+    image_hash="8ea6074817bd376ae0d2d17aeaf1ddd9432c3fb294d63f914d6bc02b06b564e8"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5m-latency-follow-rate.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5m-latency-follow-rate"
+    report_pattern="verify-v0.portal5m-latency-follow-rate-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5M_LATENCY_FOLLOW_RATE'
+    report_required_regex_extra='smartisax_apk_semantics=ok|smartisax_system_webrtc_libs=ok'
+    live_verify="tools/r2-verify-v0.portal5m-latency-follow-rate.sh --read-only"
+    gate_note="Smartisax v0.6.13/versionCode 30 on top of live-proven v0.portal5l; adds predictive touch-to-photon marker status, compact touchMoveBatch acks, frame-aligned Portal move batching, and throttled Chrome smoke logging for latency/follow-rate validation."
+    ;;
+  v0.portal5n|v0.portal5n-latency-budget-queue-collapse)
+    variant="v0.portal5n-latency-budget-queue-collapse"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5n-latency-budget-queue-collapse.sparse.img"
+    image_hash="639e7cfcb7ca8c4f7a4b55fba18335714c291a9fa828951adf1e9363c7b11339"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5n-latency-budget-queue-collapse.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5n-latency-budget-queue-collapse"
+    report_pattern="verify-v0.portal5n-latency-budget-queue-collapse-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5N_LATENCY_BUDGET_QUEUE_COLLAPSE'
+    report_required_regex_extra='smartisax_dual_move_channel=ok'
+    report_required_regex_extra2='smartisax_latest_frame_queue=ok'
+    live_verify="tools/r2-verify-v0.portal5n-latency-budget-queue-collapse.sh --read-only"
+    gate_note="Smartisax v0.6.14/versionCode 31 on top of live-proven v0.portal5m; keeps H264-first WebRTC, adds latest-frame-only projection queue collapse, splits move input onto smartisax-input-move, and compacts move backpressure to the newest point."
+    ;;
+  v0.portal5o|v0.portal5o-input-frame-boost)
+    variant="v0.portal5o-input-frame-boost"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5o-input-frame-boost.sparse.img"
+    image_hash="1886be1676562e91e5860b14faeaf00d3cd4534b86b001596ff6a9638f60eec4"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5o-input-frame-boost.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5o-input-frame-boost"
+    report_pattern="verify-v0.portal5o-input-frame-boost-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5O_INPUT_FRAME_BOOST'
+    report_required_regex_extra='smartisax_input_frame_boost=ok'
+    report_required_regex_extra2='smartisax_latest_frame_queue=ok'
+    live_verify="tools/r2-verify-v0.portal5o-input-frame-boost.sh --read-only"
+    gate_note="Smartisax v0.6.15/versionCode 32 on top of live-proven v0.portal5n; keeps latest-frame-only queue collapse and dual move channel, then requests urgent projection forceFrame boosts after touch marker draw and high-frequency move input to reduce touch-to-photon latency."
+    ;;
+  v0.portal5p|v0.portal5p-dual-phase-input-boost)
+    variant="v0.portal5p-dual-phase-input-boost"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5p-dual-phase-input-boost.sparse.img"
+    image_hash="4c7d83fbb34a5f9aa76edd65cc5088f9decb190d341f1b14f302f46f86d1c1ef"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5p-dual-phase-input-boost.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5p-dual-phase-input-boost"
+    report_pattern="verify-v0.portal5p-dual-phase-input-boost-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5P_DUAL_PHASE_INPUT_BOOST'
+    report_required_regex_extra='smartisax_dual_phase_input_boost=ok'
+    report_required_regex_extra2='smartisax_input_frame_boost=ok'
+    live_verify="tools/r2-verify-v0.portal5p-dual-phase-input-boost.sh --read-only"
+    gate_note="Smartisax v0.6.16/versionCode 33 on top of live-proven/read-only v0.portal5o; keeps latest-frame-only queue collapse and dual move channel, requests input-frame boost immediately after marker-backed input injection, retains marker-drawn boost, and coalesces pending forceFrame work into the next continuity frame."
+    ;;
+  v0.portal5r|v0.portal5r-refresh-rate-60-90hz)
+    variant="v0.portal5r-refresh-rate-60-90hz"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5r-refresh-rate-60-90hz.sparse.img"
+    image_hash="157c4ebb19b5331b13492a464a0d15a0074f22af3b9ac8ff0894b48afeb6bfd7"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5r-refresh-rate-60-90hz.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5r-refresh-rate-60-90hz"
+    report_pattern="verify-v0.portal5r-refresh-rate-60-90hz-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5R_REFRESH_RATE_60_90HZ'
+    report_required_regex_extra='smartisax_boost_token_retain=ok'
+    report_required_regex_extra2='smartisax_dual_phase_input_boost=ok'
+    live_verify="tools/r2-verify-v0.portal5r-refresh-rate-60-90hz.sh --read-only"
+    gate_note="Smartisax v0.6.18/versionCode 35 on top of current live/read-only v0.portal5p; changes Portal profiles from 1080/30 plus 1080/60 to hardware-aligned 1080/60 plus 1080/90, raises runtime maxFps to 90 and max bitrate to 18Mbps, keeps dual-phase input boost, and retains boost tokens until a frame is captured."
+    ;;
+  v0.portal5s|v0.portal5s-event-time-input-priority)
+    variant="v0.portal5s-event-time-input-priority"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5s-event-time-input-priority.sparse.img"
+    image_hash="b947a9456c11284810b1f976691c689d2158798c5c3ed504865bfaecb851a5f2"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5s-event-time-input-priority.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5s-event-time-input-priority"
+    report_pattern="verify-v0.portal5s-event-time-input-priority-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5S_EVENT_TIME_INPUT_PRIORITY'
+    report_required_regex_extra='smartisax_event_time_input=ok'
+    report_required_regex_extra2='smartisax_input_priority_frame=ok'
+    live_verify="tools/r2-verify-v0.portal5s-event-time-input-priority.sh --read-only"
+    gate_note="Smartisax v0.6.19/versionCode 36 on top of current live/read-only v0.portal5p; keeps the 1080/60 plus 1080/90 Portal target, preserves browser pointer event timing through move-stream injection, and lets input-triggered projection frames use half-interval priority capture."
+    ;;
+  v0.portal5t|v0.portal5t-marker-burst-presentation)
+    variant="v0.portal5t-marker-burst-presentation"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5t-marker-burst-presentation.sparse.img"
+    image_hash="7417c6abcabca10dacf77d50e6dbdb84bf54414b074e23f7737c3ec929843bdd"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5t-marker-burst-presentation.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5t-marker-burst-presentation"
+    report_pattern="verify-v0.portal5t-marker-burst-presentation-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5T_MARKER_BURST_PRESENTATION'
+    report_required_regex_extra='smartisax_marker_burst_boost=ok'
+    report_required_regex_extra2='smartisax_input_priority_frame=ok'
+    live_verify="tools/r2-verify-v0.portal5t-marker-burst-presentation.sh --read-only"
+    gate_note="Smartisax v0.6.20/versionCode 37 on top of live/read-only v0.portal5s; keeps 60/90Hz, event-time input, and input-priority capture, then adds a short marker-visible burst of input-priority frames to reduce Chrome presentation/RVFC gaps and marker tail latency."
+    ;;
+  v0.portal5u|v0.portal5u-burst-reschedule-presentation)
+    variant="v0.portal5u-burst-reschedule-presentation"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5u-burst-reschedule-presentation.sparse.img"
+    image_hash="4515ab16ff5dc443c91cd455c6361aeac3016fd728bc8abd9dbe70d3d7ac3db8"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5u-burst-reschedule-presentation.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5u-burst-reschedule-presentation"
+    report_pattern="verify-v0.portal5u-burst-reschedule-presentation-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5U_BURST_RESCHEDULE_PRESENTATION'
+    report_required_regex_extra='smartisax_marker_burst_reschedule=ok'
+    report_required_regex_extra2='smartisax_input_priority_frame=ok'
+    live_verify="tools/r2-verify-v0.portal5u-burst-reschedule-presentation.sh --read-only"
+    gate_note="Smartisax v0.6.21/versionCode 38 on top of live/read-only v0.portal5s; keeps 60/90Hz, event-time input, boost-token-retain, input-priority capture, and marker-visible burst, then reschedules burst frames until each input-priority request is accepted by the projection frame pump."
+    ;;
+  v0.portal5v|v0.portal5v-presentation-cadence)
+    variant="v0.portal5v-presentation-cadence"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5v-presentation-cadence.sparse.img"
+    image_hash="9fbef52aee9ecffd146f0d949047107be6bbbfb1ca6ebb4762a00c7387742fff"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5v-presentation-cadence.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5v-presentation-cadence"
+    report_pattern="verify-v0.portal5v-presentation-cadence-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5V_PRESENTATION_CADENCE'
+    report_required_regex_extra='smartisax_presentation_cadence=ok'
+    report_required_regex_extra2='smartisax_marker_burst_reschedule=ok'
+    live_verify="tools/r2-verify-v0.portal5v-presentation-cadence.sh --read-only"
+    gate_note="Smartisax v0.6.22/versionCode 39 on top of live/read-only v0.portal5s; keeps 60/90Hz, event-time input, boost-token-retain, marker-burst-reschedule, and adds browser receiver playoutDelayHint=0 plus motion contentHint and RTC playout/drop/freeze diagnostics for Chrome presentation/RVFC gap repair."
+    ;;
+  v0.portal5w|v0.portal5w-quiet-presentation)
+    variant="v0.portal5w-quiet-presentation"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5w-quiet-presentation.sparse.img"
+    image_hash="bf7145e79050d65cba96b1c0451c8b5c246957f8ef2fb9c513cc2966db77b593"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5w-quiet-presentation.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5w-quiet-presentation"
+    report_pattern="verify-v0.portal5w-quiet-presentation-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5W_QUIET_PRESENTATION'
+    report_required_regex_extra='smartisax_quiet_presentation=ok'
+    report_required_regex_extra2='smartisax_presentation_cadence=ok'
+    live_verify="tools/r2-verify-v0.portal5w-quiet-presentation.sh --read-only"
+    gate_note="Smartisax v0.6.23/versionCode 40 on top of live/read-only v0.portal5s; keeps marker-burst-reschedule and receiver presentation cadence repair, then suppresses browser DOM/log churn during WebRTC playback and records RAF main-thread drift beside RVFC cadence."
+    ;;
+  v0.portal5x|v0.portal5x-presenter-mode)
+    variant="v0.portal5x-presenter-mode"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5x-presenter-mode.sparse.img"
+    image_hash="3d72fe25ae50542edca42edc0472f70f16deef320fc5dde0a8ecc6eebfad2f6d"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5x-presenter-mode.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5x-presenter-mode"
+    report_pattern="verify-v0.portal5x-presenter-mode-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5X_PRESENTER_MODE'
+    report_required_regex_extra='smartisax_presenter_mode=ok'
+    report_required_regex_extra2='smartisax_quiet_presentation=ok'
+    live_verify="tools/r2-verify-v0.portal5x-presenter-mode.sh --read-only"
+    gate_note="Smartisax v0.6.24/versionCode 41 on top of live/read-only v0.portal5w; keeps quiet presentation and adds video/canvas/dual presenter modes so strict smoke can compare video RVFC, RAF, canvas draw cadence, canvas media-change cadence, and marker detection source."
+    ;;
+  v0.portal5y|v0.portal5y-presentation-transport-pacing)
+    variant="v0.portal5y-presentation-transport-pacing"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5y-presentation-transport-pacing.sparse.img"
+    image_hash="c20ad88972c3395b848f5941b5bf12f8b5674d00da3cf9ccd6fca673ca28e4dc"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5y-presentation-transport-pacing.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5y-presentation-transport-pacing"
+    report_pattern="verify-v0.portal5y-presentation-transport-pacing-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5Y_PRESENTATION_TRANSPORT_PACING'
+    report_required_regex_extra='smartisax_presentation_transport_pacing=ok'
+    report_required_regex_extra2='smartisax_presenter_mode=ok'
+    live_verify="tools/r2-verify-v0.portal5y-presentation-transport-pacing.sh --read-only"
+    gate_note="Smartisax v0.6.25/versionCode 42 on top of live/read-only v0.portal5x; preserves 90Hz input semantics but paces VirtualDisplay/WebRTC video at 60fps with lower 1080/90 bitrate to reduce packet loss and RVFC/media cadence gaps."
+    ;;
+  v0.portal5z|v0.portal5z-video-primary-roi-probe)
+    variant="v0.portal5z-video-primary-roi-probe"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5z-video-primary-roi-probe.sparse.img"
+    image_hash="3a622e32a540c077075d0e9259a6245338e38a24b65342a09c212a6032fda0df"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal5z-video-primary-roi-probe.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal5z-video-primary-roi-probe"
+    report_pattern="verify-v0.portal5z-video-primary-roi-probe-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL5Z_VIDEO_PRIMARY_ROI_PROBE'
+    report_required_regex_extra='smartisax_video_primary_roi_probe=ok'
+    report_required_regex_extra2='smartisax_presentation_transport_pacing=ok'
+    live_verify="tools/r2-verify-v0.portal5z-video-primary-roi-probe.sh --read-only"
+    gate_note="Smartisax v0.6.26/versionCode 43 on top of live/read-only v0.portal5y; keeps video as the primary visible presenter, samples only the marker ROI for touch-to-photon detection, drives pending-marker detection from RAF, and preserves v0.portal5y transport pacing."
+    ;;
+  v0.portal6a|v0.portal6a-marker-draw-sync)
+    variant="v0.portal6a-marker-draw-sync"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal6a-marker-draw-sync.sparse.img"
+    image_hash="b8d2bbe12c3d889fa83963ea8d8e31e2a47b2a460c075d11b29ba4d1676fcc2a"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal6a-marker-draw-sync.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal6a-marker-draw-sync"
+    report_pattern="verify-v0.portal6a-marker-draw-sync-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL6A_MARKER_DRAW_SYNC'
+    report_required_regex_extra='smartisax_marker_draw_sync=ok'
+    report_required_regex_extra2='smartisax_video_primary_roi_probe=ok'
+    live_verify="tools/r2-verify-v0.portal6a-marker-draw-sync.sh --read-only"
+    gate_note="Smartisax v0.6.27/versionCode 44 on top of live/read-only v0.portal5z; triggers marker capture boost and marker burst after the marker view participates in Android draw, preserving video-primary ROI probe and 60/90Hz transport pacing."
+    ;;
+  v0.portal6b|v0.portal6b-draw-urgent-boost)
+    variant="v0.portal6b-draw-urgent-boost"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal6b-draw-urgent-boost.sparse.img"
+    image_hash="057930f125ce07e5fc3c2940af4ac348102df7e8acbfe83d6a25467e4c3ee235"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal6b-draw-urgent-boost.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal6b-draw-urgent-boost"
+    report_pattern="verify-v0.portal6b-draw-urgent-boost-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL6B_DRAW_URGENT_BOOST'
+    report_required_regex_extra='smartisax_draw_urgent_boost=ok'
+    report_required_regex_extra2='smartisax_marker_draw_sync=ok'
+    live_verify="tools/r2-verify-v0.portal6b-draw-urgent-boost.sh --read-only"
+    gate_note="Smartisax v0.6.28/versionCode 45 on top of live/read-only v0.portal6a; lets draw-synced marker boosts bypass normal half-frame input boost spacing while preserving 6a marker draw-sync telemetry."
+    ;;
+  v0.portal6c|v0.portal6c-visible-screenbox)
+    variant="v0.portal6c-visible-screenbox"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal6c-visible-screenbox.sparse.img"
+    image_hash="df7912827b4201bcff601edcc300fe79654ffdc571dda860272eb6485a247a9a"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal6c-visible-screenbox.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal6c-visible-screenbox"
+    report_pattern="verify-v0.portal6c-visible-screenbox-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL6C_VISIBLE_SCREENBOX'
+    report_required_regex_extra='smartisax_visible_screenbox=ok'
+    report_required_regex_extra2='smartisax_draw_urgent_boost=ok'
+    live_verify="tools/r2-verify-v0.portal6c-visible-screenbox.sh --read-only"
+    gate_note="Smartisax v0.6.29/versionCode 46 on top of live/read-only v0.portal6b; repairs the real Portal screenBox by removing parent size containment and giving video a stable visible phone aspect box, while preserving 6b WebRTC draw-urgent/input paths."
+    ;;
+  v0.portal6d|v0.portal6d-display-wake-guard)
+    variant="v0.portal6d-display-wake-guard"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal6d-display-wake-guard.sparse.img"
+    image_hash="48f3329f3da1496e9c27ce3de7ff2f08fdd4d589f37ee5feaab74b8782bba0e4"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal6d-display-wake-guard.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal6d-display-wake-guard"
+    report_pattern="verify-v0.portal6d-display-wake-guard-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL6D_DISPLAY_WAKE_GUARD'
+    report_required_regex_extra='smartisax_display_wake_guard=ok'
+    report_required_regex_extra2='smartisax_visible_screenbox=ok'
+    live_verify="tools/r2-verify-v0.portal6d-display-wake-guard.sh --read-only"
+    gate_note="Smartisax v0.6.30/versionCode 47 on top of live/read-only v0.portal6c; keeps the device display awake during real Portal WebRTC sessions so MediaProjection does not stream black frames after the phone sleeps, while preserving visible screenBox, H264 WebRTC, draw-urgent, and input paths."
+    ;;
+  v0.portal6e|v0.portal6e-encoder-transport-burst)
+    variant="v0.portal6e-encoder-transport-burst"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal6e-encoder-transport-burst.sparse.img"
+    image_hash="5c1a6d9885dcdff1f9ee0b7277419dc2280b4320cfe3551bd68e901eb4663f83"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal6e-encoder-transport-burst.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal6e-encoder-transport-burst"
+    report_pattern="verify-v0.portal6e-encoder-transport-burst-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL6E_ENCODER_TRANSPORT_BURST'
+    report_required_regex_extra='smartisax_encoder_transport_burst=ok'
+    report_required_regex_extra2='system_b[[:space:]]+image=04cfe9746848f5daee752a13efb18ba3cb938d8c7969d5b48333c965f319a6b7[[:space:]]+sparse_slice=04cfe9746848f5daee752a13efb18ba3cb938d8c7969d5b48333c965f319a6b7'
+    live_verify="tools/r2-verify-v0.portal6e-encoder-transport-burst.sh --read-only"
+    gate_note="Smartisax v0.6.31/versionCode 48 on top of live/read-only v0.portal6d; clamps 1080p60/90 WebRTC sender bitrate bursts and late-starts the projection frame pump after local SDP to target 1080/60 packet loss and encoder/transport burst before RVFC/T2P work."
+    ;;
+  v0.portal6f|v0.portal6f-presentation-tail-cadence)
+    variant="v0.portal6f-presentation-tail-cadence"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal6f-presentation-tail-cadence.sparse.img"
+    image_hash="d0bd5eb4653d8e019fdfea6fbe7815895c9ab57b87bc441b38ed7b8112465d9a"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal6f-presentation-tail-cadence.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal6f-presentation-tail-cadence"
+    report_pattern="verify-v0.portal6f-presentation-tail-cadence-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL6F_PRESENTATION_TAIL_CADENCE'
+    report_required_regex_extra='smartisax_presentation_tail_cadence=ok'
+    report_required_regex_extra2='system_b[[:space:]]+image=0cd94324a512d5cb1fd9eed87f7aa82b49e586062033c08a81a96e7c0ab937b2[[:space:]]+sparse_slice=0cd94324a512d5cb1fd9eed87f7aa82b49e586062033c08a81a96e7c0ab937b2'
+    live_verify="tools/r2-verify-v0.portal6f-presentation-tail-cadence.sh --read-only"
+    gate_note="Smartisax v0.6.32/versionCode 49 on top of live/read-only v0.portal6e; paces marker-visible tail boosts at full presentation-frame cadence, extends marker visibility for reliable 1080/60 T2P detection, and adds receiver jitter-buffer/RVFC cadence diagnostics while preserving encoder/transport burst behavior."
+    ;;
+  v0.portal6g|v0.portal6g-rvfc-media-tail)
+    variant="v0.portal6g-rvfc-media-tail"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal6g-rvfc-media-tail.sparse.img"
+    image_hash="d3a938546f197e54ea1f7c08bf300b8d61bf91b9c389bca92a9ddfa018a038fb"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.portal6g-rvfc-media-tail.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.portal6g-rvfc-media-tail"
+    report_pattern="verify-v0.portal6g-rvfc-media-tail-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0PORTAL6G_RVFC_MEDIA_TAIL'
+    report_required_regex_extra='smartisax_media_callback_tail_repair=ok'
+    report_required_regex_extra2='system_b[[:space:]]+image=941c660259f32270eaf4e3a8a5778b8518d4035e0f5efb73a8b704fd7d4b4241[[:space:]]+sparse_slice=941c660259f32270eaf4e3a8a5778b8518d4035e0f5efb73a8b704fd7d4b4241'
+    live_verify="tools/r2-verify-v0.portal6g-rvfc-media-tail.sh --read-only"
+    gate_note="Smartisax v0.6.33/versionCode 50 on top of live/read-only v0.portal6f; keeps 1080/60 plus 1080/90 strict targets and specifically reduces 1080/60 RVFC/media callback tail clustering by making 60fps smoke preserve 90Hz input semantics, de-phasing the 1080p60 sender to 59fps, narrowing the 60Hz sender window to 7Mbps, and spacing continuity forceFrame cadence at a full media-frame interval."
     ;;
   v0.36|v0.36-smartisax-shell-debloat)
     die "v0.36 is retired: it flashed and booted but Smartisax failed Android 11 target R+ resources.arsc alignment parsing. Use v0.36.1-smartisax-shell-debloat-arsc-align."

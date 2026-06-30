@@ -3,12 +3,16 @@ package com.smartisax.browser;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.view.WindowManager;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 public final class ShellActivity extends Activity {
     private String homeUrl;
@@ -20,6 +24,7 @@ public final class ShellActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         homeUrl = "file:///android_asset/shell/index.html";
+        keepShellVisibleDuringPortal();
 
         WebView view = new WebView(this);
         webView = view;
@@ -54,8 +59,22 @@ public final class ShellActivity extends Activity {
         });
         view.setWebChromeClient(new WebChromeClient());
 
-        setContentView(view);
+        FrameLayout root = new FrameLayout(this);
+        root.addView(view, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT));
+        SmartisaxTouchMarker.attach(root);
+
+        setContentView(root);
         handleIntent(getIntent());
+    }
+
+    private void keepShellVisibleDuringPortal() {
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setTurnScreenOn(true);
+        }
     }
 
     @Override
@@ -75,6 +94,7 @@ public final class ShellActivity extends Activity {
             webView.destroy();
             webView = null;
         }
+        SmartisaxTouchMarker.detach();
         super.onDestroy();
     }
 

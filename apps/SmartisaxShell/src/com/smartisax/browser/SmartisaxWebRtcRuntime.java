@@ -6,6 +6,8 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjection.Callback;
+import android.os.Handler;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.view.Surface;
 import java.io.IOException;
@@ -63,20 +65,41 @@ final class SmartisaxWebRtcRuntime {
     private static final int MIN_FRAME_WIDTH = 240;
     private static final int MAX_FRAME_WIDTH = 1080;
     private static final int MIN_FRAME_FPS = 1;
-    private static final int MAX_FRAME_FPS = 60;
-    private static final int DEFAULT_FRAME_WIDTH_PORTRAIT = 540;
+    private static final int MAX_FRAME_FPS = 90;
+    private static final int DEFAULT_FRAME_WIDTH_PORTRAIT = 1080;
     private static final int DEFAULT_FRAME_HEIGHT_PORTRAIT = 1170;
-    private static final int DEFAULT_FRAME_WIDTH_LANDSCAPE = 720;
-    private static final int DEFAULT_FRAME_FPS = 8;
+    private static final int DEFAULT_FRAME_WIDTH_LANDSCAPE = 1080;
+    private static final int DEFAULT_FRAME_FPS = 60;
+    private static final int PRESENTATION_TRANSPORT_MAX_FPS = 60;
     private static final int BITRATE_MIN_BPS = 250000;
-    private static final int BITRATE_MAX_BPS = 12000000;
-    private static final int DEFAULT_MIN_VIDEO_BITRATE_BPS = 600000;
-    private static final int DEFAULT_TARGET_VIDEO_BITRATE_BPS = 1200000;
-    private static final int DEFAULT_MAX_VIDEO_BITRATE_BPS = 1200000;
-    private static final String BITRATE_POLICY = "runtime-tuning";
+    private static final int BITRATE_MAX_BPS = 18000000;
+    private static final int ENCODER_BURST_MIN_VIDEO_BITRATE_BPS = 4000000;
+    private static final int ENCODER_BURST_TARGET_VIDEO_BITRATE_BPS = 8000000;
+    private static final int ENCODER_BURST_MAX_VIDEO_BITRATE_BPS = 9000000;
+    private static final int RVFC_TAIL_60HZ_TARGET_VIDEO_BITRATE_BPS = 7000000;
+    private static final int RVFC_TAIL_60HZ_MAX_VIDEO_BITRATE_BPS = 7000000;
+    private static final int RVFC_TAIL_60HZ_SENDER_MAX_FRAMERATE = 59;
+    private static final int PACED_90_MIN_VIDEO_BITRATE_BPS = ENCODER_BURST_MIN_VIDEO_BITRATE_BPS;
+    private static final int PACED_90_TARGET_VIDEO_BITRATE_BPS = ENCODER_BURST_TARGET_VIDEO_BITRATE_BPS;
+    private static final int PACED_90_MAX_VIDEO_BITRATE_BPS = ENCODER_BURST_MAX_VIDEO_BITRATE_BPS;
+    private static final int DEFAULT_MIN_VIDEO_BITRATE_BPS = ENCODER_BURST_MIN_VIDEO_BITRATE_BPS;
+    private static final int DEFAULT_TARGET_VIDEO_BITRATE_BPS = ENCODER_BURST_TARGET_VIDEO_BITRATE_BPS;
+    private static final int DEFAULT_MAX_VIDEO_BITRATE_BPS = ENCODER_BURST_MAX_VIDEO_BITRATE_BPS;
+    private static final String BITRATE_POLICY = "runtime-tuning+presentation-transport-pacing+encoder-transport-burst-clamp+rvfc-media-tail-60hz-window";
+    private static final String TRANSPORT_PACING_POLICY = "virtualdisplay-60fps-presentation-paced-90hz-input";
+    private static final String ENCODER_TRANSPORT_BURST_POLICY = "1080p60-target-window-bitrate+late-start-frame-pump+maintain-framerate-sender";
+    private static final String MEDIA_CALLBACK_TAIL_POLICY = "1080p60-rvfc-media-callback-tail-dephase+sender-59fps+7mbps-window+full-frame-forceFrame-spacing";
     private static final String CAPTURE_BACKEND_AUTO = "projection-auto";
     private static final String CAPTURE_BACKEND_PROJECTION = "projection-texture";
     private static final String CAPTURE_BACKEND_BITMAP = "bitmap-i420";
+    private static final String DISPLAY_WAKE_POLICY = "webrtc-session-screen-wake-lock+activity-keep-screen-on";
+    private static final int PROJECTION_MAX_PENDING_CONTINUITY_FRAMES = 1;
+    private static final long PROJECTION_FORCE_FRAME_EARLY_MARGIN_MS = 1L;
+    private static final long PROJECTION_INPUT_BOOST_MIN_INTERVAL_DIVISOR = 2L;
+    private static final int PROJECTION_INPUT_BOOST_BURST_MAX_FRAMES = 4;
+    private static final String PRESENTATION_TAIL_CADENCE_POLICY = "marker-visible-tail-presentation-cadence+full-frame-spacing-after-draw-urgent+rvfc-media-callback-tail-dephase";
+    private static final String LATENCY_MODE = "latest-frame-only-queue-collapse+dual-phase-input-frame-boost+marker-visible-burst-boost+marker-burst-reschedule-until-accepted+boost-token-retain+60-90hz+event-time-input-priority+receiver-playout-delay-zero+quiet-presentation-surface+canvas-presenter-mode+presentation-transport-pacing+video-primary-roi-probe+raf-touch-photon-detect+marker-draw-synced-capture-boost+draw-urgent-input-frame-boost+encoder-transport-burst-clamp+marker-visible-tail-presentation-cadence+rvfc-media-callback-tail-dephase";
+    private static final String FRAME_QUEUE_POLICY = "skip-forceFrame-when-captured-frame-is-fresh+coalesce-pending-forceFrame-after-input-marker+retain-boost-token-until-captured-frame+input-boost-half-interval-capture+marker-burst-input-priority+marker-burst-reschedule-until-accepted+marker-draw-synced-capture-boost+draw-urgent-bypass-half-interval+marker-tail-full-frame-spacing+virtualdisplay-60fps-presentation-paced-90hz-input+rvfc-tail-full-frame-forceFrame-spacing";
     private static final Map<String, RuntimeSession> SESSIONS = new LinkedHashMap<>();
     private static RuntimeConfig currentConfig = RuntimeConfig.defaults();
     private static boolean initialized;
@@ -95,14 +118,32 @@ final class SmartisaxWebRtcRuntime {
         json.put("nativeLibrary", "jingle_peerconnection_so");
         json.put("mode", "native-libwebrtc");
         json.put("dtlsSrtp", true);
+        json.put("codecPolicy", "latency-first-modern-fallback");
+        json.put("codecPreference", "H264,AV1,VP9,H265");
+        json.put("codecFallback", "H264");
         json.put("input", "webrtc-datachannel-input");
         json.put("inputChannel", "smartisax-input");
+        json.put("inputMoveChannel", "smartisax-input-move");
+        json.put("inputMoveStream", "touchStart-touchMoveBatch-touchEnd-low-retransmit+event-time-preserving-move-stream");
+        json.put("touchPhotonMarker", "touch-photon-marker+predictive-status+dual-phase-input-frame-boost+marker-visible-burst-boost+marker-burst-reschedule-until-accepted+marker-draw-synced-capture-boost+draw-urgent-input-frame-boost+boost-token-retain+60-90hz+input-priority-frame+marker-visible-tail-presentation-cadence");
+        json.put("ackJitterRepair", "dual-datachannel+compact-move-acks+batched-move-stream");
+        json.put("chromePresentationGapRepair", "rvfc-marker-prediction+throttled-smoke-logging+dual-phase-input-frame-boost+marker-visible-burst-boost+marker-burst-reschedule-until-accepted+marker-draw-synced-capture-boost+draw-urgent-input-frame-boost+boost-token-retain+60-90hz+receiver-playout-delay-zero+motion-content-hint+rtc-playout-stats+quiet-presentation-surface+raf-mainthread-drift+canvas-presenter-mode+rvfc-vs-raf-vs-canvas+presentation-transport-pacing+video-primary-roi-probe+raf-touch-photon-detect+marker-visible-tail-presentation-cadence+rvfc-media-callback-tail-dephase");
+        json.put("displayWakeGuard", DISPLAY_WAKE_POLICY);
+        json.put("presentationProbe", "video-primary-roi-probe+raf-touch-photon-detect");
+        json.put("refreshRateProfiles", "1080p60+1080p90");
+        json.put("transportPacing", TRANSPORT_PACING_POLICY);
+        json.put("encoderTransportBurstRepair", ENCODER_TRANSPORT_BURST_POLICY);
+        json.put("mediaCallbackTailRepair", MEDIA_CALLBACK_TAIL_POLICY);
         json.put("httpInput", false);
         JSONObject framePump = new JSONObject();
         framePump.put("widthPortrait", config.frameWidthPortrait);
         framePump.put("heightPortrait", DEFAULT_FRAME_HEIGHT_PORTRAIT);
         framePump.put("widthLandscape", config.frameWidthLandscape);
-        framePump.put("fps", config.fps);
+        framePump.put("fps", config.presentationFps);
+        framePump.put("requestedFps", config.fps);
+        framePump.put("presentationFps", config.presentationFps);
+        framePump.put("transportFps", config.presentationFps);
+        framePump.put("inputRefreshHz", config.inputRefreshHz);
         framePump.put("minVideoBitrateBps", config.minBitrateBps);
         framePump.put("targetVideoBitrateBps", config.targetBitrateBps);
         framePump.put("maxVideoBitrateBps", config.maxBitrateBps);
@@ -110,10 +151,23 @@ final class SmartisaxWebRtcRuntime {
         framePump.put("captureBackend", config.captureBackend);
         framePump.put("latency", "low-latency-screencast");
         framePump.put("copyPath", "projection-texture avoids Java Bitmap/I420 conversion when available");
+        framePump.put("latencyMode", LATENCY_MODE);
+        framePump.put("queuePolicy", FRAME_QUEUE_POLICY);
+        framePump.put("transportPacing", TRANSPORT_PACING_POLICY);
+        framePump.put("encoderTransportBurstRepair", ENCODER_TRANSPORT_BURST_POLICY);
+        framePump.put("mediaCallbackTailRepair", MEDIA_CALLBACK_TAIL_POLICY);
+        framePump.put("presentationTailCadence", PRESENTATION_TAIL_CADENCE_POLICY);
+        framePump.put("senderMinVideoBitrateBps", config.senderMinBitrateBps());
+        framePump.put("senderTargetVideoBitrateBps", config.senderTargetBitrateBps());
+        framePump.put("senderMaxVideoBitrateBps", config.senderMaxBitrateBps());
+        framePump.put("senderMaxFramerate", config.senderMaxFramerate());
+        framePump.put("senderDegradationPreference", "MAINTAIN_FRAMERATE");
+        framePump.put("framePumpStartPolicy", "late-start-after-local-sdp");
+        framePump.put("maxPendingContinuityFrames", PROJECTION_MAX_PENDING_CONTINUITY_FRAMES);
         json.put("framePumpDefaults", framePump);
         json.put("runtimeTuning", true);
-        json.put("targetMinimum", "1080p30");
-        json.put("targetDefault", "1080p60");
+        json.put("targetMinimum", "1080p60");
+        json.put("targetDefault", "1080p90-input-60fps-presentation");
         json.put("runtimeConfig", config.toJson());
         json.put("runtimeConfigLimits", RuntimeConfig.limitsJson());
         synchronized (LOCK) {
@@ -123,6 +177,33 @@ final class SmartisaxWebRtcRuntime {
             json.put("sessions", sessionsJsonLocked());
         }
         return json;
+    }
+
+    static void requestInputFrameBoost(String reason) {
+        synchronized (LOCK) {
+            cleanupSessionsLocked(false);
+            for (RuntimeSession session : SESSIONS.values()) {
+                session.requestInputFrameBoost(reason);
+            }
+        }
+    }
+
+    static void requestUrgentInputFrameBoost(String reason) {
+        synchronized (LOCK) {
+            cleanupSessionsLocked(false);
+            for (RuntimeSession session : SESSIONS.values()) {
+                session.requestUrgentInputFrameBoost(reason);
+            }
+        }
+    }
+
+    static void requestInputFrameBoostBurst(String reason, int frameCount) {
+        synchronized (LOCK) {
+            cleanupSessionsLocked(false);
+            for (RuntimeSession session : SESSIONS.values()) {
+                session.requestInputFrameBoostBurst(reason, frameCount);
+            }
+        }
     }
 
     static JSONObject configJson() throws JSONException {
@@ -318,6 +399,73 @@ final class SmartisaxWebRtcRuntime {
         }
     }
 
+    @SuppressWarnings("deprecation")
+    private static final class ProjectionDisplayGuard {
+        private final String policy = DISPLAY_WAKE_POLICY;
+        private final String reason;
+        private final long acquiredElapsedMs;
+        private long releasedElapsedMs;
+        private PowerManager.WakeLock wakeLock;
+        private boolean acquired;
+        private String error = "";
+
+        private ProjectionDisplayGuard(String reason) {
+            this.reason = reason == null || reason.length() == 0 ? "webrtc-session" : reason;
+            this.acquiredElapsedMs = SystemClock.elapsedRealtime();
+        }
+
+        static ProjectionDisplayGuard acquire(Context context, String reason) {
+            ProjectionDisplayGuard guard = new ProjectionDisplayGuard(reason);
+            try {
+                PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+                if (powerManager == null) {
+                    guard.error = "power_manager_unavailable";
+                    return guard;
+                }
+                PowerManager.WakeLock lock = powerManager.newWakeLock(
+                        PowerManager.SCREEN_BRIGHT_WAKE_LOCK
+                                | PowerManager.ACQUIRE_CAUSES_WAKEUP
+                                | PowerManager.ON_AFTER_RELEASE,
+                        "Smartisax:PortalWebRtc");
+                lock.setReferenceCounted(false);
+                lock.acquire(SESSION_TTL_MS + 30000L);
+                guard.wakeLock = lock;
+                guard.acquired = lock.isHeld();
+            } catch (RuntimeException e) {
+                guard.error = e.toString();
+            }
+            return guard;
+        }
+
+        void release() {
+            releasedElapsedMs = SystemClock.elapsedRealtime();
+            if (wakeLock == null) {
+                return;
+            }
+            try {
+                if (wakeLock.isHeld()) {
+                    wakeLock.release();
+                }
+            } catch (RuntimeException e) {
+                error = e.toString();
+            } finally {
+                wakeLock = null;
+            }
+        }
+
+        JSONObject toJson() throws JSONException {
+            JSONObject json = new JSONObject();
+            json.put("policy", policy);
+            json.put("reason", reason);
+            json.put("acquired", acquired);
+            json.put("held", wakeLock != null && wakeLock.isHeld());
+            json.put("acquiredElapsedMs", acquiredElapsedMs);
+            json.put("releasedElapsedMs", releasedElapsedMs);
+            json.put("error", error);
+            return json;
+        }
+    }
+
     private static final class NativeAnswer {
         final String sdp;
         final String iceGatheringState;
@@ -344,10 +492,16 @@ final class SmartisaxWebRtcRuntime {
         VideoTrack videoTrack;
         RtpSender videoSender;
         CapturePump framePump;
+        ProjectionDisplayGuard displayGuard;
         String videoBitratePolicy = BITRATE_POLICY;
         String videoBitrateStage = "";
         String videoBitrateError = "";
         int videoBitrateEncodingCount;
+        int videoSenderMinBitrateBps;
+        int videoSenderTargetBitrateBps;
+        int videoSenderMaxBitrateBps;
+        int videoSenderMaxFramerate;
+        String videoSenderDegradationPreference = "";
         boolean videoBitrateApplied;
 
         RuntimeSession(Context context, FrameProvider frameProvider, InputHandler inputHandler, RuntimeConfig config) {
@@ -359,6 +513,7 @@ final class SmartisaxWebRtcRuntime {
         }
 
         NativeAnswer answer(String remoteSdp) throws JSONException, IOException {
+            try {
             PeerConnection.RTCConfiguration configuration =
                     new PeerConnection.RTCConfiguration(Collections.<PeerConnection.IceServer>emptyList());
             configuration.sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN;
@@ -379,13 +534,11 @@ final class SmartisaxWebRtcRuntime {
             videoSource = factory.createVideoSource(true);
             videoSource.setIsScreencast(true);
             Point display = frameProvider.displaySize();
-            videoSource.adaptOutputFormat(config.targetWidth(display), config.targetHeight(display), config.fps);
+            videoSource.adaptOutputFormat(config.targetWidth(display), config.targetHeight(display), config.videoFps());
             videoTrack = factory.createVideoTrack("smartisax-r2-screen", videoSource);
             videoTrack.setEnabled(true);
             videoSender = peerConnection.addTrack(videoTrack, Collections.singletonList("smartisax-screen"));
             applyVideoSenderParameters("after-addTrack");
-
-            startFramePump(videoSource.getCapturerObserver());
 
             awaitSetRemote(new SessionDescription(SessionDescription.Type.OFFER, remoteSdp));
             SessionDescription answer = awaitCreateAnswer();
@@ -394,7 +547,19 @@ final class SmartisaxWebRtcRuntime {
             peerObserver.awaitIceComplete(2200);
             SessionDescription local = peerConnection.getLocalDescription();
             String sdp = local == null ? answer.description : local.description;
+            displayGuard = ProjectionDisplayGuard.acquire(context, "webrtc-session");
+            startFramePump(videoSource.getCapturerObserver());
             return new NativeAnswer(sdp, peerObserver.iceGatheringState(), candidatesJson(candidates));
+            } catch (JSONException e) {
+                close();
+                throw e;
+            } catch (IOException e) {
+                close();
+                throw e;
+            } catch (RuntimeException e) {
+                close();
+                throw e;
+            }
         }
 
         JSONObject framePumpJson() throws JSONException {
@@ -409,15 +574,75 @@ final class SmartisaxWebRtcRuntime {
             json.put("width", framePump.width());
             json.put("height", framePump.height());
             json.put("fps", framePump.fps());
+            json.put("requestedFps", config.fps);
+            json.put("presentationFps", config.presentationFps);
+            json.put("transportFps", config.presentationFps);
+            json.put("inputRefreshHz", config.inputRefreshHz);
             json.put("capturedFrames", framePump.capturedFrames());
             json.put("lastError", framePump.lastError());
             json.put("startedElapsedMs", framePump.startedElapsedMs());
             json.put("lastFrameElapsedMs", framePump.lastFrameElapsedMs());
             json.put("fallbackError", framePump.fallbackError());
+            json.put("displayWakeGuard", displayGuard == null ? JSONObject.NULL : displayGuard.toJson());
+            if (framePump instanceof ProjectionTextureFramePump) {
+                ProjectionTextureFramePump projectionPump = (ProjectionTextureFramePump) framePump;
+                json.put("continuityMode", projectionPump.continuityMode());
+                json.put("latencyMode", projectionPump.latencyMode());
+                json.put("queuePolicy", projectionPump.queuePolicy());
+                json.put("maxPendingContinuityFrames", projectionPump.maxPendingContinuityFrames());
+                json.put("sourceFrames", projectionPump.sourceFrames());
+                json.put("droppedFrames", projectionPump.droppedFrames());
+                json.put("continuityFrameRequests", projectionPump.continuityFrameRequests());
+                json.put("continuityFrameSkips", projectionPump.continuityFrameSkips());
+                json.put("continuityFrames", projectionPump.continuityFrames());
+                json.put("inputFrameBoostRequests", projectionPump.inputFrameBoostRequests());
+                json.put("inputFrameBoostSkips", projectionPump.inputFrameBoostSkips());
+                json.put("inputFrameBoostFrames", projectionPump.inputFrameBoostFrames());
+                json.put("inputFrameBoostUrgentRequests", projectionPump.inputFrameBoostUrgentRequests());
+                json.put("inputFrameBoostUrgentSkips", projectionPump.inputFrameBoostUrgentSkips());
+                json.put("inputFrameBoostUrgentFrames", projectionPump.inputFrameBoostUrgentFrames());
+                json.put("inputFrameBoostBurstRequests", projectionPump.inputFrameBoostBurstRequests());
+                json.put("inputFrameBoostBurstFrames", projectionPump.inputFrameBoostBurstFrames());
+                json.put("inputFrameBoostBurstSkips", projectionPump.inputFrameBoostBurstSkips());
+                json.put("inputFrameBoostBurstRetries", projectionPump.inputFrameBoostBurstRetries());
+                json.put("inputFrameBoostBurstPendingFrames", projectionPump.inputFrameBoostBurstPendingFrames());
+                json.put("inputFrameBoostBurstActiveFrames", projectionPump.inputFrameBoostBurstActiveFrames());
+                json.put("inputFrameBoostBurstMaxFrames", projectionPump.inputFrameBoostBurstMaxFrames());
+                json.put("inputFrameBoostBurstCadenceMs", projectionPump.inputFrameBoostBurstCadenceMs());
+                json.put("mediaCallbackTailRepair", projectionPump.mediaCallbackTailRepair());
+                json.put("mediaCallbackTailFrameSpacingMs", projectionPump.mediaCallbackTailFrameSpacingMs());
+                json.put("presentationTailCadence", projectionPump.presentationTailCadence());
+                json.put("inputFrameBoostMinIntervalMs", projectionPump.inputFrameBoostMinIntervalMs());
+                json.put("timestampRewriteFrames", projectionPump.timestampRewriteFrames());
+                json.put("lastSourceFrameElapsedMs", projectionPump.lastSourceFrameElapsedMs());
+                json.put("lastContinuityFrameRequestElapsedMs", projectionPump.lastContinuityFrameRequestElapsedMs());
+                json.put("lastContinuityFrameSkipElapsedMs", projectionPump.lastContinuityFrameSkipElapsedMs());
+                json.put("lastContinuityFrameElapsedMs", projectionPump.lastContinuityFrameElapsedMs());
+                json.put("lastInputFrameBoostRequestElapsedMs", projectionPump.lastInputFrameBoostRequestElapsedMs());
+                json.put("lastInputFrameBoostSkipElapsedMs", projectionPump.lastInputFrameBoostSkipElapsedMs());
+                json.put("lastInputFrameBoostElapsedMs", projectionPump.lastInputFrameBoostElapsedMs());
+                json.put("lastInputFrameBoostUrgentRequestElapsedMs", projectionPump.lastInputFrameBoostUrgentRequestElapsedMs());
+                json.put("lastInputFrameBoostUrgentSkipElapsedMs", projectionPump.lastInputFrameBoostUrgentSkipElapsedMs());
+                json.put("lastInputFrameBoostUrgentFrameElapsedMs", projectionPump.lastInputFrameBoostUrgentFrameElapsedMs());
+                json.put("lastInputFrameBoostBurstRequestElapsedMs", projectionPump.lastInputFrameBoostBurstRequestElapsedMs());
+                json.put("lastInputFrameBoostBurstFrameElapsedMs", projectionPump.lastInputFrameBoostBurstFrameElapsedMs());
+                json.put("lastInputFrameBoostBurstRetryElapsedMs", projectionPump.lastInputFrameBoostBurstRetryElapsedMs());
+                json.put("lastTimestampRewriteElapsedMs", projectionPump.lastTimestampRewriteElapsedMs());
+            }
             json.put("bitratePolicy", videoBitratePolicy);
+            json.put("transportPacing", TRANSPORT_PACING_POLICY);
+            json.put("encoderTransportBurstRepair", ENCODER_TRANSPORT_BURST_POLICY);
+            json.put("mediaCallbackTailRepair", MEDIA_CALLBACK_TAIL_POLICY);
+            json.put("presentationTailCadence", PRESENTATION_TAIL_CADENCE_POLICY);
             json.put("minBitrateBps", config.minBitrateBps);
             json.put("targetBitrateBps", config.targetBitrateBps);
             json.put("maxBitrateBps", config.maxBitrateBps);
+            json.put("senderMinBitrateBps", videoSenderMinBitrateBps);
+            json.put("senderTargetBitrateBps", videoSenderTargetBitrateBps);
+            json.put("senderMaxBitrateBps", videoSenderMaxBitrateBps);
+            json.put("senderMaxFramerate", videoSenderMaxFramerate);
+            json.put("senderDegradationPreference", videoSenderDegradationPreference);
+            json.put("framePumpStartPolicy", "late-start-after-local-sdp");
             json.put("bitrateApplied", videoBitrateApplied);
             json.put("bitrateStage", videoBitrateStage);
             json.put("bitrateError", videoBitrateError);
@@ -432,7 +657,19 @@ final class SmartisaxWebRtcRuntime {
             json.put("minBitrateBps", config.minBitrateBps);
             json.put("targetBitrateBps", config.targetBitrateBps);
             json.put("maxBitrateBps", config.maxBitrateBps);
-            json.put("maxFramerate", config.fps);
+            json.put("senderMinBitrateBps", videoSenderMinBitrateBps);
+            json.put("senderTargetBitrateBps", videoSenderTargetBitrateBps);
+            json.put("senderMaxBitrateBps", videoSenderMaxBitrateBps);
+            json.put("senderMaxFramerate", videoSenderMaxFramerate);
+            json.put("senderDegradationPreference", videoSenderDegradationPreference);
+            json.put("encoderTransportBurstRepair", ENCODER_TRANSPORT_BURST_POLICY);
+            json.put("mediaCallbackTailRepair", MEDIA_CALLBACK_TAIL_POLICY);
+            json.put("framePumpStartPolicy", "late-start-after-local-sdp");
+            json.put("maxFramerate", config.senderMaxFramerate());
+            json.put("captureFramerate", config.videoFps());
+            json.put("requestedFramerate", config.fps);
+            json.put("presentationFps", config.presentationFps);
+            json.put("inputRefreshHz", config.inputRefreshHz);
             json.put("applied", videoBitrateApplied);
             json.put("stage", videoBitrateStage);
             json.put("encodingCount", videoBitrateEncodingCount);
@@ -456,6 +693,10 @@ final class SmartisaxWebRtcRuntime {
                 framePump.stop();
                 framePump = null;
             }
+            if (displayGuard != null) {
+                displayGuard.release();
+                displayGuard = null;
+            }
             if (peerObserver != null) {
                 peerObserver.closeDataChannel();
             }
@@ -471,6 +712,24 @@ final class SmartisaxWebRtcRuntime {
             if (videoSource != null) {
                 videoSource.dispose();
                 videoSource = null;
+            }
+        }
+
+        void requestInputFrameBoost(String reason) {
+            if (framePump instanceof ProjectionTextureFramePump) {
+                ((ProjectionTextureFramePump) framePump).requestInputFrameBoost(reason);
+            }
+        }
+
+        void requestUrgentInputFrameBoost(String reason) {
+            if (framePump instanceof ProjectionTextureFramePump) {
+                ((ProjectionTextureFramePump) framePump).requestUrgentInputFrameBoost(reason);
+            }
+        }
+
+        void requestInputFrameBoostBurst(String reason, int frameCount) {
+            if (framePump instanceof ProjectionTextureFramePump) {
+                ((ProjectionTextureFramePump) framePump).requestInputFrameBoostBurst(reason, frameCount);
             }
         }
 
@@ -522,6 +781,11 @@ final class SmartisaxWebRtcRuntime {
             if (videoSender == null) {
                 videoBitrateApplied = false;
                 videoBitrateEncodingCount = 0;
+                videoSenderMinBitrateBps = 0;
+                videoSenderTargetBitrateBps = 0;
+                videoSenderMaxBitrateBps = 0;
+                videoSenderMaxFramerate = 0;
+                videoSenderDegradationPreference = "";
                 videoBitrateError = "video_sender_unavailable";
                 return;
             }
@@ -530,18 +794,29 @@ final class SmartisaxWebRtcRuntime {
                 if (parameters == null || parameters.encodings == null || parameters.encodings.isEmpty()) {
                     videoBitrateApplied = false;
                     videoBitrateEncodingCount = 0;
+                    videoSenderMinBitrateBps = 0;
+                    videoSenderTargetBitrateBps = 0;
+                    videoSenderMaxBitrateBps = 0;
+                    videoSenderMaxFramerate = 0;
+                    videoSenderDegradationPreference = "";
                     videoBitrateError = "sender_parameters_no_encodings";
                     return;
                 }
+                parameters.degradationPreference = RtpParameters.DegradationPreference.MAINTAIN_FRAMERATE;
+                videoSenderMinBitrateBps = config.senderMinBitrateBps();
+                videoSenderTargetBitrateBps = config.senderTargetBitrateBps();
+                videoSenderMaxBitrateBps = config.senderMaxBitrateBps();
+                videoSenderMaxFramerate = config.senderMaxFramerate();
+                videoSenderDegradationPreference = String.valueOf(parameters.degradationPreference);
                 videoBitrateEncodingCount = parameters.encodings.size();
                 for (RtpParameters.Encoding encoding : parameters.encodings) {
                     if (encoding == null) {
                         continue;
                     }
                     encoding.active = true;
-                    encoding.minBitrateBps = Integer.valueOf(config.minBitrateBps);
-                    encoding.maxBitrateBps = Integer.valueOf(config.maxBitrateBps);
-                    encoding.maxFramerate = Integer.valueOf(config.fps);
+                    encoding.minBitrateBps = Integer.valueOf(videoSenderMinBitrateBps);
+                    encoding.maxBitrateBps = Integer.valueOf(videoSenderMaxBitrateBps);
+                    encoding.maxFramerate = Integer.valueOf(videoSenderMaxFramerate);
                 }
                 videoBitrateApplied = videoSender.setParameters(parameters);
                 if (!videoBitrateApplied) {
@@ -560,8 +835,11 @@ final class SmartisaxWebRtcRuntime {
         private final CountDownLatch iceComplete = new CountDownLatch(1);
         private volatile String iceGatheringState = "";
         private volatile DataChannel inputChannel;
+        private volatile DataChannel moveChannel;
         private volatile String inputChannelLabel = "";
         private volatile String inputChannelState = "";
+        private volatile String moveChannelLabel = "";
+        private volatile String moveChannelState = "";
         private volatile String lastInputJson = "";
 
         PeerObserver(List<IceCandidate> candidates, InputHandler inputHandler) {
@@ -587,24 +865,22 @@ final class SmartisaxWebRtcRuntime {
             json.put("label", inputChannelLabel);
             json.put("state", inputChannelState);
             json.put("ready", "OPEN".equals(inputChannelState));
+            json.put("moveLabel", moveChannelLabel);
+            json.put("moveState", moveChannelState);
+            json.put("moveReady", "OPEN".equals(moveChannelState));
             json.put("last", lastInputJson.length() == 0 ? JSONObject.NULL : new JSONObject(lastInputJson));
             return json;
         }
 
         void closeDataChannel() {
             DataChannel channel = inputChannel;
+            DataChannel move = moveChannel;
             inputChannel = null;
+            moveChannel = null;
             inputChannelState = "CLOSED";
-            if (channel != null) {
-                try {
-                    channel.close();
-                } catch (RuntimeException ignored) {
-                }
-                try {
-                    channel.unregisterObserver();
-                } catch (RuntimeException ignored) {
-                }
-            }
+            moveChannelState = "CLOSED";
+            closeChannel(channel);
+            closeChannel(move);
         }
 
         @Override
@@ -651,9 +927,17 @@ final class SmartisaxWebRtcRuntime {
             if (dataChannel == null) {
                 return;
             }
-            inputChannel = dataChannel;
-            inputChannelLabel = safeLabel(dataChannel);
-            inputChannelState = String.valueOf(dataChannel.state());
+            String label = safeLabel(dataChannel);
+            boolean isMoveChannel = label.toLowerCase().contains("move");
+            if (isMoveChannel) {
+                moveChannel = dataChannel;
+                moveChannelLabel = label;
+                moveChannelState = String.valueOf(dataChannel.state());
+            } else {
+                inputChannel = dataChannel;
+                inputChannelLabel = label;
+                inputChannelState = String.valueOf(dataChannel.state());
+            }
             dataChannel.registerObserver(new DataChannel.Observer() {
                 @Override
                 public void onBufferedAmountChange(long previousAmount) {
@@ -661,7 +945,7 @@ final class SmartisaxWebRtcRuntime {
 
                 @Override
                 public void onStateChange() {
-                    inputChannelState = String.valueOf(dataChannel.state());
+                    updateChannelState(dataChannel);
                 }
 
                 @Override
@@ -685,6 +969,7 @@ final class SmartisaxWebRtcRuntime {
 
         private void handleDataChannelMessage(DataChannel dataChannel, DataChannel.Buffer buffer) {
             JSONObject ack = new JSONObject();
+            long receivedElapsedMs = SystemClock.elapsedRealtime();
             try {
                 if (buffer == null || buffer.binary) {
                     throw new IOException("input_message_must_be_text_json");
@@ -704,8 +989,13 @@ final class SmartisaxWebRtcRuntime {
                 }
                 ack.put("ok", true);
                 ack.put("mode", "webrtc-datachannel-input");
+                ack.put("receivedElapsedMs", receivedElapsedMs);
+                ack.put("ackElapsedMs", SystemClock.elapsedRealtime());
                 if (payload.has("seq")) {
                     ack.put("seq", payload.optLong("seq"));
+                }
+                if (payload.has("clientElapsedMs")) {
+                    ack.put("clientElapsedMs", payload.optDouble("clientElapsedMs"));
                 }
                 ack.put("type", result.optString("type", type));
                 ack.put("result", result);
@@ -713,6 +1003,8 @@ final class SmartisaxWebRtcRuntime {
                 try {
                     ack.put("ok", false);
                     ack.put("mode", "webrtc-datachannel-input");
+                    ack.put("receivedElapsedMs", receivedElapsedMs);
+                    ack.put("ackElapsedMs", SystemClock.elapsedRealtime());
                     ack.put("error", t.toString());
                 } catch (JSONException ignored) {
                 }
@@ -725,6 +1017,29 @@ final class SmartisaxWebRtcRuntime {
             try {
                 byte[] bytes = ack.toString().getBytes(StandardCharsets.UTF_8);
                 dataChannel.send(new DataChannel.Buffer(ByteBuffer.wrap(bytes), false));
+            } catch (RuntimeException ignored) {
+            }
+        }
+
+        private void updateChannelState(DataChannel dataChannel) {
+            String state = String.valueOf(dataChannel.state());
+            if (dataChannel == moveChannel) {
+                moveChannelState = state;
+            } else if (dataChannel == inputChannel) {
+                inputChannelState = state;
+            }
+        }
+
+        private static void closeChannel(DataChannel channel) {
+            if (channel == null) {
+                return;
+            }
+            try {
+                channel.close();
+            } catch (RuntimeException ignored) {
+            }
+            try {
+                channel.unregisterObserver();
             } catch (RuntimeException ignored) {
             }
         }
@@ -837,7 +1152,7 @@ final class SmartisaxWebRtcRuntime {
             this.frameProvider = frameProvider;
             this.observer = observer;
             this.config = config;
-            this.fps = config.fps;
+            this.fps = config.videoFps();
             this.fallbackFrom = fallbackFrom == null ? "" : fallbackFrom;
             this.fallbackError = fallbackError == null ? "" : fallbackError;
             this.thread = new Thread(this, "SmartisaxWebRtcScreenFrames");
@@ -975,17 +1290,59 @@ final class SmartisaxWebRtcRuntime {
         private final CapturerObserver observer;
         private final RuntimeConfig config;
         private final int fps;
+        private final long frameIntervalMs;
         private final int width;
         private final int height;
         private volatile boolean running;
+        private volatile boolean observerStarted;
         private volatile long capturedFrames;
+        private volatile long sourceFrames;
+        private volatile long droppedFrames;
+        private volatile long continuityFrameRequests;
+        private volatile long continuityFrameSkips;
+        private volatile long continuityFrames;
+        private volatile long inputFrameBoostRequests;
+        private volatile long inputFrameBoostSkips;
+        private volatile long inputFrameBoostFrames;
+        private volatile long inputFrameBoostUrgentRequests;
+        private volatile long inputFrameBoostUrgentSkips;
+        private volatile long inputFrameBoostUrgentFrames;
+        private volatile long inputFrameBoostBurstRequests;
+        private volatile long inputFrameBoostBurstSkips;
+        private volatile long inputFrameBoostBurstFrames;
+        private volatile long inputFrameBoostBurstRetries;
+        private volatile long timestampRewriteFrames;
         private volatile long startedElapsedMs;
         private volatile long lastFrameElapsedMs;
+        private volatile long lastSourceFrameElapsedMs;
+        private volatile long lastContinuityFrameRequestElapsedMs;
+        private volatile long lastContinuityFrameSkipElapsedMs;
+        private volatile long lastContinuityFrameElapsedMs;
+        private volatile long lastInputFrameBoostRequestElapsedMs;
+        private volatile long lastInputFrameBoostSkipElapsedMs;
+        private volatile long lastInputFrameBoostElapsedMs;
+        private volatile long lastInputFrameBoostUrgentRequestElapsedMs;
+        private volatile long lastInputFrameBoostUrgentSkipElapsedMs;
+        private volatile long lastInputFrameBoostUrgentFrameElapsedMs;
+        private volatile long lastInputFrameBoostBurstRequestElapsedMs;
+        private volatile long lastInputFrameBoostBurstFrameElapsedMs;
+        private volatile long lastInputFrameBoostBurstRetryElapsedMs;
+        private volatile long lastTimestampRewriteElapsedMs;
         private volatile String lastError = "";
         private MediaProjection mediaProjection;
         private VirtualDisplay virtualDisplay;
         private SurfaceTextureHelper surfaceTextureHelper;
         private Surface surface;
+        private Runnable continuityTicker;
+        private int pendingContinuityFrames;
+        private int pendingInputFrameBoostFrames;
+        private int pendingUrgentInputFrameBoostFrames;
+        private int pendingInputFrameBoostBurstFrames;
+        private int activeInputFrameBoostBurstFrames;
+        private boolean inputFrameBoostScheduled;
+        private boolean inputFrameBoostBurstRetryScheduled;
+        private int inputFrameBoostScheduleToken;
+        private String inputFrameBoostBurstReason = "";
 
         ProjectionTextureFramePump(Context context, FrameProvider frameProvider, CapturerObserver observer,
                 RuntimeConfig config) {
@@ -993,7 +1350,8 @@ final class SmartisaxWebRtcRuntime {
             this.frameProvider = frameProvider;
             this.observer = observer;
             this.config = config;
-            this.fps = config.fps;
+            this.fps = config.videoFps();
+            this.frameIntervalMs = Math.max(1L, 1000L / Math.max(1, config.videoFps()));
             Point display = frameProvider.displaySize();
             this.width = config.targetWidth(display);
             this.height = config.targetHeight(display);
@@ -1033,6 +1391,8 @@ final class SmartisaxWebRtcRuntime {
                     }
                 }, surfaceTextureHelper.getHandler());
                 observer.onCapturerStarted(true);
+                observerStarted = true;
+                startContinuityTicker();
             } catch (Throwable t) {
                 lastError = t.toString();
                 stop();
@@ -1045,14 +1405,84 @@ final class SmartisaxWebRtcRuntime {
 
         @Override
         public void onFrame(VideoFrame frame) {
-            capturedFrames += 1;
-            lastFrameElapsedMs = SystemClock.elapsedRealtime();
-            observer.onFrameCaptured(frame);
+            if (!running || frame == null) {
+                return;
+            }
+            long now = SystemClock.elapsedRealtime();
+            boolean continuity = pendingContinuityFrames > 0;
+            boolean inputBoost = pendingInputFrameBoostFrames > 0;
+            boolean urgentInputBoost = pendingUrgentInputFrameBoostFrames > 0;
+            boolean burstInputBoost = activeInputFrameBoostBurstFrames > 0;
+            sourceFrames += 1;
+            lastSourceFrameElapsedMs = now;
+            long minimumFrameSpacingMs = inputBoost
+                    ? (urgentInputBoost ? 0L
+                            : (burstInputBoost ? markerTailFrameSpacingMs() : inputBoostMinimumFrameSpacingMs()))
+                    : continuityForceFrameMinimumSpacingMs();
+            if (lastFrameElapsedMs != 0L && now - lastFrameElapsedMs < minimumFrameSpacingMs) {
+                droppedFrames += 1;
+                return;
+            }
+            if (continuity) {
+                pendingContinuityFrames -= 1;
+            }
+            if (inputBoost) {
+                pendingInputFrameBoostFrames -= 1;
+                if (urgentInputBoost) {
+                    pendingUrgentInputFrameBoostFrames -= 1;
+                }
+                if (activeInputFrameBoostBurstFrames > 0) {
+                    activeInputFrameBoostBurstFrames -= 1;
+                }
+            }
+            try {
+                VideoFrame outboundFrame = wrapWithFreshTimestamp(frame);
+                try {
+                    observer.onFrameCaptured(outboundFrame);
+                } finally {
+                    outboundFrame.release();
+                }
+                capturedFrames += 1;
+                lastFrameElapsedMs = now;
+                if (inputBoost) {
+                    inputFrameBoostFrames += 1;
+                    lastInputFrameBoostElapsedMs = now;
+                    if (urgentInputBoost) {
+                        inputFrameBoostUrgentFrames += 1;
+                        lastInputFrameBoostUrgentFrameElapsedMs = now;
+                    }
+                    if (burstInputBoost) {
+                        inputFrameBoostBurstFrames += 1;
+                        lastInputFrameBoostBurstFrameElapsedMs = now;
+                        scheduleNextInputFrameBoostBurst();
+                    }
+                } else if (continuity) {
+                    continuityFrames += 1;
+                    lastContinuityFrameElapsedMs = now;
+                }
+                lastError = "";
+            } catch (Throwable t) {
+                lastError = t.toString();
+            }
+        }
+
+        private VideoFrame wrapWithFreshTimestamp(VideoFrame frame) {
+            frame.getBuffer().retain();
+            timestampRewriteFrames += 1;
+            lastTimestampRewriteElapsedMs = SystemClock.elapsedRealtime();
+            return new VideoFrame(frame.getBuffer(), frame.getRotation(), System.nanoTime());
         }
 
         @Override
         public void stop() {
             running = false;
+            Handler handler = surfaceTextureHelper == null ? null : surfaceTextureHelper.getHandler();
+            if (handler != null && continuityTicker != null) {
+                try {
+                    handler.removeCallbacks(continuityTicker);
+                } catch (RuntimeException ignored) {
+                }
+            }
             if (surfaceTextureHelper != null) {
                 try {
                     surfaceTextureHelper.stopListening();
@@ -1087,7 +1517,331 @@ final class SmartisaxWebRtcRuntime {
                 }
                 surfaceTextureHelper = null;
             }
-            observer.onCapturerStopped();
+            if (observerStarted) {
+                observerStarted = false;
+                observer.onCapturerStopped();
+            }
+        }
+
+        private void startContinuityTicker() {
+            continuityTicker = new Runnable() {
+                @Override
+                public void run() {
+                    if (!running) {
+                        return;
+                    }
+                    long now = SystemClock.elapsedRealtime();
+                    long elapsedSinceFrame = lastFrameElapsedMs == 0L ? Long.MAX_VALUE : now - lastFrameElapsedMs;
+                    long minimumForceInterval = continuityForceFrameMinimumSpacingMs();
+                    long cadenceMs = mediaCallbackTailFrameSpacingMs();
+                    if (pendingContinuityFrames > 0) {
+                        long pendingAgeMs = lastContinuityFrameRequestElapsedMs == 0L
+                                ? 0L
+                                : now - lastContinuityFrameRequestElapsedMs;
+                        if (pendingAgeMs < Math.max(cadenceMs * 2L, cadenceMs + 1L)) {
+                            continuityFrameSkips += 1;
+                            lastContinuityFrameSkipElapsedMs = now;
+                            postContinuityTick(cadenceMs);
+                            return;
+                        }
+                        pendingContinuityFrames = 0;
+                    }
+                    if (elapsedSinceFrame < minimumForceInterval) {
+                        continuityFrameSkips += 1;
+                        lastContinuityFrameSkipElapsedMs = now;
+                        postContinuityTick(Math.max(1L, minimumForceInterval - elapsedSinceFrame));
+                        return;
+                    }
+                    if (surfaceTextureHelper != null) {
+                        try {
+                            if (pendingContinuityFrames < PROJECTION_MAX_PENDING_CONTINUITY_FRAMES) {
+                                pendingContinuityFrames += 1;
+                            }
+                            continuityFrameRequests += 1;
+                            lastContinuityFrameRequestElapsedMs = now;
+                            surfaceTextureHelper.forceFrame();
+                        } catch (RuntimeException e) {
+                            lastError = e.toString();
+                            if (pendingContinuityFrames > 0) {
+                                pendingContinuityFrames -= 1;
+                            }
+                        }
+                    }
+                    postContinuityTick(cadenceMs);
+                }
+            };
+            postContinuityTick(mediaCallbackTailFrameSpacingMs());
+        }
+
+        void requestInputFrameBoost(final String reason) {
+            Handler handler = surfaceTextureHelper == null ? null : surfaceTextureHelper.getHandler();
+            if (handler == null) {
+                return;
+            }
+            try {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        scheduleInputFrameBoost(reason);
+                    }
+                });
+            } catch (RuntimeException e) {
+                lastError = e.toString();
+            }
+        }
+
+        void requestUrgentInputFrameBoost(final String reason) {
+            Handler handler = surfaceTextureHelper == null ? null : surfaceTextureHelper.getHandler();
+            if (handler == null) {
+                return;
+            }
+            try {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        scheduleUrgentInputFrameBoost(reason);
+                    }
+                });
+            } catch (RuntimeException e) {
+                lastError = e.toString();
+            }
+        }
+
+        void requestInputFrameBoostBurst(final String reason, final int frameCount) {
+            Handler handler = surfaceTextureHelper == null ? null : surfaceTextureHelper.getHandler();
+            if (handler == null) {
+                return;
+            }
+            try {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        scheduleInputFrameBoostBurst(reason, frameCount);
+                    }
+                });
+            } catch (RuntimeException e) {
+                lastError = e.toString();
+            }
+        }
+
+        private boolean scheduleInputFrameBoost(final String reason) {
+            return scheduleInputFrameBoost(reason, true);
+        }
+
+        private boolean scheduleInputFrameBoost(final String reason, boolean countSkip) {
+            if (!running || surfaceTextureHelper == null) {
+                return false;
+            }
+            long now = SystemClock.elapsedRealtime();
+            if (pendingInputFrameBoostFrames > 0 || inputFrameBoostScheduled) {
+                if (countSkip) {
+                    inputFrameBoostSkips += 1;
+                    lastInputFrameBoostSkipElapsedMs = now;
+                }
+                return false;
+            }
+            if (pendingContinuityFrames > 0) {
+                pendingInputFrameBoostFrames += 1;
+                inputFrameBoostRequests += 1;
+                lastInputFrameBoostRequestElapsedMs = now;
+                return true;
+            }
+            long elapsedSinceFrame = lastFrameElapsedMs == 0L ? Long.MAX_VALUE : now - lastFrameElapsedMs;
+            long minimumForceInterval = inputBoostMinimumFrameSpacingMs();
+            long delayMs = elapsedSinceFrame < minimumForceInterval
+                    ? Math.max(1L, minimumForceInterval - elapsedSinceFrame)
+                    : 1L;
+            inputFrameBoostScheduled = true;
+            Handler handler = surfaceTextureHelper.getHandler();
+            try {
+                final int scheduleToken = ++inputFrameBoostScheduleToken;
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (scheduleToken != inputFrameBoostScheduleToken) {
+                            return;
+                        }
+                        inputFrameBoostScheduled = false;
+                        requestInputFrameBoostNow(reason);
+                    }
+                }, delayMs);
+                return true;
+            } catch (RuntimeException e) {
+                inputFrameBoostScheduled = false;
+                lastError = e.toString();
+                return false;
+            }
+        }
+
+        private boolean scheduleUrgentInputFrameBoost(final String reason) {
+            if (!running || surfaceTextureHelper == null) {
+                return false;
+            }
+            long now = SystemClock.elapsedRealtime();
+            if (pendingInputFrameBoostFrames > 0) {
+                if (pendingUrgentInputFrameBoostFrames < pendingInputFrameBoostFrames) {
+                    pendingUrgentInputFrameBoostFrames += 1;
+                    inputFrameBoostUrgentRequests += 1;
+                    lastInputFrameBoostUrgentRequestElapsedMs = now;
+                    return true;
+                }
+                inputFrameBoostUrgentSkips += 1;
+                lastInputFrameBoostUrgentSkipElapsedMs = now;
+                return false;
+            }
+            if (inputFrameBoostScheduled) {
+                inputFrameBoostScheduleToken += 1;
+                inputFrameBoostScheduled = false;
+            }
+            return requestInputFrameBoostNow(reason, true);
+        }
+
+        private void scheduleInputFrameBoostBurst(String reason, int frameCount) {
+            if (!running || surfaceTextureHelper == null) {
+                return;
+            }
+            long now = SystemClock.elapsedRealtime();
+            int requestedFrames = Math.max(1, Math.min(PROJECTION_INPUT_BOOST_BURST_MAX_FRAMES, frameCount));
+            String burstReason = reason == null || reason.length() == 0 ? "touch-marker-burst" : reason;
+            pendingInputFrameBoostBurstFrames = Math.max(
+                    pendingInputFrameBoostBurstFrames,
+                    requestedFrames);
+            inputFrameBoostBurstReason = burstReason;
+            inputFrameBoostBurstRequests += requestedFrames;
+            lastInputFrameBoostBurstRequestElapsedMs = now;
+            scheduleNextInputFrameBoostBurst(markerTailFrameSpacingMs());
+        }
+
+        private void scheduleNextInputFrameBoostBurst() {
+            scheduleNextInputFrameBoostBurst(markerTailFrameSpacingMs());
+        }
+
+        private void scheduleNextInputFrameBoostBurst(long delayMs) {
+            if (!running || surfaceTextureHelper == null || pendingInputFrameBoostBurstFrames <= 0) {
+                return;
+            }
+            final Handler handler = surfaceTextureHelper.getHandler();
+            if (handler == null) {
+                return;
+            }
+            if (delayMs <= 0L) {
+                requestNextInputFrameBoostBurst();
+                return;
+            }
+            if (inputFrameBoostBurstRetryScheduled) {
+                return;
+            }
+            inputFrameBoostBurstRetryScheduled = true;
+            try {
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        inputFrameBoostBurstRetryScheduled = false;
+                        if (!running) {
+                            return;
+                        }
+                        requestNextInputFrameBoostBurst();
+                    }
+                }, Math.max(1L, delayMs));
+            } catch (RuntimeException e) {
+                inputFrameBoostBurstRetryScheduled = false;
+                inputFrameBoostBurstSkips += 1;
+                lastInputFrameBoostBurstRetryElapsedMs = SystemClock.elapsedRealtime();
+                lastError = e.toString();
+            }
+        }
+
+        private void requestNextInputFrameBoostBurst() {
+            if (!running || surfaceTextureHelper == null || pendingInputFrameBoostBurstFrames <= 0) {
+                return;
+            }
+            String baseReason = inputFrameBoostBurstReason == null || inputFrameBoostBurstReason.length() == 0
+                    ? "touch-marker-burst"
+                    : inputFrameBoostBurstReason;
+            boolean accepted = scheduleInputFrameBoost(baseReason + "-accepted", false);
+            if (accepted) {
+                pendingInputFrameBoostBurstFrames -= 1;
+                activeInputFrameBoostBurstFrames += 1;
+                return;
+            }
+            inputFrameBoostBurstRetries += 1;
+            inputFrameBoostBurstSkips += 1;
+            lastInputFrameBoostBurstRetryElapsedMs = SystemClock.elapsedRealtime();
+            scheduleNextInputFrameBoostBurst(markerTailFrameSpacingMs());
+        }
+
+        private boolean requestInputFrameBoostNow(String reason) {
+            return requestInputFrameBoostNow(reason, false);
+        }
+
+        private boolean requestInputFrameBoostNow(String reason, boolean urgent) {
+            if (!running || surfaceTextureHelper == null) {
+                return false;
+            }
+            long now = SystemClock.elapsedRealtime();
+            if (pendingContinuityFrames >= PROJECTION_MAX_PENDING_CONTINUITY_FRAMES) {
+                if (pendingInputFrameBoostFrames == 0) {
+                    pendingInputFrameBoostFrames += 1;
+                    if (urgent) {
+                        pendingUrgentInputFrameBoostFrames += 1;
+                        inputFrameBoostUrgentRequests += 1;
+                        lastInputFrameBoostUrgentRequestElapsedMs = now;
+                    }
+                    inputFrameBoostRequests += 1;
+                    lastInputFrameBoostRequestElapsedMs = now;
+                    return true;
+                }
+                inputFrameBoostSkips += 1;
+                lastInputFrameBoostSkipElapsedMs = now;
+                if (urgent) {
+                    inputFrameBoostUrgentSkips += 1;
+                    lastInputFrameBoostUrgentSkipElapsedMs = now;
+                }
+                return false;
+            }
+            try {
+                pendingContinuityFrames += 1;
+                pendingInputFrameBoostFrames += 1;
+                if (urgent) {
+                    pendingUrgentInputFrameBoostFrames += 1;
+                    inputFrameBoostUrgentRequests += 1;
+                    lastInputFrameBoostUrgentRequestElapsedMs = now;
+                }
+                inputFrameBoostRequests += 1;
+                continuityFrameRequests += 1;
+                lastInputFrameBoostRequestElapsedMs = now;
+                lastContinuityFrameRequestElapsedMs = now;
+                surfaceTextureHelper.forceFrame();
+                return true;
+            } catch (RuntimeException e) {
+                lastError = e.toString();
+                if (pendingContinuityFrames > 0) {
+                    pendingContinuityFrames -= 1;
+                }
+                if (pendingInputFrameBoostFrames > 0) {
+                    pendingInputFrameBoostFrames -= 1;
+                }
+                if (urgent && pendingUrgentInputFrameBoostFrames > 0) {
+                    pendingUrgentInputFrameBoostFrames -= 1;
+                }
+                if (urgent) {
+                    inputFrameBoostUrgentSkips += 1;
+                    lastInputFrameBoostUrgentSkipElapsedMs = now;
+                }
+                return false;
+            }
+        }
+
+        private void postContinuityTick(long delayMs) {
+            Handler handler = surfaceTextureHelper == null ? null : surfaceTextureHelper.getHandler();
+            if (handler == null || continuityTicker == null) {
+                return;
+            }
+            try {
+                handler.postDelayed(continuityTicker, Math.max(1L, delayMs));
+            } catch (RuntimeException e) {
+                lastError = e.toString();
+            }
         }
 
         @Override
@@ -1102,7 +1856,27 @@ final class SmartisaxWebRtcRuntime {
 
         @Override
         public String copyPath() {
-            return "MediaProjection VirtualDisplay -> SurfaceTextureHelper texture frames -> WebRTC encoder";
+            return "MediaProjection VirtualDisplay -> latest-frame-only SurfaceTextureHelper cadence -> fresh-timestamp retained texture frames -> WebRTC encoder";
+        }
+
+        String continuityMode() {
+            return "surface-texture-helper-latest-frame-only+fresh-texture-timestamps";
+        }
+
+        String latencyMode() {
+            return LATENCY_MODE;
+        }
+
+        String queuePolicy() {
+            return FRAME_QUEUE_POLICY;
+        }
+
+        String presentationTailCadence() {
+            return PRESENTATION_TAIL_CADENCE_POLICY;
+        }
+
+        int maxPendingContinuityFrames() {
+            return PROJECTION_MAX_PENDING_CONTINUITY_FRAMES;
         }
 
         @Override
@@ -1125,6 +1899,101 @@ final class SmartisaxWebRtcRuntime {
             return capturedFrames;
         }
 
+        long sourceFrames() {
+            return sourceFrames;
+        }
+
+        long droppedFrames() {
+            return droppedFrames;
+        }
+
+        long continuityFrameRequests() {
+            return continuityFrameRequests;
+        }
+
+        long continuityFrameSkips() {
+            return continuityFrameSkips;
+        }
+
+        long continuityFrames() {
+            return continuityFrames;
+        }
+
+        long inputFrameBoostRequests() {
+            return inputFrameBoostRequests;
+        }
+
+        long inputFrameBoostSkips() {
+            return inputFrameBoostSkips;
+        }
+
+        long inputFrameBoostFrames() {
+            return inputFrameBoostFrames;
+        }
+
+        long inputFrameBoostUrgentRequests() {
+            return inputFrameBoostUrgentRequests;
+        }
+
+        long inputFrameBoostUrgentSkips() {
+            return inputFrameBoostUrgentSkips;
+        }
+
+        long inputFrameBoostUrgentFrames() {
+            return inputFrameBoostUrgentFrames;
+        }
+
+        long inputFrameBoostBurstRequests() {
+            return inputFrameBoostBurstRequests;
+        }
+
+        long inputFrameBoostBurstSkips() {
+            return inputFrameBoostBurstSkips;
+        }
+
+        long inputFrameBoostBurstFrames() {
+            return inputFrameBoostBurstFrames;
+        }
+
+        long inputFrameBoostBurstRetries() {
+            return inputFrameBoostBurstRetries;
+        }
+
+        int inputFrameBoostBurstPendingFrames() {
+            return pendingInputFrameBoostBurstFrames;
+        }
+
+        int inputFrameBoostBurstActiveFrames() {
+            return activeInputFrameBoostBurstFrames;
+        }
+
+        int inputFrameBoostBurstMaxFrames() {
+            return PROJECTION_INPUT_BOOST_BURST_MAX_FRAMES;
+        }
+
+        long inputFrameBoostBurstCadenceMs() {
+            return markerTailFrameSpacingMs();
+        }
+
+        String mediaCallbackTailRepair() {
+            return config.mediaCallbackTailRepair ? MEDIA_CALLBACK_TAIL_POLICY : "";
+        }
+
+        long mediaCallbackTailFrameSpacingMs() {
+            if (!config.mediaCallbackTailRepair) {
+                return Math.max(1L, frameIntervalMs);
+            }
+            return Math.max(1L, Math.round(1000.0d / Math.max(1, config.videoFps())));
+        }
+
+        long inputFrameBoostMinIntervalMs() {
+            return inputBoostMinimumFrameSpacingMs();
+        }
+
+        long timestampRewriteFrames() {
+            return timestampRewriteFrames;
+        }
+
         @Override
         public long startedElapsedMs() {
             return startedElapsedMs;
@@ -1133,6 +2002,62 @@ final class SmartisaxWebRtcRuntime {
         @Override
         public long lastFrameElapsedMs() {
             return lastFrameElapsedMs;
+        }
+
+        long lastSourceFrameElapsedMs() {
+            return lastSourceFrameElapsedMs;
+        }
+
+        long lastContinuityFrameRequestElapsedMs() {
+            return lastContinuityFrameRequestElapsedMs;
+        }
+
+        long lastContinuityFrameSkipElapsedMs() {
+            return lastContinuityFrameSkipElapsedMs;
+        }
+
+        long lastContinuityFrameElapsedMs() {
+            return lastContinuityFrameElapsedMs;
+        }
+
+        long lastInputFrameBoostRequestElapsedMs() {
+            return lastInputFrameBoostRequestElapsedMs;
+        }
+
+        long lastInputFrameBoostSkipElapsedMs() {
+            return lastInputFrameBoostSkipElapsedMs;
+        }
+
+        long lastInputFrameBoostElapsedMs() {
+            return lastInputFrameBoostElapsedMs;
+        }
+
+        long lastInputFrameBoostUrgentRequestElapsedMs() {
+            return lastInputFrameBoostUrgentRequestElapsedMs;
+        }
+
+        long lastInputFrameBoostUrgentSkipElapsedMs() {
+            return lastInputFrameBoostUrgentSkipElapsedMs;
+        }
+
+        long lastInputFrameBoostUrgentFrameElapsedMs() {
+            return lastInputFrameBoostUrgentFrameElapsedMs;
+        }
+
+        long lastInputFrameBoostBurstRequestElapsedMs() {
+            return lastInputFrameBoostBurstRequestElapsedMs;
+        }
+
+        long lastInputFrameBoostBurstFrameElapsedMs() {
+            return lastInputFrameBoostBurstFrameElapsedMs;
+        }
+
+        long lastInputFrameBoostBurstRetryElapsedMs() {
+            return lastInputFrameBoostBurstRetryElapsedMs;
+        }
+
+        long lastTimestampRewriteElapsedMs() {
+            return lastTimestampRewriteElapsedMs;
         }
 
         @Override
@@ -1144,26 +2069,69 @@ final class SmartisaxWebRtcRuntime {
         public String fallbackError() {
             return "";
         }
+
+        private long inputBoostMinimumFrameSpacingMs() {
+            return Math.max(1L, frameIntervalMs / PROJECTION_INPUT_BOOST_MIN_INTERVAL_DIVISOR);
+        }
+
+        private long continuityForceFrameMinimumSpacingMs() {
+            long earlyMargin = config.mediaCallbackTailRepair ? 0L : PROJECTION_FORCE_FRAME_EARLY_MARGIN_MS;
+            return Math.max(1L, frameIntervalMs - earlyMargin);
+        }
+
+        private long markerTailFrameSpacingMs() {
+            return mediaCallbackTailFrameSpacingMs();
+        }
     }
 
     private static final class RuntimeConfig {
         final int frameWidthPortrait;
         final int frameWidthLandscape;
         final int fps;
+        final int presentationFps;
+        final int inputRefreshHz;
         final int minBitrateBps;
         final int targetBitrateBps;
         final int maxBitrateBps;
+        final boolean encoderTransportBurstClamped;
+        final boolean mediaCallbackTailRepair;
         final String bitratePolicy;
         final String captureBackend;
 
         RuntimeConfig(int frameWidthPortrait, int frameWidthLandscape, int fps,
+                int presentationFps, int inputRefreshHz,
                 int minBitrateBps, int targetBitrateBps, int maxBitrateBps, String captureBackend) {
             this.frameWidthPortrait = even(clampValue(frameWidthPortrait, MIN_FRAME_WIDTH, MAX_FRAME_WIDTH));
             this.frameWidthLandscape = even(clampValue(frameWidthLandscape, MIN_FRAME_WIDTH, MAX_FRAME_WIDTH));
             this.fps = clampValue(fps, MIN_FRAME_FPS, MAX_FRAME_FPS);
-            this.targetBitrateBps = clampValue(targetBitrateBps, BITRATE_MIN_BPS, BITRATE_MAX_BPS);
+            this.presentationFps = clampValue(
+                    Math.min(presentationFps, PRESENTATION_TRANSPORT_MAX_FPS),
+                    MIN_FRAME_FPS,
+                    PRESENTATION_TRANSPORT_MAX_FPS);
+            this.inputRefreshHz = clampValue(inputRefreshHz, MIN_FRAME_FPS, MAX_FRAME_FPS);
+            boolean transportPaced = isTransportPaced(this.fps, this.presentationFps, this.inputRefreshHz);
+            int target = clampValue(targetBitrateBps, BITRATE_MIN_BPS, BITRATE_MAX_BPS);
             int min = clampValue(minBitrateBps, BITRATE_MIN_BPS, BITRATE_MAX_BPS);
             int max = clampValue(maxBitrateBps, BITRATE_MIN_BPS, BITRATE_MAX_BPS);
+            if (transportPaced) {
+                target = Math.min(target, PACED_90_TARGET_VIDEO_BITRATE_BPS);
+                min = Math.min(min, PACED_90_MIN_VIDEO_BITRATE_BPS);
+                max = Math.min(max, PACED_90_MAX_VIDEO_BITRATE_BPS);
+            }
+            boolean burstClamped = isEncoderTransportBurstClamped(this.frameWidthPortrait, this.fps,
+                    this.presentationFps);
+            if (burstClamped) {
+                target = Math.min(target, ENCODER_BURST_TARGET_VIDEO_BITRATE_BPS);
+                min = Math.min(min, ENCODER_BURST_MIN_VIDEO_BITRATE_BPS);
+                max = Math.min(max, ENCODER_BURST_MAX_VIDEO_BITRATE_BPS);
+            }
+            boolean mediaTailRepair = isMediaCallbackTailRepair(this.frameWidthPortrait, this.fps,
+                    this.presentationFps);
+            if (mediaTailRepair) {
+                target = Math.min(target, RVFC_TAIL_60HZ_TARGET_VIDEO_BITRATE_BPS);
+                max = Math.min(max, RVFC_TAIL_60HZ_MAX_VIDEO_BITRATE_BPS);
+            }
+            this.targetBitrateBps = target;
             if (min > this.targetBitrateBps) {
                 min = this.targetBitrateBps;
             }
@@ -1172,6 +2140,8 @@ final class SmartisaxWebRtcRuntime {
             }
             this.minBitrateBps = min;
             this.maxBitrateBps = max;
+            this.encoderTransportBurstClamped = burstClamped;
+            this.mediaCallbackTailRepair = mediaTailRepair;
             this.bitratePolicy = BITRATE_POLICY;
             this.captureBackend = normalizeCaptureBackend(captureBackend);
         }
@@ -1181,6 +2151,8 @@ final class SmartisaxWebRtcRuntime {
                     DEFAULT_FRAME_WIDTH_PORTRAIT,
                     DEFAULT_FRAME_WIDTH_LANDSCAPE,
                     DEFAULT_FRAME_FPS,
+                    DEFAULT_FRAME_FPS,
+                    DEFAULT_FRAME_FPS,
                     DEFAULT_MIN_VIDEO_BITRATE_BPS,
                     DEFAULT_TARGET_VIDEO_BITRATE_BPS,
                     DEFAULT_MAX_VIDEO_BITRATE_BPS,
@@ -1189,12 +2161,21 @@ final class SmartisaxWebRtcRuntime {
 
         static RuntimeConfig fromJson(JSONObject json, RuntimeConfig fallback) {
             RuntimeConfig base = fallback == null ? defaults() : fallback;
+            int requestedFps = optIntAny(json, base.fps, "fps", "frameFps", "requestedFps");
+            int inputRefreshHz = optIntAny(json,
+                    Math.max(requestedFps, base.inputRefreshHz),
+                    "inputRefreshHz", "refreshHz", "inputHz");
+            int presentationFps = optIntAny(json,
+                    defaultPresentationFps(requestedFps),
+                    "presentationFps", "transportFps", "captureFps", "sendFps");
             int target = optIntAny(json, base.targetBitrateBps,
                     "targetBitrateBps", "targetVideoBitrateBps", "bitrateBps", "bitrate");
             return new RuntimeConfig(
                     optIntAny(json, base.frameWidthPortrait, "frameWidthPortrait", "widthPortrait", "width"),
                     optIntAny(json, base.frameWidthLandscape, "frameWidthLandscape", "widthLandscape"),
-                    optIntAny(json, base.fps, "fps", "frameFps"),
+                    requestedFps,
+                    presentationFps,
+                    inputRefreshHz,
                     optIntAny(json, Math.min(base.minBitrateBps, target), "minBitrateBps", "minVideoBitrateBps"),
                     target,
                     optIntAny(json, Math.max(base.maxBitrateBps, target), "maxBitrateBps", "maxVideoBitrateBps"),
@@ -1207,11 +2188,20 @@ final class SmartisaxWebRtcRuntime {
             json.put("maxFrameWidth", MAX_FRAME_WIDTH);
             json.put("minFps", MIN_FRAME_FPS);
             json.put("maxFps", MAX_FRAME_FPS);
+            json.put("maxPresentationFps", PRESENTATION_TRANSPORT_MAX_FPS);
             json.put("minBitrateBps", BITRATE_MIN_BPS);
             json.put("maxBitrateBps", BITRATE_MAX_BPS);
+            json.put("encoderTransportBurstMinBitrateBps", ENCODER_BURST_MIN_VIDEO_BITRATE_BPS);
+            json.put("encoderTransportBurstTargetBitrateBps", ENCODER_BURST_TARGET_VIDEO_BITRATE_BPS);
+            json.put("encoderTransportBurstMaxBitrateBps", ENCODER_BURST_MAX_VIDEO_BITRATE_BPS);
+            json.put("mediaCallbackTailTargetBitrateBps", RVFC_TAIL_60HZ_TARGET_VIDEO_BITRATE_BPS);
+            json.put("mediaCallbackTailMaxBitrateBps", RVFC_TAIL_60HZ_MAX_VIDEO_BITRATE_BPS);
+            json.put("mediaCallbackTailSenderMaxFramerate", RVFC_TAIL_60HZ_SENDER_MAX_FRAMERATE);
             json.put("maxResolutionLabel", "1080p");
-            json.put("defaultTarget", "1080p60");
-            json.put("minimumTarget", "1080p30");
+            json.put("defaultTarget", "1080p90-input-60fps-presentation");
+            json.put("minimumTarget", "1080p60");
+            json.put("refreshRateProfiles", "1080p60+1080p90");
+            json.put("transportPacing", TRANSPORT_PACING_POLICY);
             JSONArray captureBackends = new JSONArray();
             captureBackends.put(CAPTURE_BACKEND_AUTO);
             captureBackends.put(CAPTURE_BACKEND_PROJECTION);
@@ -1227,6 +2217,10 @@ final class SmartisaxWebRtcRuntime {
             json.put("widthPortrait", frameWidthPortrait);
             json.put("widthLandscape", frameWidthLandscape);
             json.put("fps", fps);
+            json.put("requestedFps", fps);
+            json.put("presentationFps", presentationFps);
+            json.put("transportFps", presentationFps);
+            json.put("inputRefreshHz", inputRefreshHz);
             json.put("minBitrateBps", minBitrateBps);
             json.put("targetBitrateBps", targetBitrateBps);
             json.put("maxBitrateBps", maxBitrateBps);
@@ -1235,10 +2229,46 @@ final class SmartisaxWebRtcRuntime {
             json.put("maxVideoBitrateBps", maxBitrateBps);
             json.put("bitratePolicy", bitratePolicy);
             json.put("captureBackend", captureBackend);
+            json.put("transportPacing", TRANSPORT_PACING_POLICY);
+            json.put("encoderTransportBurstRepair", ENCODER_TRANSPORT_BURST_POLICY);
+            json.put("encoderTransportBurstClamped", encoderTransportBurstClamped);
+            json.put("mediaCallbackTailRepair", mediaCallbackTailRepair);
+            json.put("mediaCallbackTailPolicy", MEDIA_CALLBACK_TAIL_POLICY);
+            json.put("mediaCallbackTailFrameSpacingMs", mediaCallbackTailRepair
+                    ? Math.max(1L, Math.round(1000.0d / Math.max(1, videoFps())))
+                    : Math.max(1L, 1000L / Math.max(1, videoFps())));
+            json.put("senderMinBitrateBps", senderMinBitrateBps());
+            json.put("senderTargetBitrateBps", senderTargetBitrateBps());
+            json.put("senderMaxBitrateBps", senderMaxBitrateBps());
+            json.put("senderMaxFramerate", senderMaxFramerate());
+            json.put("senderDegradationPreference", "MAINTAIN_FRAMERATE");
+            json.put("framePumpStartPolicy", "late-start-after-local-sdp");
+            json.put("presentationTransportPacing", isTransportPaced(fps, presentationFps, inputRefreshHz));
             json.put("runtimeTuning", true);
             json.put("maxFrameWidth", MAX_FRAME_WIDTH);
             json.put("maxFps", MAX_FRAME_FPS);
+            json.put("maxPresentationFps", PRESENTATION_TRANSPORT_MAX_FPS);
             return json;
+        }
+
+        int videoFps() {
+            return presentationFps;
+        }
+
+        int senderMinBitrateBps() {
+            return minBitrateBps;
+        }
+
+        int senderTargetBitrateBps() {
+            return targetBitrateBps;
+        }
+
+        int senderMaxBitrateBps() {
+            return encoderTransportBurstClamped ? targetBitrateBps : maxBitrateBps;
+        }
+
+        int senderMaxFramerate() {
+            return mediaCallbackTailRepair ? RVFC_TAIL_60HZ_SENDER_MAX_FRAMERATE : videoFps();
         }
 
         int targetWidth(Point display) {
@@ -1259,10 +2289,34 @@ final class SmartisaxWebRtcRuntime {
                     && frameWidthPortrait == other.frameWidthPortrait
                     && frameWidthLandscape == other.frameWidthLandscape
                     && fps == other.fps
+                    && presentationFps == other.presentationFps
+                    && inputRefreshHz == other.inputRefreshHz
                     && minBitrateBps == other.minBitrateBps
                     && targetBitrateBps == other.targetBitrateBps
                     && maxBitrateBps == other.maxBitrateBps
+                    && encoderTransportBurstClamped == other.encoderTransportBurstClamped
+                    && mediaCallbackTailRepair == other.mediaCallbackTailRepair
                     && captureBackend.equals(other.captureBackend);
+        }
+
+        private static int defaultPresentationFps(int requestedFps) {
+            return Math.min(
+                    clampValue(requestedFps, MIN_FRAME_FPS, MAX_FRAME_FPS),
+                    PRESENTATION_TRANSPORT_MAX_FPS);
+        }
+
+        private static boolean isTransportPaced(int requestedFps, int presentationFps, int inputRefreshHz) {
+            return requestedFps > presentationFps || inputRefreshHz > presentationFps;
+        }
+
+        private static boolean isEncoderTransportBurstClamped(int widthPortrait, int requestedFps,
+                int presentationFps) {
+            return widthPortrait >= 1080 && requestedFps >= 60 && presentationFps >= 60;
+        }
+
+        private static boolean isMediaCallbackTailRepair(int widthPortrait, int requestedFps,
+                int presentationFps) {
+            return widthPortrait >= 1080 && requestedFps == 60 && presentationFps == 60;
         }
     }
 

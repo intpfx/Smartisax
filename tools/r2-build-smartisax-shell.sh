@@ -33,6 +33,8 @@ CLASSES_JAR="${JAVA_BUILD_DIR}/classes.jar"
 WEBRTC_AAR_DIR="${JAVA_BUILD_DIR}/webrtc-aar"
 WEBRTC_CLASSES_JAR="${WEBRTC_AAR_DIR}/classes.jar"
 WEBRTC_JNI_DIR="${WEBRTC_AAR_DIR}/jni"
+APK_VERSION_NAME="$(sed -n 's/.*android:versionName="\([^"]*\)".*/\1/p' "${SRC_DIR}/AndroidManifest.xml" | head -n 1)"
+APK_VERSION_CODE="$(sed -n 's/.*android:versionCode="\([^"]*\)".*/\1/p' "${SRC_DIR}/AndroidManifest.xml" | head -n 1)"
 
 need_file() {
   [ -f "$1" ] || {
@@ -61,6 +63,14 @@ need_file "$ANDROID_JAR"
 need_file "$WEBRTC_AAR"
 need_file "${SRC_DIR}/AndroidManifest.xml"
 need_file "$TS_ENTRY"
+[ -n "$APK_VERSION_NAME" ] || {
+  echo "missing android:versionName in ${SRC_DIR}/AndroidManifest.xml" >&2
+  exit 1
+}
+[ -n "$APK_VERSION_CODE" ] || {
+  echo "missing android:versionCode in ${SRC_DIR}/AndroidManifest.xml" >&2
+  exit 1
+}
 
 mkdir -p "$OUT_DIR" "${ROOT_DIR}/hard-rom/keys" "$(dirname "$JS_OUT")"
 rm -f "$UNSIGNED_APK" "$ALIGNED_UNSIGNED_APK" "$OUT_APK" "$MANIFEST" "$JS_OUT"
@@ -203,8 +213,8 @@ PY
   echo "aligned_unsigned_apk=${ALIGNED_UNSIGNED_APK}"
   echo "source=${SRC_DIR}"
   echo "package=com.smartisax.browser"
-  echo "versionName=0.6.9"
-  echo "versionCode=26"
+  echo "versionName=${APK_VERSION_NAME}"
+  echo "versionCode=${APK_VERSION_CODE}"
   echo "webrtc_aar=${WEBRTC_AAR}"
   echo "signed_by=${KEYSTORE}"
   echo "built_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"

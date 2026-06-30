@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SPARSE_TOOL="${SPARSE_TOOL:-${ROOT_DIR}/tools/r2-sparse-partition-patch.py}"
+
+SOURCE_SYSTEM_B_DEFAULT="${ROOT_DIR}/hard-rom/build/system-otatrust-v0.portal5p-dual-phase-input-boost.img"
+SOURCE_SYSTEM_B_WORK="${ROOT_DIR}/hard-rom/work/v0.portal5r-refresh-rate-60-90hz/source/system-otatrust-v0.portal5p-dual-phase-input-boost.img"
+SOURCE_SYSTEM_B_EXPECTED_SHA256="354246abbac4ee418b78580ef75682cc9bc089be067c57066a397e602821e58a"
+SOURCE_SPARSE_PATH="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.portal5p-dual-phase-input-boost.sparse.img"
+
+if [ ! -f "$SOURCE_SYSTEM_B_DEFAULT" ]; then
+  mkdir -p "$(dirname "$SOURCE_SYSTEM_B_WORK")"
+  if [ ! -f "$SOURCE_SYSTEM_B_WORK" ]; then
+    "$SPARSE_TOOL" \
+      --source-sparse "$SOURCE_SPARSE_PATH" \
+      --extent "system_b=8306688:6217336" \
+      --extract-image "system_b=${SOURCE_SYSTEM_B_WORK}" >/dev/null
+  fi
+  SOURCE_SYSTEM_B_DEFAULT="$SOURCE_SYSTEM_B_WORK"
+fi
+
+export VARIANT="v0.portal5r-refresh-rate-60-90hz"
+export SOURCE_VARIANT="v0.portal5p-dual-phase-input-boost"
+export SOURCE_SPARSE="${SOURCE_SPARSE:-${SOURCE_SPARSE_PATH}}"
+export SOURCE_SPARSE_SHA256="${SOURCE_SPARSE_SHA256:-4c7d83fbb34a5f9aa76edd65cc5088f9decb190d341f1b14f302f46f86d1c1ef}"
+export SOURCE_SYSTEM_B="${SOURCE_SYSTEM_B:-${SOURCE_SYSTEM_B_DEFAULT}}"
+export SOURCE_SYSTEM_B_SHA256="${SOURCE_SYSTEM_B_SHA256:-${SOURCE_SYSTEM_B_EXPECTED_SHA256}}"
+export WEBRTC_ARM64_SO="${WEBRTC_ARM64_SO:-${ROOT_DIR}/hard-rom/build/apk/SmartisaxShell-java/webrtc-aar/jni/arm64-v8a/libjingle_peerconnection_so.so}"
+export WEBRTC_ARM_SO="${WEBRTC_ARM_SO:-${ROOT_DIR}/hard-rom/build/apk/SmartisaxShell-java/webrtc-aar/jni/armeabi-v7a/libjingle_peerconnection_so.so}"
+export EXPECTED_SERVICES_JAR_SHA256="${EXPECTED_SERVICES_JAR_SHA256:-3c2775dca94a7893901d89e095d2ac1932687e5b92795dc8b4dcb5d72b67f909}"
+export PACKAGE_DIR_MTIME_HEX="${PACKAGE_DIR_MTIME_HEX:-0x6a442000}"
+export PACKAGE_DIR_MTIME_NOTE="${PACKAGE_DIR_MTIME_NOTE:-2026-07-01 02:15:20 +0800; invalidates Smartisax package scan/cache after 60/90Hz Portal refresh-rate repair}"
+export PURPOSE="${PURPOSE:-Move the local-feel target from 30/60Hz to hardware-aligned 60/90Hz while retaining dual-phase input boost and boost-token retain semantics.}"
+export RESULT_NAME="${RESULT_NAME:-PASS_BUILD_V0PORTAL5R_REFRESH_RATE_60_90HZ}"
+
+"${ROOT_DIR}/tools/r2-hardrom-build-v0.portal4c-session-hardening.sh" "$@"

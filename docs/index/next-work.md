@@ -4,24 +4,365 @@ This file was split out of the root `README.md` so active task notes can grow wi
 
 ## Active Work Pointers
 
-The active live ROM line is now
-`v0.portal5j.2-projection-binder-transact`. It is flashed to B slot after
-exact confirmation, boots cleanly, and read-only verifies. It retains `v0.usb2`
-USB/CD-ROM cleanup,
+The active live Portal ROM line is
+`v0.portal6g-rvfc-media-tail`. It was flashed to B slot after exact
+confirmation, boots cleanly, and read-only verifies. The 6g live line retains
+`v0.usb2` USB/CD-ROM cleanup,
 `v0.kg1-smartisax-skip-keyguard` PackageManager/framework behavior,
 `v0.wadb2.2-smartisax-wireless-adb-binder-transact` Smartisax wireless ADB
-control, the v0.portal5j MediaProjection texture probe path, the
-v0.portal4c Portal session hardening, v0.portal5d's Bitmap.copy WebRTC frame
-pump, v0.portal5e's H.264/session cleanup behavior, v0.portal5g's touch overlay
-mapping, v0.portal5h's WebRTC-only UI/default startup/bitrate parameter path,
-v0.portal5i's runtime tuning controls, and Smartisax as
-`/system/priv-app/SmartisaxShell`. Its services.jar policy grants
+control, the v0.portal4c Portal session hardening, the v0.portal5j.2 raw Binder
+MediaProjection token repair, v0.portal5k.1's fresh timestamp
+projection-texture baseline, v0.portal5l's visible touch-to-photon marker and
+down/move/up stream injection, v0.portal5m's predictive marker status plus
+compact `touchMoveBatch` acks, v0.portal5n's latest-frame-only queue collapse
+plus dual move DataChannel, v0.portal5o/v0.portal5p input-frame boosts,
+v0.portal5r/v0.portal5s 60/90Hz event-time input-priority capture,
+v0.portal5u's marker-burst reschedule-until-accepted repair, v0.portal5v's
+receiver presentation cadence, v0.portal5w's quiet presentation surface,
+v0.portal5x's canvas presenter surface, v0.portal5y's presentation/transport
+pacing split, v0.portal5z's video-primary ROI probe, and v0.portal6a marker
+draw-sync boost, plus v0.portal6b's draw-urgent input-frame boost and
+v0.portal6c's real Portal screenBox repair and v0.portal6d's display wake
+guard, v0.portal6e's 1080/60 encoder/transport burst repair, and
+v0.portal6f's presentation-tail cadence repair. It now adds the exact 1080/60
+RVFC/media callback tail branch:
+`1080p60-rvfc-media-callback-tail-dephase+sender-59fps+7mbps-window+full-frame-forceFrame-spacing`.
+The 1080/60 smoke profile explicitly preserves `inputRefreshHz=90`, the
+sender is capped to 59fps, the 1080p60 target/max bitrate window is narrowed
+to 7000000bps, and continuity/marker tail forceFrame cadence is spaced at a
+full media-frame interval. It exposes `mediaCallbackTailRepair`,
+`mediaCallbackTailFrameSpacingMs`, and `senderMaxFramerate` diagnostics.
+Its services.jar policy grants
 `READ_FRAME_BUFFER`, `CAPTURE_VIDEO_OUTPUT`, and `MANAGE_MEDIA_PROJECTION` to
 `com.smartisax.browser`; live read-only verification proves all three are
-`granted=true`. `INJECT_EVENTS` remains ungranted by this policy. The
-Smartisax APK is now v0.6.9/versionCode 26 and uses raw Binder transact calls
-instead of hidden `IMediaProjectionManager$Stub.asInterface(...)` reflection
-for MediaProjection token creation.
+`granted=true`. `WAKE_LOCK` is also granted. `INJECT_EVENTS` remains ungranted
+by this policy.
+
+Smartisax live is v0.6.33/versionCode 50 from
+`/system/priv-app/SmartisaxShell`. Hashes: APK
+`442276dfaf1e70ecf0209818ed61b207bae72194fc490f8c601471b6a43f9f6a`,
+system_b `941c660259f32270eaf4e3a8a5778b8518d4035e0f5efb73a8b704fd7d4b4241`,
+sparse `d3a938546f197e54ea1f7c08bf300b8d61bf91b9c389bca92a9ddfa018a038fb`.
+Build result is `PASS_BUILD_V0PORTAL6G_RVFC_MEDIA_TAIL`; offline result is
+`PASS_OFFLINE_IMAGE_V0PORTAL6G_RVFC_MEDIA_TAIL`; live read-only result is
+`PASS_READ_ONLY_V0PORTAL6G_RVFC_MEDIA_TAIL`; flash result is
+`PASS_FLASH_V0PORTAL6G_RVFC_MEDIA_TAIL`.
+Post-boot checks prove slot `_b`, boot_completed=1, bootanim stopped, verified
+boot orange, root with SELinux Enforcing, Smartisax Shell resumed,
+isKeyguardShowing=false, and the device APK/libwebrtc hashes match the
+candidate. A post-flash display/window probe proves `mWakefulness=Awake`,
+`mDisplayReady=true`, display power `state=ON`, and the ShellActivity window is
+on-screen/visible. Flash/boot/read-only evidence:
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/flash-v0.portal6g-rvfc-media-tail-20260629-203737.txt`,
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/boot-wait-v0.portal6g-rvfc-media-tail-20260629-203737.txt`,
+and
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/verify-v0.portal6g-rvfc-media-tail-device-read-only-20260629-204302.txt`.
+Focus/keyguard and display evidence:
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/post-flash-focus-v0.portal6g-rvfc-media-tail-20260629-203737.txt`
+and
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/display-window-state-after-flash-20260629-204340.txt`.
+
+Fresh-code 6f strict smoke with pairing code `176725` was run through a
+Safari fallback browser wrapper because Google Chrome is not installed at
+`/Applications/Google Chrome.app`. It passed both strict profiles as a real
+Safari visibility/playback/control/T2P gate: 1080/60 selected H264, displayed
+1080x2340, decoded 3855 frames at 59.77fps, packetLossDelta 0, RVFC 55.65fps,
+RVFC gaps over 34ms 18, move-stream PASS, and T2P p50/p95/max
+115.5/116.85/117ms. 1080/90 selected H264, displayed 1080x2340, decoded 3855
+frames at 59.93fps, packetLossDelta 0, RVFC 56.16fps, RVFC gaps over 34ms 10,
+move-stream PASS, and T2P p50/p95/max 128/140.6/142ms. Summary evidence:
+`hard-rom/inspect/v0.portal6f-presentation-tail-cadence/portal-presentation-tail-cadence-smoke-safari-176725/projection-texture-summary.md`.
+This does not close the Chrome-specific presentation-gap comparison; Safari
+reports playoutDelayHint/jitterBufferTarget unsupported, so use a fresh pairing
+code with a supported Chrome/Chromium runner if the next question is Chrome
+RVFC/presentation cadence.
+
+Fresh-code 6f Chrome-side cadence smoke with pairing code `998599` was then run
+through the Codex in-app browser at a temporary 540x1170 viewport. It is
+diagnostic FAIL overall because 1080/60 still misses the RVFC gap gate, but it
+proves the device/input path is no longer the main blocker. 1080/60 selected
+H264, displayed 1080x2340, decoded 3878 frames at 59.76fps, packetLossDelta 0,
+RVFC 51.2fps, RAF 60fps, T2P p50/p95/max 102.95/124.42/126.8ms, and
+move-stream PASS; the single failing gate is RVFC gaps over 34ms = 123 against
+the <=60 requirement. 1080/90 selected H264, displayed 1080x2340, decoded 3874
+frames at 59.93fps, packetLossDelta 0, RVFC 53.79fps, RVFC gaps over 34ms 63,
+T2P p50/p95/max 113.55/129.26/131ms, and PASS. Summary evidence:
+`hard-rom/inspect/v0.portal6f-presentation-tail-cadence/portal-presentation-tail-cadence-smoke-iab-998599/projection-texture-summary.md`.
+Unlike Safari, the in-app browser run applied receiver playoutDelayHint and
+jitterBufferTarget. The next optimization should target RVFC/media callback
+tail clustering and receiver presentation cadence, especially 1080/60
+`frameGapsOver34ms`, rather than adding more input boost.
+
+Fresh-code 6e strict smoke with pairing code `666132` has run and is
+diagnostic FAIL, not accepted. The run proves the 1080/60 packet-loss and
+encoder/transport burst repair direction: 1080/60 packetLossDelta is now 0,
+down from v0.portal6b's 560. The remaining strict blockers are video
+presentation/RVFC cadence and marker-visible T2P tail. Summary evidence:
+`hard-rom/inspect/v0.portal6e-encoder-transport-burst/portal-encoder-transport-burst-smoke-live/projection-texture-summary.md`.
+
+6f build/offline/preflight evidence:
+`hard-rom/inspect/v0.portal6f-presentation-tail-cadence/build-v0.portal6f-presentation-tail-cadence-20260625-190344.txt`,
+`hard-rom/inspect/v0.portal6f-presentation-tail-cadence/verify-v0.portal6f-presentation-tail-cadence-offline-image-20260625-190751.txt`,
+and
+`hard-rom/inspect/v0.portal6f-presentation-tail-cadence/preflight-v0.portal6f-presentation-tail-cadence-20260625-191141.txt`.
+
+6g build/offline/preflight/flash/read-only evidence:
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/build-v0.portal6g-rvfc-media-tail-20260629-202323.txt`,
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/verify-v0.portal6g-rvfc-media-tail-offline-image-20260629-202657.txt`,
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/preflight-v0.portal6g-rvfc-media-tail-20260629-202908.txt`,
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/flash-v0.portal6g-rvfc-media-tail-20260629-203737.txt`,
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/boot-wait-v0.portal6g-rvfc-media-tail-20260629-203737.txt`,
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/verify-v0.portal6g-rvfc-media-tail-device-read-only-20260629-204302.txt`,
+and
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/display-window-state-after-flash-20260629-204340.txt`.
+It updates Smartisax to v0.6.33/versionCode 50, APK hash
+`442276dfaf1e70ecf0209818ed61b207bae72194fc490f8c601471b6a43f9f6a`,
+system_b hash
+`941c660259f32270eaf4e3a8a5778b8518d4035e0f5efb73a8b704fd7d4b4241`,
+and sparse hash
+`d3a938546f197e54ea1f7c08bf300b8d61bf91b9c389bca92a9ddfa018a038fb`.
+It specifically targets Chrome-side/in-app-browser RVFC media callback tail
+cadence by making the 1080/60 smoke profile explicitly preserve
+`inputRefreshHz=90`, de-phasing the exact 1080p60 sender to 59fps, narrowing
+that sender window to 7Mbps, and spacing continuity forceFrame cadence at a
+full media-frame interval. Flash was performed only after the exact
+confirmation phrase `确认刷入 v0.portal6g-rvfc-media-tail B 槽`.
+
+After the confirmed flash and read-only verification, the next gate is the
+strict in-app browser or supported Chrome/Chromium smoke with a fresh pairing
+code:
+`tools/r2-portal6g-rvfc-media-tail-smoke.sh --url http://192.168.31.103:37601 --code <new-code> --chrome <chrome-or-browser-wrapper>`.
+The target remains reducing 1080/60 `frameGapsOver34ms` from 123 to <=60 while
+preserving packetLossDelta 0, T2P p95 around 125ms, and DataChannel ack p95
+around 13ms.
+
+Pairing codes `829543` and `808364` were consumed on 2026-06-30 by attempted
+in-app-browser 6g strict smoke runs. `829543` could not create/attach a receiver
+tab. `808364` used manual-open fallback after the user opened the in-app
+browser, but 1080/60 (`http://127.0.0.1:60826/`) and 1080/90
+(`http://127.0.0.1:60958/`) both timed out after `180000ms` without WebRTC
+answers. Pair/config/probe and runtime config passed, but no decoded frames,
+RVFC, DataChannel ack, or T2P sample was produced. Treat both as
+`CONTROL_FAIL`, not as 6g performance results. Evidence:
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/portal-rvfc-media-tail-smoke-iab-829543/`
+and
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/portal-rvfc-media-tail-smoke-iab-808364/`.
+
+The same already paired Portal tab was then measured directly at
+`http://192.168.31.103:37601/`. That direct-in-Portal diagnostic is valid for
+connectivity, packet loss, RVFC/RAF, and DataChannel input: both profiles
+connected with H264 1080x2340 and packetLossDelta 0; 1080/60 decoded 55.66fps
+with RVFC gaps over 34ms = 61, while 1080/90 decoded 57.36fps with gaps = 83.
+Move acks and touchEnd acks were 8/8 on both profiles, and RAF had 0 gaps over
+34ms. Pixel T2P was disabled because the first marker-pixel probe stalled under
+the in-app-browser automation path, so keep this as diagnostic evidence and
+next build a durable direct-in-Portal harness with non-blocking marker sampling.
+Evidence:
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/portal-direct-in-app-browser-20260630-808364-session/`.
+
+Fresh-code Safari strict smoke with pairing code `223229` consumed the code and
+is diagnostic FAIL overall only because 1080/90 was visibility-contaminated.
+1080/60 is strict Safari PASS: H264 1080x2340, decoded 57.94fps,
+packetLossDelta 0, RVFC 56.18fps, RVFC gaps over 34ms = 6, RAF 60.01fps,
+T2P p50/p95/max 133/149.2/151ms, ping ack p50/p95 9/14ms, move-stream PASS,
+marker draw-sync PASS, inputFrameBoost PASS, urgent PASS, and no hidden/blur
+events. 1080/90 kept packetLossDelta 0, decoded 59.72fps, T2P p95 135.8ms,
+move-stream PASS, and marker/input boost PASS, but the receiver page entered
+hidden/unfocused state around 33s (`blur` about 33315ms and
+`visibilitychange hidden` about 33642ms), after which RVFC fell to 38.93fps and
+gaps rose to 163. Treat 1080/90 as `VISIBILITY_CONTAMINATED`, not as a clean
+6g media-cadence failure. Evidence:
+`hard-rom/inspect/v0.portal6g-rvfc-media-tail/portal-rvfc-media-tail-smoke-safari-223229/projection-texture-summary.md`.
+
+Next Portal work should keep 1080/60 as accepted Safari strict evidence, then
+rerun 1080/90 only with receiver foreground pinning or an explicit visibility
+guard that aborts contaminated samples. In parallel, convert the direct
+`http://192.168.31.103:37601/` Portal path into a strict schema harness so
+paired real-Portal sessions can be measured without the localhost receiver-tab
+attach failure.
+
+6d build/offline evidence:
+`hard-rom/inspect/v0.portal6d-display-wake-guard/build-v0.portal6d-display-wake-guard-20260625-155951.txt`
+and
+`hard-rom/inspect/v0.portal6d-display-wake-guard/verify-v0.portal6d-display-wake-guard-offline-image-20260625-160303.txt`.
+
+The real Portal Chrome visual smoke on the previous v0.portal6c did connect
+and decode H264
+at 1080x2340 with both WebRTC input channels open, and the real screenBox was
+visible and non-collapsed. It still failed because the video pixels were flat
+black. Read-only ADB evidence showed the R2 was asleep
+(`mWakefulness=Asleep`, `mGlobalDisplayState=OFF`) and ADB `screencap` itself
+was black; an ADB wake probe changed the display state to ON and normal Shell UI
+returned. Evidence is in
+`hard-rom/inspect/v0.portal6c-visible-screenbox/portal-real-ui-visual-smoke-live/`.
+
+The fresh-code real Portal visual smoke on live 6d now passes. Evidence:
+`hard-rom/inspect/v0.portal6d-display-wake-guard/portal-real-ui-visual-smoke-live/real-portal-visual-smoke-v0.portal6d-display-wake-guard-20260625-083527.json`
+and
+`hard-rom/inspect/v0.portal6d-display-wake-guard/portal-real-ui-visual-smoke-live/real-portal-visual-smoke-v0.portal6d-display-wake-guard-20260625-083527.png`.
+It proves pairState `paired`, H264 answer applied, video `1080x2340`,
+readyState `4`, screenBox `1170px contain=layout paint aspect=1080 / 2340`,
+pixelRange `233.33`, pixelBuckets `89`, and both input DataChannels open.
+Post-smoke display evidence is
+`hard-rom/inspect/v0.portal6d-display-wake-guard/display-wake-state-after-real-portal-smoke-20260625-083527.txt`;
+it proves `mWakefulness=Awake`, `mGlobalDisplayState=ON`, built-in display
+`state ON`, and `SmartisaxWebRtcProjection` virtual display `state ON`.
+
+v0.portal6e-encoder-transport-burst is the previous live flashed/read-only line
+for the first returned performance gate. It starts from live/read-only 6d,
+updates Smartisax to v0.6.31/versionCode 48, clamps the 1080p60/90 WebRTC
+sender bitrate window, sets sender degradation preference to maintain
+framerate, and late-starts the projection frame pump after local SDP. Build,
+offline-image verifier, read-only live preflight, flash, and read-only device
+verifier all pass. Evidence:
+`hard-rom/inspect/v0.portal6e-encoder-transport-burst/build-v0.portal6e-encoder-transport-burst-20260625-165309.txt`,
+`hard-rom/inspect/v0.portal6e-encoder-transport-burst/verify-v0.portal6e-encoder-transport-burst-offline-image-20260625-170017.txt`,
+`hard-rom/inspect/v0.portal6e-encoder-transport-burst/preflight-v0.portal6e-encoder-transport-burst-20260625-170235.txt`,
+`hard-rom/inspect/v0.portal6e-encoder-transport-burst/flash-v0.portal6e-encoder-transport-burst-20260625-171510.txt`,
+and
+`hard-rom/inspect/v0.portal6e-encoder-transport-burst/verify-v0.portal6e-encoder-transport-burst-device-read-only-20260625-172037.txt`.
+Hashes: APK
+`90421ef5613f5dafa5491735848ebe6588e2fe5d95ffb79929bfe00329a921ef`,
+system_b `04cfe9746848f5daee752a13efb18ba3cb938d8c7969d5b48333c965f319a6b7`,
+sparse `5c1a6d9885dcdff1f9ee0b7277419dc2280b4320cfe3551bd68e901eb4663f83`.
+Strict smoke result with code `666132`: diagnostic FAIL. 1080/60 used H264
+1080x2340, frame pump 1080x2340@60, packetLossDelta 0 PASS, but decoded at
+54.54fps, RVFC 41.92fps, had 158 RVFC gaps over 34ms, and T2P p50/p95
+347.5/471.07ms. 1080/90 used H264 1080x2340, requested 90Hz input with 60fps
+video transport, decoded at 59.14fps PASS, T2P p50/p95 138.55/163.98ms PASS,
+but packetLossDelta was 2 and RVFC stayed at 47.7fps with 126 gaps over 34ms.
+It led directly to the current live 6f RVFC/presentation-cadence and 1080/60
+marker-visible T2P-tail candidate; the next proof is the 6f strict smoke with
+a fresh pairing code.
+
+Previous v0.portal6a evidence remains:
+`hard-rom/inspect/v0.portal6a-marker-draw-sync/flash-v0.portal6a-marker-draw-sync-20260625-013740.txt`,
+`hard-rom/inspect/v0.portal6a-marker-draw-sync/boot-wait-v0.portal6a-marker-draw-sync-20260625-013740.txt`,
+`hard-rom/inspect/v0.portal6a-marker-draw-sync/verify-v0.portal6a-marker-draw-sync-device-read-only-20260625-014307.txt`,
+`hard-rom/inspect/v0.portal6a-marker-draw-sync/build-v0.portal6a-marker-draw-sync-20260625-011529.txt`,
+and
+`hard-rom/inspect/v0.portal6a-marker-draw-sync/verify-v0.portal6a-marker-draw-sync-offline-image-20260625-012011.txt`.
+
+v0.portal6b strict smoke remains the performance diagnostic boundary and is not
+accepted:
+`hard-rom/inspect/v0.portal6b-draw-urgent-boost/portal-draw-urgent-boost-smoke-live/projection-texture-summary.md`.
+Both profiles connected with H264, projection-texture 1080x2340, input PASS,
+move-stream PASS, marker draw-sync PASS, and draw-urgent counters PASS.
+1080/60 decoded 3602 frames at 55.03fps but failed RVFC 43.78fps,
+packet-loss delta 560, 127 RVFC gaps over 34ms, and T2P p50/p95
+189.8/197.99ms. 1080/90 decoded 3872 frames at 59.64fps with packet-loss delta
+0 and RVFC 50.39fps, but failed 102 RVFC gaps over 34ms and T2P p50/p95
+183.75/186.86ms. The draw-urgent mechanism is proven by counters:
+1080/60 had urgent requests/frames 4/4 and 1080/90 had 4/4. Next proof should
+repair 1080/60 packet loss and encoder/transport burst first, then reduce RVFC
+gap cadence and marker-visible T2P tail rather than adding more input boosts.
+
+v0.portal5z strict smoke comparison evidence is in
+`hard-rom/inspect/v0.portal5z-video-primary-roi-probe/portal-video-primary-roi-probe-smoke-live/projection-texture-summary.md`.
+
+v0.portal5z strict smoke is diagnostic FAIL, not accepted. Both profiles
+connected with H264, projection-texture 1080x2340, input PASS, move-stream PASS,
+and input-frame-boost PASS. The original 5z smoke showed 1080/60 decoding
+59.3fps but RVFC at 31.41fps, packet-loss delta 4, 95 RVFC gaps over 34ms, and
+T2P p50/p95 153.9/192.96ms; 1080/90 decoded 59.38fps with packet-loss delta 0
+and RAF 59.99fps, but RVFC was 49.09fps, RVFC gaps over 34ms were 111, and T2P
+p50/p95 was 357.7/401.98ms. After adding Chrome anti-throttle launch flags,
+fixed window sizing, compact summary output, and page lifecycle/RVFC/RAF
+timeline fields, a no-flash rerun against current 5z kept packet-loss delta 0
+on both profiles and RAF near 60fps. It moved 1080/60 to decoded 59.76fps,
+RVFC 49.79fps, 79 RVFC gaps over 34ms, ping p50/p95 16.6/95.31ms, and T2P
+p50/p95 409.25/591.54ms; 1080/90 reached decoded 60.03fps, RVFC 48.38fps,
+146 RVFC gaps over 34ms, ping p50/p95 14.95/95.55ms, and T2P p50/p95
+189.1/214.03ms. `document.hidden` stayed false and RAF stayed clean, so treat
+the original 22s-class presentation gap as host-window/background noise, but
+continue treating video RVFC cadence and marker-visible tail latency as the real
+remaining blocker. The smoke harness now also tries to foreground Chrome after
+launch; that foreground path still needs a fresh pairing code or explicit Portal
+restart before it can be validated.
+
+v0.portal5y strict smoke is the previous diagnostic FAIL boundary, not accepted,
+but it moved the
+transport boundary. Both 1080/60 and 1080/90 connected with H264,
+projection-texture 1080x2340, input PASS, move-stream PASS,
+input-frame-boost PASS, and packet-loss delta 0. 1080/60 decoded 60.04fps with
+RVFC 43.5fps, 21 RVFC gaps over 34ms, RAF 60fps, canvas draw 59.95fps, ping
+ack p50/p95 15.8/101.39ms, and T2P p50/p95 205.35/253.82ms. 1080/90 decoded
+55.14fps with RVFC 31.45fps, 91 RVFC gaps over 34ms, max frame delta
+14016.7ms, 133 dropped frames, 15 freezes, 7080ms freeze time, ping ack
+p50/p95 16.65/97.78ms, and T2P p50/p95 175.15/176.99ms. Treat this as proof
+that 90Hz input plus 60fps transport removes packet loss, while the remaining
+repair path is the 5z video-primary ROI probe: reduce Chrome/smoke-page
+observation overhead first, then measure whether real presentation/main-thread
+freeze, RVFC/media-change cadence, and T2P tail latency move.
+
+v0.portal5o strict-smoke follow-up was diagnostic rather than fully accepted.
+The full 1080/30 plus 1080/60 run failed: the 1080/30 profile had no
+touch-to-photon detections and no move events in that sequence, while 1080/60
+then saw RVFC below gate and packet-loss delta 4. Clean single-profile reruns
+show the important split. 1080/60 passes and is the best measured latency point
+so far: H264 1080x2340, decoded fps 60.2, RVFC 54.2fps, packet-loss delta 0,
+gaps over 34ms 56, move-stream 30/30, `inputFrameBoostRequests=14`,
+`inputFrameBoostFrames=14`, and touch-to-photon p50/p95 133.25/138.51ms. The
+1080/30 single-profile rerun keeps decoded fps 29.84, RVFC 27.76fps,
+packet-loss delta 0, move-stream 30/30, and input boost proof, but fails the
+strict gates with 911 gaps over 34ms and touch-to-photon p50/p95
+181.85/205.66ms. Treat this as proof that the 5o boost helps, especially at
+60Hz cadence, but that 30fps still loses about one frame of input-to-capture
+budget.
+
+The strict v0.portal5n latency-budget smoke passes both profiles with
+`smartisax-input-move` open. 1080/30 projection-texture H264 decodes 1989
+frames at 29.85fps with packet-loss delta 0, RVFC 23.99fps, 273 gaps over 34ms,
+move events 30/30, ping ack p50/p95 18.05/144.41ms, and touch-to-photon
+p50/p95 221.7/221.7ms from 1/2 detections. 1080/60 decodes 3875 frames at
+59.33fps with packet-loss delta 2, RVFC 45.23fps, 46 gaps over 34ms, 34 gaps
+over 50ms, move events 30/30, ping ack p50/p95 16.05/91.73ms, and
+touch-to-photon p50/p95 205.85/208.6ms. Compared with v0.portal5m, 1080/60 gap
+count and ping p95 improved, but T2P regressed from 154.45/158.1ms and RVFC got
+worse, so queue collapse alone is not accepted as the final latency repair.
+
+v0.portal5s strict smoke is diagnostic, not accepted. The full 1080/60 plus
+1080/90 run connected both profiles with H264, packet-loss delta 0,
+move-stream PASS, and input-frame-boost PASS. 1080/60 decoded 3944 frames at
+60.01fps with 19 input boost frames and T2P p50/p95 160.1/165.86ms, but failed
+RVFC 44.46fps, 117 gaps over 34ms, and the strict 165ms T2P p95 gate. 1080/90
+decoded 5568 frames at 85.14fps with 18 input boost frames and only 33 gaps
+over 34ms, but failed RVFC 31.62fps and T2P p50/p95 213.6/298.92ms. A clean
+single-profile 1080/60 rerun still failed: decoded 3947 frames at 60.13fps,
+packet-loss delta 0, 34 gaps over 34ms, move-stream PASS, and 21 input boost
+frames, but RVFC was 47.98fps and touch-to-photon p50/p95 regressed to
+266.85/370.85ms. Treat 5s as a live/read-only proven experiment that exposes
+the next bottleneck rather than the new latency winner.
+
+v0.portal5w-quiet-presentation is the previous live Portal gate. Its strict
+smoke was diagnostic FAIL, not accepted, but it usefully isolated the video
+presentation/RVFC path: both 1080/60 and 1080/90 connected with H264,
+packet-loss delta 0, move-stream PASS, input-frame-boost PASS, and RAF near
+59.9fps, while RVFC/media cadence and marker latency still missed gates.
+
+v0.portal5x-presenter-mode is the previous live Portal gate, flashed to B slot,
+read-only verified, strict-smoked after exact confirmation, and then
+superseded by v0.portal5y. Strict smoke is
+diagnostic FAIL, not accepted, but it moved the latency boundary. Both 1080/60
+and 1080/90 connected with H264, move-stream PASS, input-frame-boost PASS, and
+RAF/canvas draw near 60fps. 1080/60 decoded 59.8fps with packet-loss delta 0,
+RVFC 42.26fps, 167 RVFC gaps over 34ms, canvas gaps over 34ms = 1, and T2P
+p50/p95 144.1/173.08ms. 1080/90 decoded 86.64fps but had packet-loss delta
+176, RVFC 35.05fps, 310 RVFC gaps over 34ms, canvas gaps over 34ms = 0, and
+T2P p50/p95 140.45/143.65ms. Treat this as proof that the visible
+canvas-presenter feedback path is much healthier, while the remaining repair
+then needed video RVFC/media-change cadence, encoder/transport pacing, and the
+fact that the 90fps encoder path still sits on a VirtualDisplay supported mode
+reported as `fps=60.0`. v0.portal5y now proves the transport pacing half can
+remove packet loss, leaving Chrome presentation/RVFC freeze as the sharper
+boundary. For interactive testing, keep H264 as the measured low-latency
+default; AV1 remains an explicit experiment, VP9 is too slow, and H265 should
+not be preferred until the browser decode path produces frames.
+v0.portal5o's clean 1080/60 result remains the latency target to beat: 60.2fps
+decoded, RVFC 54.2fps, packet-loss delta 0, gaps over 34ms 56, and T2P
+p50/p95 133.25/138.51ms. v0.portal5z has now tested the video-primary ROI probe
+against that target and did not beat it; continue with video presentation/RVFC
+cadence and marker-visible tail repair.
 
 The previous fully Portal-smoke-proven v0.portal5h hashes are: APK
 `d434f4d7ca4a1c3625d27c8788781018b6e349458f4f7eab81a5869b0c999308`,
@@ -36,7 +377,7 @@ ping/tap/swipe acks, and `bitrateApplied=true`. Logcat proves the encoder
 accepted explicit bitrate configuration but chose the min value:
 `bitrate=600000`.
 
-The current live v0.portal5i line is built, offline-verified, live-preflighted,
+The previous live v0.portal5i line is built, offline-verified, live-preflighted,
 flashed, booted, and read-only verified. It updates Smartisax to
 v0.6.7/versionCode 24, keeps the v0.portal5h stable defaults, adds the
 token-gated `/api/webrtc/config` runtime config endpoint, and exposes browser
@@ -58,7 +399,7 @@ three profiles use H.264 WebRTC and pass `smartisax-input` DataChannel
 ping/tap/swipe acks. The device was restored to Stable config and
 activeSessions=0 afterward.
 
-The currently flashed v0.portal5j line updates Smartisax to
+The previous v0.portal5j line updates Smartisax to
 v0.6.8/versionCode 25, adds a MediaProjection + VirtualDisplay + WebRTC
 SurfaceTextureHelper capture backend, raises runtime tuning maxFps to 60, adds
 token-gated `/api/webrtc/capture/probe`, and adds
@@ -73,7 +414,7 @@ read-only result is a focused failure because the framework does not grant
 `MANAGE_MEDIA_PROJECTION`/`CAPTURE_VIDEO_OUTPUT` to Smartisax without a
 services.jar signature-permission policy.
 
-The current live candidate `v0.portal5j.1-projection-permission-grant` keeps the
+The previous live candidate `v0.portal5j.1-projection-permission-grant` keeps the
 Smartisax v0.6.8 APK unchanged and replaces only services.jar with a narrow
 `SmartisaxPackagePolicy.shouldGrantSignaturePermission(...)` policy for
 `com.smartisax.browser`: `READ_FRAME_BUFFER`, `CAPTURE_VIDEO_OUTPUT`, and
@@ -154,14 +495,78 @@ device session reports 27 captured frames. In both cases frame counters stop
 after the initial burst, so the next step is not another profile run; it is a
 frame-pump continuity repair.
 
-Next, inspect and patch the
-MediaProjection/VirtualDisplay/SurfaceTextureHelper -> WebRTC encoder surface
-path so `projection-texture` keeps producing frames after startup. Prioritize
-listener/thread ownership, VirtualDisplay lifecycle, requested fps versus
-Smartisan/TNT virtual-display behavior, and the hardware encoder metadata-mode
-fallback. Keep HTTP `/api/input` removed; use ADB for emergency debug/control.
-After the repair, rerun 1080/30 first, then 1080/60, then `projection-auto`
-fallback/regression.
+The v0.portal5k frame-pump continuity repair is now live-flashed and read-only
+verified. It starts from v0.portal5j.2, updates Smartisax to
+v0.6.10/versionCode 27, keeps the raw Binder MediaProjection token route and
+services.jar policy, and uses `SurfaceTextureHelper.forceFrame()` on the helper
+handler to keep `projection-texture` feeding WebRTC after the initial
+VirtualDisplay burst. Hashes: APK
+`4181d040b473a83c12a2be25d07a706e29c5b0e0749487dfd1c9ef13c4c7f619`, system_b
+`57302f32c4ccd0f9c1ee9a18791761261d775ef2ac542928871c35236b511958`, sparse
+`cc9f9921c510ce471d46a24ac786684b03b7e5bb5cf2d801865bd4d3f8dfe14a`. Build
+result is `PASS_BUILD_V0PORTAL5K_FRAME_PUMP_CONTINUITY`; offline result is
+`PASS_OFFLINE_IMAGE_V0PORTAL5K_FRAME_PUMP_CONTINUITY`; live read-only result is
+`PASS_READ_ONLY_V0PORTAL5K_FRAME_PUMP_CONTINUITY`. The 1080/30 smoke proves
+H.264 connection, 1080x2340 browser video, zero packet-loss delta, and
+DataChannel tap/swipe, but browser decode stalls at 26 frames while device-side
+`capturedFrames=638`, `sourceFrames=718`, and `continuityFrames=633` continue.
+1080/60 was intentionally not run after 1080/30 failed.
+
+The previous live Portal performance baseline is
+`v0.portal5k.1-frame-timestamp-retain`. It
+updates Smartisax to v0.6.11/versionCode 28 and wraps each retained texture
+frame with a fresh `System.nanoTime()` timestamp before handing it to WebRTC,
+while preserving v0.portal5k's `forceFrame()` cadence. Hashes: APK
+`d99026b525f57daa9b7a85ebdca8752e9d2312d11ca485055cec2ec258d0fc35`, system_b
+`e1d3dddd36dceea72d2cacc0df2d58ed91669f8680f6738f7b8e4b957c481174`, sparse
+`e60e756bc805190ea7e43244fac6c5701be2b4bf0891f3e90d20ac20b524d451`. Build
+result is `PASS_BUILD_V0PORTAL5K1_FRAME_TIMESTAMP_RETAIN`; offline result is
+`PASS_OFFLINE_IMAGE_V0PORTAL5K1_FRAME_TIMESTAMP_RETAIN`; live read-only result
+is `PASS_READ_ONLY_V0PORTAL5K1_FRAME_TIMESTAMP_RETAIN`; smoke evidence proves
+1080/30 and 1080/60 `projection-texture` with H.264, 1080x2340, zero
+packet-loss delta, fresh timestamp rewrite counters, and `smartisax-input`
+tap/swipe. A no-flash 1080/60 latency/input baseline has also passed with
+decoded fps 59.99, packet-loss delta 0, DataChannel ping ack p50 15.25ms/p95
+71.09ms, tap ack 80.8ms, and swipe ack 21.1ms. The bottleneck to investigate
+next is presentation/control feel rather than source frame continuity: RVFC
+callback fps was 39.67, frame interval p95 was 49.72ms, and the run recorded
+135 gaps over 34ms. Next Portal work is true touch-to-photon marker evidence,
+move-stream reverse-control refresh, Chrome presentation-gap investigation,
+`projection-auto` fallback/regression, longer-duration stability, default
+profile/autostart policy, file APIs, and UI polish. Keep HTTP `/api/input`
+removed; use ADB for emergency debug/control.
+
+The previous smoke-proven Portal line `v0.portal5l-touch-photon-move-stream` is built,
+offline-verified, live-preflighted, flashed, booted, read-only verified, and
+1080/60 touch-to-photon/move-stream smoke verified.
+It starts from v0.portal5k.1, updates Smartisax to v0.6.12/versionCode 29, adds a
+device-side visible touch-to-photon marker overlay, reports marker region/color
+metadata through DataChannel acks/status, and upgrades reverse control from
+legacy tap/swipe gestures to `touchStart`/`touchMove`/`touchEnd` down/move/up
+stream injection. Hashes: APK
+`c7f4487f4bfa2a1b06cc0be4ffeeb81b418b1b9a248200a20849c503b8f1301a`, system_b
+`0f8398b5fa42409e104979b8ee37baefe2ba6316ad98283bc6ed763f1b849877`, sparse
+`680a8c78299706996a4a96ada98e4c24606d76df94e4683fadeb9ec8780886c9`. Build
+result is `PASS_BUILD_V0PORTAL5L_TOUCH_PHOTON_MOVE_STREAM`; offline result is
+`PASS_OFFLINE_IMAGE_V0PORTAL5L_TOUCH_PHOTON_MOVE_STREAM`; live read-only result
+is `PASS_READ_ONLY_V0PORTAL5L_TOUCH_PHOTON_MOVE_STREAM`; smoke result is PASS.
+The flash wrote sparse super chunks 1/9 through 9/9, erased `misc`, rebooted,
+and reached `sys.boot_completed=1` on `_b`. The smoke reports H.264 1080x2340,
+3922 decoded frames, estimated 60.05fps, packet-loss delta 0, 4188 source
+frames, 4075 continuity frames, 4085 captured frames, 103 dropped frames,
+30/30 move acks, down/up PASS, and touch-to-photon marker detection 2/2 with
+p50 202.85ms, p95 286.59ms, and max 295.9ms.
+
+The previous smoke-proven Portal line `v0.portal5m-latency-follow-rate` is
+latency/follow-rate smoke-proven. Build result:
+`PASS_BUILD_V0PORTAL5M_LATENCY_FOLLOW_RATE`; offline result:
+`PASS_OFFLINE_IMAGE_V0PORTAL5M_LATENCY_FOLLOW_RATE`; live read-only result:
+`PASS_READ_ONLY_V0PORTAL5M_LATENCY_FOLLOW_RATE`; smoke result: PASS. It was
+flashed to B slot after exact confirmation, wrote sparse super chunks 1/9
+through 9/9, erased `misc`, rebooted, and verified boot/package/keyguard/focus
+state. Its 1080/30 smoke holds 29.81fps with T2P p95 193.03ms; its 1080/60
+smoke holds 59.94fps with T2P p95 158.1ms, ping ack p95 97.04ms, RVFC
+52.28fps, and move events 30/30 through batched move acks.
 
 The current live v0.portal4b hashes are: APK
 `81470570b23022d30893cb2b4a9b592158c7b94f9fbd056aae806a74b30d84f9`,
@@ -193,9 +598,12 @@ control smoke, and an interactive scrcpy window opens with Metal renderer and
 `tools/r2-mirror.sh record <output.mp4> [seconds] [usb|wireless|auto]`.
 The script also has `tools/r2-mirror.sh connect-wireless` to reconnect the
 known Smartisax wireless ADB endpoint when it is already enabled on the phone.
-Next Portal step is to repair projection-texture frame continuity. Treat
-v0.portal5i Stable as the rollback runtime config until the new route can
-sustain at least 1080/30, with 1080/60 as the desired default profile.
+Next Portal step is a v0.portal5s-based repair for Chrome presentation/RVFC
+gaps and marker touchEnd tail latency. After building the next candidate, run
+read-only verification plus 1080/60 and 1080/90 event-time/input-priority
+smoke.
+Treat v0.portal5o as the current measured 1080/60 latency comparison line, and
+v0.portal5k.1 as the pre-marker continuity baseline.
 Persistent Portal autostart, file APIs, broader UI polish, optional
 `v0.mirror1-mac-wrapper`, and TNT/Desktop-mode audit remain separate lines.
 
