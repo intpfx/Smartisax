@@ -194,6 +194,14 @@ Variants:
   v0.portal6e-encoder-transport-burst v0.portal6d follow-up clamping 1080p60/90 sender bitrate bursts and late-starting the frame pump after local SDP
   v0.portal6f-presentation-tail-cadence v0.portal6e follow-up repairing RVFC/presentation cadence and 1080/60 marker-visible touch-to-photon tail
   v0.portal6g-rvfc-media-tail v0.portal6f follow-up reducing 1080/60 RVFC/media callback tail clustering with sender dephase and full-frame continuity spacing
+  v0.agent0-vision-loop on-device Smartisax Agent MVP with MiMo vision-first planner and DeepSeek text fallback on top of v0.portal6g
+  v0.agent0.4-home-onestep-settings-guard v0.agent0.3 follow-up teaching Settings-open goals to use One Step from SmartisaxShell instead of repeated HOME
+  v0.agent0.5-reobserve-on-screen-change v0.agent0.4 follow-up moving stale-coordinate recovery into runtime material screen-change reobserve/replan guards
+  v0.agent0.6-accessibility-tree v0.agent0.5 follow-up adding compact Accessibility tree observations and a narrow click_node action
+  v0.agent0.7-window-preflight v0.agent0.6 follow-up collecting active plus interactive-window Accessibility roots and surfacing provider network/timeout failures
+  v0.agent0.8-onestep-a11y-nodes v0.agent0.7 follow-up adding One Step visible-state recovery and dynamic Sidebar app-strip Accessibility nodes
+  v0.agent0.9-worker-a11y-targets v0.agent0.8 follow-up reconciling dead Agent workers and surfacing One Step/Settings Accessibility target counts
+  v0.agent0.10-finish-target-verify v0.agent0.9 follow-up allowing Settings-open goals to finish when foreground/accessibility confirms Settings is visible
   v0.24-cleaner-apk-only-locale-prune latest eleven APK-only language-prune candidate
   v0.25-settings-noop-on-v0.24  SettingsSmartisan no-op gate rebased on live-verified v0.24
   systemui-certprobe-noop-on-v0.24 SmartisanSystemUI no-op gate rebased on live-verified v0.24
@@ -1280,6 +1288,138 @@ case "$variant" in
     report_required_regex_extra2='system_b[[:space:]]+image=941c660259f32270eaf4e3a8a5778b8518d4035e0f5efb73a8b704fd7d4b4241[[:space:]]+sparse_slice=941c660259f32270eaf4e3a8a5778b8518d4035e0f5efb73a8b704fd7d4b4241'
     live_verify="tools/r2-verify-v0.portal6g-rvfc-media-tail.sh --read-only"
     gate_note="Smartisax v0.6.33/versionCode 50 on top of live/read-only v0.portal6f; keeps 1080/60 plus 1080/90 strict targets and specifically reduces 1080/60 RVFC/media callback tail clustering by making 60fps smoke preserve 90Hz input semantics, de-phasing the 1080p60 sender to 59fps, narrowing the 60Hz sender window to 7Mbps, and spacing continuity forceFrame cadence at a full media-frame interval."
+    ;;
+  v0.agent0|v0.agent0-vision-loop)
+    variant="v0.agent0-vision-loop"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.agent0-vision-loop.sparse.img"
+    image_hash="c4b757bf09edd043c932f76e978aeefe1a426bf57e5c4f8f078084a60dcdbb3f"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.agent0-vision-loop.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.agent0-vision-loop"
+    report_pattern="verify-v0.agent0-vision-loop-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0AGENT0_VISION_LOOP'
+    report_required_regex_extra='PASS_AGENT0_OFFLINE_TESTS|agent0_extra_offline_checks=ok|/api/agent/status|mimo-v2.5|deepseek-v4-flash'
+    live_verify="tools/r2-verify-v0.agent0-vision-loop.sh --read-only"
+    gate_note="Smartisax v0.7.0/versionCode 51 on top of live/read-only v0.portal6g; adds a local Shell-started on-device Agent runtime with MiMo V2.5 vision-first planner, DeepSeek text fallback, mock provider, JPEG/Base64 screen observation, and narrow tap/swipe/BACK/HOME/wait/finish/ask_user action surface. No remote HTTP Agent start/control; /api/input remains absent."
+    ;;
+  v0.agent0.1|v0.agent0.1-vision-guard)
+    variant="v0.agent0.1-vision-guard"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.agent0.1-vision-guard.sparse.img"
+    image_hash="4456d0b9e3d2b05a05bebfca08424a4ee4dd5f61d3240a83a93b2a7dfb9b6458"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.agent0.1-vision-guard.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.agent0.1-vision-guard"
+    report_pattern="verify-v0.agent0.1-vision-guard-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0AGENT01_VISION_GUARD'
+    report_required_regex_extra='PASS_AGENT0_OFFLINE_TESTS|agent01_extra_offline_checks=ok|postActionCheck|coordinate_edge_guard|finish_requires_verified_screen_change|repeated_tap_no_screen_change'
+    live_verify="tools/r2-verify-v0.agent0.1-vision-guard.sh --read-only"
+    gate_note="Smartisax v0.7.1/versionCode 52 on top of live/read-only v0.agent0; repairs the on-device Agent with post-action observation checks, finish gating after UI actions, coordinate edge guard, repeated no-change tap pause, screenshot fingerprints, and visible step transcript output while preserving the narrow action surface and no remote HTTP Agent start/control."
+    ;;
+  v0.agent0.2|v0.agent0.2-one-step)
+    variant="v0.agent0.2-one-step"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.agent0.2-one-step.sparse.img"
+    image_hash="b30c3d6a1ed6ba0c9f31ae722b77c869810be734f73db8131d3b6f5e63efc2a9"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.agent0.2-one-step.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.agent0.2-one-step"
+    report_pattern="verify-v0.agent0.2-one-step-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0AGENT02_ONE_STEP'
+    report_required_regex_extra='PASS_AGENT0_OFFLINE_TESTS|agent02_extra_offline_checks=ok|one_step|side_bar_zoom_type|IWindowManager.transact\(2001\)|right_edge_swipe|back_key'
+    live_verify="tools/r2-verify-v0.agent0.2-one-step.sh --read-only"
+    gate_note="Smartisax v0.7.2/versionCode 53 on top of live/read-only v0.agent0.1; teaches the on-device Agent a narrow one_step enter/exit action for Smartisan One Step mode, using programmatic WindowManager transact first and touch/key fallback second, while preserving post-action observation guards and no remote HTTP Agent start/control."
+    ;;
+  v0.agent0.3|v0.agent0.3-one-step-bind-wait)
+    variant="v0.agent0.3-one-step-bind-wait"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.agent0.3-one-step-bind-wait.sparse.img"
+    image_hash="afc2d90ceee5e59036c4f9dd4ae7e4096dd1284f5614f4e6afa5c7ad3c8ae056"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.agent0.3-one-step-bind-wait.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.agent0.3-one-step-bind-wait"
+    report_pattern="verify-v0.agent0.3-one-step-bind-wait-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0AGENT03_ONE_STEP_BIND_WAIT'
+    report_required_regex_extra='PASS_AGENT0_OFFLINE_TESTS|agent03_extra_offline_checks=ok|PROGRAMMATIC_WAIT_MS|programmaticRetry|one_step_state_guard|one_step_enter_not_visible'
+    live_verify="tools/r2-verify-v0.agent0.3-one-step-bind-wait.sh --read-only"
+    gate_note="Smartisax v0.7.3/versionCode 54 on top of live/read-only v0.agent0.2; repairs One Step Agent execution by waiting for async SidebarService binding after IWindowManager.transact(2001), retrying once, and pausing immediately if enter/exit does not reach the requested visible state."
+    ;;
+  v0.agent0.4|v0.agent0.4-home-onestep-settings-guard)
+    variant="v0.agent0.4-home-onestep-settings-guard"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.agent0.4-home-onestep-settings-guard.sparse.img"
+    image_hash="c3aa40da9294a3db7e28aa81e91bfd244b717d11a0c96fd71b1b1b28d2107fc5"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.agent0.4-home-onestep-settings-guard.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.agent0.4-home-onestep-settings-guard"
+    report_pattern="verify-v0.agent0.4-home-onestep-settings-guard-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0AGENT04_HOME_ONESTEP_SETTINGS_GUARD'
+    report_required_regex_extra='PASS_AGENT0_OFFLINE_TESTS|agent04_extra_offline_checks=ok|repeated_key_no_screen_change|foreground\.isSmartisaxShell|gear-shaped Settings icon'
+    live_verify="tools/r2-verify-v0.agent0.4-home-onestep-settings-guard.sh --read-only"
+    gate_note="Smartisax v0.7.4/versionCode 55 on top of live/read-only v0.agent0.3; fixes Settings-open planning from SmartisaxShell by avoiding repeated HOME loops and routing Settings through One Step's top app strip, while adding a repeated key no-screen-change guard and preserving no remote HTTP Agent start/control."
+    ;;
+  v0.agent0.5|v0.agent0.5-reobserve-on-screen-change)
+    variant="v0.agent0.5-reobserve-on-screen-change"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.agent0.5-reobserve-on-screen-change.sparse.img"
+    image_hash="09c157326d12dd95b5b0aaaa7783daebb0292e46cd1fb064923cd33654f17f47"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.agent0.5-reobserve-on-screen-change.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change"
+    report_pattern="verify-v0.agent0.5-reobserve-on-screen-change-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0AGENT05_REOBSERVE_ON_SCREEN_CHANGE'
+    report_required_regex_extra='PASS_AGENT0_OFFLINE_TESTS|agent05_extra_offline_checks=ok|screen_freshness_guard|screen_changed_before_action|coordinate_guard_after_screen_change_reobserve|visualDistance|changedCells'
+    live_verify="tools/r2-verify-v0.agent0.5-reobserve-on-screen-change.sh --read-only"
+    gate_note="Smartisax v0.7.5/versionCode 56 on top of live/read-only v0.agent0.4; moves stale-coordinate recovery from prompt-only guidance into runtime material screen-change checks that skip stale UI actions and reobserve/replan before executing guarded edge taps."
+    ;;
+  v0.agent0.6|v0.agent0.6-accessibility-tree)
+    variant="v0.agent0.6-accessibility-tree"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.agent0.6-accessibility-tree.sparse.img"
+    image_hash="8f9c050815555ca38c0c7aa35fb3ed88497f4680e57ad8e15a3d75072c298fa7"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.agent0.6-accessibility-tree.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.agent0.6-accessibility-tree"
+    report_pattern="verify-v0.agent0.6-accessibility-tree-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0AGENT06_ACCESSIBILITY_TREE'
+    report_required_regex_extra='PASS_AGENT0_OFFLINE_TESTS|agent06_extra_offline_checks=ok|accessibilityTree|click_node|accessibility_action_guard|enabled_accessibility_services'
+    live_verify="tools/r2-verify-v0.agent0.6-accessibility-tree.sh --read-only"
+    gate_note="Smartisax v0.7.6/versionCode 57 on top of live/read-only v0.agent0.5; adds compact Accessibility tree observations and a narrow click_node action backed by AccessibilityNodeInfo.performAction(ACTION_CLICK), while preserving no shell/root/ADB/fastboot Agent actions."
+    ;;
+  v0.agent0.7|v0.agent0.7-window-preflight)
+    variant="v0.agent0.7-window-preflight"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.agent0.7-window-preflight.sparse.img"
+    image_hash="d16518056abea641cf51e8d944eb517a00dfdbd3d4ba7ef44a5cbad30400c7cc"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.agent0.7-window-preflight.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.agent0.7-window-preflight"
+    report_pattern="verify-v0.agent0.7-window-preflight-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0AGENT07_WINDOW_PREFLIGHT'
+    report_required_regex_extra='PASS_AGENT0_OFFLINE_TESTS|agent07_extra_offline_checks=ok|android_accessibility_active_plus_windows|getWindows|windowCount|provider_network_guard|paused_provider_error'
+    live_verify="tools/r2-verify-v0.agent0.7-window-preflight.sh --read-only"
+    gate_note="Smartisax v0.7.7/versionCode 58 on top of live/read-only v0.agent0.6; extends Accessibility observations and click_node lookup to active plus interactive window roots, adds visible provider planning/network/timeout transcript guards, and preserves no shell/root/ADB/fastboot Agent actions."
+    ;;
+  v0.agent0.8|v0.agent0.8-onestep-a11y-nodes)
+    variant="v0.agent0.8-onestep-a11y-nodes"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.agent0.8-onestep-a11y-nodes.sparse.img"
+    image_hash="3f0ea7fb8f3bed0dcf9e8c3582e40c02f0b2db59991ef606a887b8d7cd979f8b"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.agent0.8-onestep-a11y-nodes.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes"
+    report_pattern="verify-v0.agent0.8-onestep-a11y-nodes-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0AGENT08_ONESTEP_A11Y_NODES'
+    report_required_regex_extra='PASS_AGENT0_OFFLINE_TESTS|agent08_extra_offline_checks=ok|sidebar_agent_onestep_a11y_nodes=ok|one_step_visibility_recovery_home_exit_enter|smartisax:onestep:app'
+    live_verify="tools/r2-verify-v0.agent0.8-onestep-a11y-nodes.sh --read-only"
+    gate_note="Smartisax v0.7.8/versionCode 59 on top of live/read-only v0.agent0.7; adds One Step enter visible-state recovery and patches Sidebar dynamic top app strip with Agent-friendly Accessibility nodes whose ACTION_CLICK opens the bound AppItem."
+    ;;
+  v0.agent0.9|v0.agent0.9-worker-a11y-targets)
+    variant="v0.agent0.9-worker-a11y-targets"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.agent0.9-worker-a11y-targets.sparse.img"
+    image_hash="648320622194a61fa0f4c4b9d30f5d395c6f20928e5c53bd98896c4a705a6cfc"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.agent0.9-worker-a11y-targets.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.agent0.9-worker-a11y-targets"
+    report_pattern="verify-v0.agent0.9-worker-a11y-targets-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0AGENT09_WORKER_A11Y_TARGETS'
+    report_required_regex_extra='PASS_AGENT0_OFFLINE_TESTS|agent09_extra_offline_checks=ok|agent_worker_not_alive|accessibilityTargets|oneStepAppNodeCount|settingsNodeCount|sidebar_agent_onestep_a11y_nodes=ok'
+    live_verify="tools/r2-verify-v0.agent0.9-worker-a11y-targets.sh --read-only"
+    gate_note="Smartisax v0.7.9/versionCode 60 on top of live/read-only v0.agent0.8; reconciles dead Agent worker status and surfaces Agent-visible One Step app/Settings Accessibility target counts while preserving the v0.8 Sidebar app-node patch."
+    ;;
+  v0.agent0.10|v0.agent0.10-finish-target-verify)
+    variant="v0.agent0.10-finish-target-verify"
+    image="${ROOT_DIR}/hard-rom/build/super-otatrust-v0.agent0.10-finish-target-verify.sparse.img"
+    image_hash="66ce7c3013138f05e7789d851ebadd8f5cb686b208084331270b11e82df0d8bc"
+    verifier="${ROOT_DIR}/tools/r2-verify-v0.agent0.10-finish-target-verify.sh"
+    report_dir="${ROOT_DIR}/hard-rom/inspect/v0.agent0.10-finish-target-verify"
+    report_pattern="verify-v0.agent0.10-finish-target-verify-offline-image-*.txt"
+    report_required_regex='result=PASS_OFFLINE_IMAGE_V0AGENT010_FINISH_TARGET_VERIFY'
+    report_required_regex_extra='PASS_AGENT0_OFFLINE_TESTS|agent010_extra_offline_checks=ok|finishTargetVerification|finish_target_verified|settings_target_visible|foregroundPackageMatched|accessibilityWindowMatched|accessibilityPackageNodeMatched|sidebar_agent_onestep_a11y_nodes=ok'
+    live_verify="tools/r2-verify-v0.agent0.10-finish-target-verify.sh --read-only"
+    gate_note="Smartisax v0.7.10/versionCode 61 on top of live/read-only v0.agent0.9; makes finish verification target-aware for Settings-open goals while preserving worker reconciliation, A11y target counts, click_node, and the Sidebar app-node patch."
     ;;
   v0.36|v0.36-smartisax-shell-debloat)
     die "v0.36 is retired: it flashed and booted but Smartisax failed Android 11 target R+ resources.arsc alignment parsing. Use v0.36.1-smartisax-shell-debloat-arsc-align."

@@ -43150,3 +43150,2176 @@ Next:
   the in-app browser pinned foreground/visible for the full profile window, or
   add a receiver-side visibility guard that aborts and classifies the sample as
   `VISIBILITY_CONTAMINATED` instead of a media-cadence failure.
+
+### 2026-06-30: v0.agent0 Vision Agent MVP Offline Build And Verification
+
+Goal:
+  Implement the first on-device Smartisax Agent MVP on top of the live-proven
+  `v0.portal6g-rvfc-media-tail` line. The runtime runs inside SmartisaxShell on
+  the R2, captures screenshots locally, uses MiMo V2.5 as the vision-first
+  planner, keeps DeepSeek as a text/status fallback, and exposes only narrow UI
+  actions: tap, swipe, BACK/HOME key, wait, finish, and ask_user.
+
+Commands:
+
+```bash
+tools/r2-build-smartisax-shell.sh
+tools/r2-agent0-offline-tests.py
+tools/r2-hardrom-build-v0.agent0-vision-loop.sh
+tools/r2-verify-v0.agent0-vision-loop.sh --offline-image
+tools/r2-live-flash-preflight.sh v0.agent0-vision-loop
+```
+
+Result:
+  - APK build:
+    `hard-rom/build/apk/SmartisaxShell.apk`
+  - APK identity:
+    Smartisax v0.7.0/versionCode 51
+  - APK hash:
+    `c4731c66a6d4413317b7f96b03c3e7a83f91fd3f1afefad0974d67033e879679`
+  - system_b hash:
+    `93ca6cedd9676bd53facb44c686f6b02b6ac8f9d933e66ca8896175390e49b82`
+  - sparse hash:
+    `c4b757bf09edd043c932f76e978aeefe1a426bf57e5c4f8f078084a60dcdbb3f`
+  - build result:
+    `PASS_BUILD_V0AGENT0_VISION_LOOP`
+  - offline result:
+    `PASS_OFFLINE_IMAGE_V0AGENT0_VISION_LOOP`
+  - extra Agent checks:
+    `PASS_AGENT0_OFFLINE_TESTS` and `agent0_extra_offline_checks=ok`
+  - exact preflight:
+    PASS. Device was online on slot `_b` with `sys.boot_completed=1`, bootanim
+    `stopped`, verified boot `orange`, root available, and SELinux Enforcing.
+
+Implementation notes:
+  SmartisaxShell now has `SmartisaxAgentRuntime`, provider adapters for
+  `mimo_v25_vision`, `deepseek_text`, and `mock`, shared
+  `SmartisaxScreenCapture` JPEG/Base64 observation, local SharedPreferences API
+  key storage, Shell UI controls, and token-gated read-only
+  `/api/agent/status`. It does not add a remote start/control HTTP API and does
+  not restore `/api/input`.
+
+Evidence:
+  - build report:
+    `hard-rom/inspect/v0.agent0-vision-loop/build-v0.agent0-vision-loop-20260630-161953.txt`
+  - offline verifier:
+    `hard-rom/inspect/v0.agent0-vision-loop/verify-v0.agent0-vision-loop-offline-image-20260630-163620.txt`
+  - preflight:
+    `hard-rom/inspect/v0.agent0-vision-loop/preflight-v0.agent0-vision-loop-20260630-163820.txt`
+  - super manifest:
+    `hard-rom/build/super-otatrust-v0.agent0-vision-loop.SHA256SUMS.txt`
+  - system manifest:
+    `hard-rom/build/system-otatrust-v0.agent0-vision-loop.SHA256SUMS.txt`
+
+Live status:
+  Superseded by the live flash/read-only pass below.
+
+### 2026-06-30: v0.agent0 Vision Agent MVP B-slot Live Read-only PASS
+
+Command:
+
+```bash
+tools/r2-live-flash-v0.agent0-vision-loop.sh \
+  --confirm "确认刷入 v0.agent0-vision-loop B 槽"
+```
+
+Result:
+  - flash result:
+    `PASS_FLASH_V0AGENT0_VISION_LOOP`
+  - read-only device result:
+    `PASS_READ_ONLY_V0AGENT0_VISION_LOOP`
+  - post-flash Agent/Portal status:
+    `PASS_POST_FLASH_AGENT0_AGENT_STATUS_SCREEN`
+  - display/window state:
+    `PASS_DISPLAY_WINDOW_STATE_V0AGENT0`
+  - slot:
+    `_b`
+  - boot:
+    `sys.boot_completed=1`, bootanim `stopped`
+  - verified boot:
+    `orange`
+  - root:
+    uid `0`, SELinux `Enforcing`
+  - Smartisax package:
+    `/system/priv-app/SmartisaxShell/SmartisaxShell.apk`,
+    versionCode `51`, versionName `0.7.0`
+  - device APK hash:
+    `c4731c66a6d4413317b7f96b03c3e7a83f91fd3f1afefad0974d67033e879679`
+  - token-gated Agent diagnostics:
+    unauthenticated `/api/agent/status` returned `401`; authorized
+    `/api/status` exposed variant `v0.agent0-vision-loop`; authorized
+    `/api/agent/status` returned idle agent state, `maxSteps=5`,
+    `storesScreenshots=false`, MiMo model `mimo-v2.5`, DeepSeek model
+    `deepseek-v4-flash`, and the narrow allowed action list.
+  - screen capture:
+    authorized `/api/screen.png` returned a valid 1080x2340 PNG.
+
+Fastboot summary:
+  The helper re-ran read-only preflight, confirmed candidate sparse hash
+  `c4b757bf09edd043c932f76e978aeefe1a426bf57e5c4f8f078084a60dcdbb3f`,
+  rebooted to bootloader, wrote sparse super chunks `1/9` through `9/9`,
+  finished `fastboot flash super` in `232.233s`, erased `misc` successfully,
+  and rebooted.
+
+Post-boot checks:
+  Boot polling reached `boot_completed=1 slot=_b bootanim=stopped
+  verified=orange`. Read-only verification proved package path, version,
+  permissions, APK hash, libwebrtc hashes, root, and SELinux. A settled
+  display/window probe proved `mWakefulness=Awake`, `mDisplayReady=true`,
+  built-in display `state ON`, `mCurrentFocus` and `mFocusedApp` on
+  `com.smartisax.browser/.ShellActivity`, and `isKeyguardShowing=false`.
+
+Evidence:
+  - flash report:
+    `hard-rom/inspect/v0.agent0-vision-loop/flash-v0.agent0-vision-loop-20260630-164247.txt`
+  - boot wait:
+    `hard-rom/inspect/v0.agent0-vision-loop/boot-wait-v0.agent0-vision-loop-20260630-164247.txt`
+  - read-only verifier:
+    `hard-rom/inspect/v0.agent0-vision-loop/verify-v0.agent0-vision-loop-device-read-only-20260630-164929.txt`
+  - first focus sample:
+    `hard-rom/inspect/v0.agent0-vision-loop/post-flash-focus-v0.agent0-vision-loop-20260630-164247.txt`
+  - display/window state:
+    `hard-rom/inspect/v0.agent0-vision-loop/display-window-state-after-flash-20260630-165332.txt`
+  - Portal/Agent smoke:
+    `hard-rom/inspect/v0.agent0-vision-loop/post-flash-agent0-smoke-20260630-165241/report.txt`
+    and
+    `hard-rom/inspect/v0.agent0-vision-loop/post-flash-agent0-smoke-20260630-165307/report.txt`
+
+Next:
+  Save a MiMo key locally from the Shell Agent panel and run a small
+  manually-started vision task. Record the transcript, Stop behavior, and any
+  model/action schema issues. Keep Portal WebRTC/DataChannel regression as the
+  next broader compatibility gate.
+
+### 2026-06-30: v0.agent0 MiMo Vision Agent Safe Finish Smoke PASS
+
+Goal:
+  Enter the MiMo API key through the Smartisax Shell Agent panel and run the
+  first manually-started vision task without allowing the Agent to manipulate
+  the phone UI.
+
+Task:
+  `Observe this screen and finish without tapping swiping or pressing keys`
+
+Result:
+  - final state:
+    `complete`
+  - provider:
+    `mimo_v25_vision`
+  - selected provider:
+    `mimo_v25_vision`
+  - key state:
+    `mimoKeySet=true` in redacted status
+  - step:
+    `1/5`
+  - model action:
+    `finish`
+  - confidence:
+    `1`
+  - plan latency:
+    `2913ms`
+  - model message:
+    `Observed the Agent configuration screen showing idle state and configuration fields.`
+  - observation:
+    original screen `1080x2340`, scaled JPEG `720x1560`, `jpegBytes=68520`,
+    `stored=false`
+
+Notes:
+  The first poll script labeled the result diagnostic because it only treated
+  `finished` as terminal success, while the runtime intentionally uses
+  `complete` for finish actions. The report was corrected after checking
+  `SmartisaxAgentRuntime.finishState("complete", ...)` and the final status
+  JSON. No API key or image base64 is recorded in the report.
+
+Evidence:
+  - report:
+    `hard-rom/inspect/v0.agent0-vision-loop/mimo-smoke/mimo-vision-task-20260630-171243/report.txt`
+  - final status:
+    `hard-rom/inspect/v0.agent0-vision-loop/mimo-smoke/mimo-vision-task-20260630-171243/final-status.json`
+
+Next:
+  Run one constrained action task, for example opening Settings and returning
+  HOME, then test Stop while a task is in progress. Keep the same action
+  allowlist and continue treating screenshots as manually-started, non-persisted
+  observations.
+
+### 2026-06-30: v0.agent0 MiMo Vision Agent Settings Tap Smoke Diagnostic FAIL
+
+Goal:
+  Manually start the on-device MiMo vision Agent from Smartisax Shell and ask
+  it to tap the Settings app icon.
+
+Result:
+  - final classification:
+    `DIAGNOSTIC_FAIL_SETTINGS_TAP_COORDINATE_GROUNDING`
+  - runtime:
+    Agent start, MiMo provider call, strict JSON action parsing, status polling,
+    and privileged input injection all worked.
+  - outcome:
+    Settings did not open. Post-run `dumpsys window` still showed
+    `mCurrentFocus=Window{... com.smartisax.browser/com.smartisax.browser.ShellActivity}`,
+    and the final Portal screenshot still showed the Smartisax Shell page with
+    the Smartisan top app row.
+  - first task:
+    `Go home if needed tap the Settings app icon once then finish`
+  - first model actions:
+    `key(HOME)`, `tap(x=9141,y=218)`, `tap(x=9141,y=218)`, then `finish`
+    with confidence `1`.
+  - second task:
+    `Tap the center of the gray gear Settings icon in the top app row near right side then finish`
+  - second model actions:
+    `tap(x=8500,y=340)`, `tap(x=9100,y=218)`, `tap(x=9100,y=218)`, then
+    `finish` with confidence `1`.
+
+Notes:
+  The model visually identified the gray gear-like Settings icon in the top app
+  row, but returned y coordinates that were too high for the visible icon center
+  on the 1080x2340 screen. The runtime accepted those coordinates because they
+  were valid 0-10000 normalized values, injected the taps successfully, and then
+  accepted the model's `finish` even though the foreground app had not changed.
+  This is a useful MVP boundary: the next Agent runtime revision should expose
+  the model transcript more clearly in the Shell UI, record post-action state
+  deltas for diagnosis, and pause instead of finishing when repeated high-
+  confidence taps do not change the observed screen or foreground package.
+
+Evidence:
+  - first settings-tap run:
+    `hard-rom/inspect/v0.agent0-vision-loop/mimo-smoke/settings-click-agent-20260630-175952/`
+  - second settings-tap run:
+    `hard-rom/inspect/v0.agent0-vision-loop/mimo-smoke/settings-click-agent2-20260630-180500/`
+  - first final screenshot:
+    `hard-rom/inspect/v0.agent0-vision-loop/mimo-smoke/settings-click-agent-20260630-175952/screen-after-agent.png`
+  - second final screenshot:
+    `hard-rom/inspect/v0.agent0-vision-loop/mimo-smoke/settings-click-agent2-20260630-180500/screen-after-agent.png`
+
+Next:
+  Fix the coordinate-grounding and completion-gating behavior before treating
+  Settings tap/open tasks as accepted. Candidate gates: require a new
+  observation after every tap before `finish`, surface every step action in the
+  visible Agent panel, and pause when the foreground package or screenshot hash
+  does not change after repeated taps on the same target.
+
+### 2026-06-30: v0.agent0.1 Vision Guard Build/Offline PASS
+
+Goal:
+  Repair the first Agent action-task failure without overwriting the accepted
+  `v0.agent0-vision-loop` rollback image. The new candidate is
+  `v0.agent0.1-vision-guard`, built on top of the live/read-only
+  `v0.agent0-vision-loop` system image.
+
+Commands:
+
+```bash
+tools/r2-build-smartisax-shell.sh
+tools/r2-hardrom-build-v0.agent0.1-vision-guard.sh
+tools/r2-verify-v0.agent0.1-vision-guard.sh --offline-image
+```
+
+Result:
+  - build result:
+    `PASS_BUILD_V0AGENT01_VISION_GUARD`
+  - offline result:
+    `PASS_OFFLINE_IMAGE_V0AGENT01_VISION_GUARD`
+  - extra Agent checks:
+    `PASS_AGENT0_OFFLINE_TESTS` and `agent01_extra_offline_checks=ok`
+  - Smartisax version:
+    `0.7.1` / versionCode `52`
+  - candidate marker:
+    `v0.agent0.1-vision-guard`
+  - APK hash:
+    `3de1cd9605310d4da2316c70066296f796352a0bb09f29ac641f99e3f18ae40e`
+  - system_b hash:
+    `6afaa75773178b2ee613f435817bed4542ada4880e5721f9ff90345de308451f`
+  - sparse hash:
+    `4456d0b9e3d2b05a05bebfca08424a4ee4dd5f61d3240a83a93b2a7dfb9b6458`
+
+Implementation:
+  The runtime now records a non-persisted screenshot fingerprint for each
+  Agent observation, performs a post-action observation after tap/swipe/key/wait
+  actions, exposes `postActionCheck` in transcript/status, blocks taps in the
+  top/bottom edge bands with `coordinate_edge_guard`, pauses on repeated same-
+  target taps with no observed screen change, and rejects `finish` after UI
+  actions unless at least one post-action observation verified a screen change.
+  The MiMo/DeepSeek prompts now explicitly tell the model not to finish after
+  UI actions until a later screenshot proves progress. The Shell Agent panel now
+  renders per-step action, confidence, status, result, post-check, and finish
+  gate details instead of only a terse one-line transcript.
+
+Safety:
+  No live preflight, flash, reboot, or `/data` mutation was run for this
+  candidate. `v0.agent0-vision-loop` remains the current live flashed state and
+  retained rollback image. The new live flash helper requires the exact phrase
+  `确认刷入 v0.agent0.1-vision-guard B 槽`.
+
+Evidence:
+  - build report:
+    `hard-rom/inspect/v0.agent0.1-vision-guard/build-v0.agent0.1-vision-guard-20260630-183031.txt`
+  - offline verifier:
+    `hard-rom/inspect/v0.agent0.1-vision-guard/verify-v0.agent0.1-vision-guard-offline-image-20260630-183352.txt`
+  - sparse manifest:
+    `hard-rom/build/super-otatrust-v0.agent0.1-vision-guard.SHA256SUMS.txt`
+  - system manifest:
+    `hard-rom/build/system-otatrust-v0.agent0.1-vision-guard.SHA256SUMS.txt`
+
+Next:
+  Run live preflight and flash only after exact user confirmation for
+  `v0.agent0.1-vision-guard B 槽`, then rerun the Settings tap task. Expected
+  behavior for the previous bad MiMo output is now pause with
+  `tap_coordinate_in_screen_edge_band` or `finish_requires_verified_screen_change`
+  rather than a false `complete`.
+
+### 2026-06-30: v0.agent0.1 Vision Guard B-slot Live Read-only PASS
+
+Goal:
+  Flash the Agent runtime guard repair candidate to the active B slot after
+  exact user confirmation, then verify boot/package/root/window state without
+  mutating `/data`.
+
+Command:
+
+```bash
+tools/r2-live-flash-v0.agent0.1-vision-guard.sh --confirm "确认刷入 v0.agent0.1-vision-guard B 槽"
+```
+
+Result:
+  - flash result:
+    `PASS_FLASH_V0AGENT01_VISION_GUARD`
+  - read-only result:
+    `PASS_READ_ONLY_V0AGENT01_VISION_GUARD`
+  - Smartisax version:
+    `0.7.1` / versionCode `52`
+  - APK hash:
+    `3de1cd9605310d4da2316c70066296f796352a0bb09f29ac641f99e3f18ae40e`
+  - system_b hash:
+    `6afaa75773178b2ee613f435817bed4542ada4880e5721f9ff90345de308451f`
+  - sparse hash:
+    `4456d0b9e3d2b05a05bebfca08424a4ee4dd5f61d3240a83a93b2a7dfb9b6458`
+
+Fastboot summary:
+  The helper re-ran preflight, confirmed the candidate and rollback sparse
+  hashes, rebooted to bootloader, verified `current-slot: b`, `unlocked: yes`,
+  and `is-userspace: no`, wrote sparse super chunks `1/9` through `9/9`,
+  finished `fastboot flash super` in `232.057s`, erased `misc`, and rebooted.
+
+Post-boot checks:
+  Boot polling reached `boot_completed=1 slot=_b bootanim=stopped
+  verified=orange`. The read-only verifier proved root is available,
+  SELinux is Enforcing, SmartisaxShell is served from
+  `/system/priv-app/SmartisaxShell/SmartisaxShell.apk`, versionCode is `52`,
+  versionName is `0.7.1`, expected privileged permissions remain granted, the
+  device APK hash matches the candidate APK, and both system libwebrtc hashes
+  match. A follow-up window probe showed `mCurrentFocus` and `mFocusedApp` on
+  `com.smartisax.browser/.ShellActivity`, the display awake/on, and
+  `isKeyguardShowing=false`.
+
+Portal note:
+  Reusing the old local pairing token after reboot timed out on `/api/status`,
+  `/api/agent/status`, and `/api/screen.png`, which is consistent with the
+  explicit-opt-in Portal service not autostarting. This is not a flash failure;
+  Portal regression should be tested from a freshly enabled/pairing session
+  before calling the broader Portal compatibility gate accepted.
+
+Evidence:
+  - flash report:
+    `hard-rom/inspect/v0.agent0.1-vision-guard/flash-v0.agent0.1-vision-guard-20260630-185030.txt`
+  - boot wait:
+    `hard-rom/inspect/v0.agent0.1-vision-guard/boot-wait-v0.agent0.1-vision-guard-20260630-185030.txt`
+  - read-only verifier:
+    `hard-rom/inspect/v0.agent0.1-vision-guard/verify-v0.agent0.1-vision-guard-device-read-only-20260630-185541.txt`
+  - Portal status probe:
+    `hard-rom/inspect/v0.agent0.1-vision-guard/post-flash-portal-status-20260630-185646/report.txt`
+
+Rollback:
+
+```bash
+fastboot -s bb12d264 flash super hard-rom/build/super-otatrust-v0.4-debloat-exact-current.sparse.img
+fastboot -s bb12d264 erase misc
+fastboot -s bb12d264 reboot
+```
+
+Next:
+  Re-enable/pair Portal when needed for read-only diagnostics, then rerun the
+  Settings tap task on `v0.agent0.1-vision-guard`. The expected guard behavior
+  for the previous bad MiMo coordinates is now a pause such as
+  `tap_coordinate_in_screen_edge_band` or `finish_requires_verified_screen_change`,
+  not a false `complete`.
+
+### 2026-06-30: v0.agent0.1 Settings Tap Smoke Diagnostic FAIL With Guard PASS
+
+Goal:
+  Rerun the previous Settings tap task on the live
+  `v0.agent0.1-vision-guard` build and confirm whether the runtime still false
+  completes when Settings is not opened.
+
+Task:
+  `Tap the grey gear Settings app icon once do not finish until Settings opens`
+
+Result:
+  - final classification:
+    `DIAGNOSTIC_FAIL_SETTINGS_NOT_OPENED_GUARD_PASS`
+  - final state:
+    `paused`
+  - provider:
+    `mimo_v25_vision`
+  - key state:
+    `mimo-v2.5 key saved`
+  - step:
+    `5/5`
+  - last:
+    `max_steps_reached`
+  - foreground:
+    `com.smartisax.browser/com.smartisax.browser.ShellActivity`
+
+Transcript summary:
+  The visible Shell transcript showed:
+  - step 1:
+    `key(HOME)` with confidence `100%`, post-check changed.
+  - step 2:
+    `tap(5000,8437)` with confidence `80%`; the model said it was clicking the
+    Shell Agent app's `Start` button, and post-check reported no screen change.
+  - step 3:
+    `swipe(5000,7000 -> 5000,3000)` with confidence `90%`, post-check changed.
+  - step 4:
+    `key(HOME)` with confidence `100%`, post-check changed.
+  - step 5:
+    `key(HOME)` with confidence `100%`, post-check no change.
+
+Interpretation:
+  This is not an accepted Settings-open task, but it is the desired guard
+  improvement over v0.agent0: the model no longer marks the task `complete`
+  while ShellActivity remains focused. The runtime exposed per-step action,
+  confidence, message, and post-check details, then paused at the max-step
+  guard. The remaining issue is navigation/grounding: MiMo repeatedly believed
+  it was returning to or navigating on the home screen, while the Shell UI
+  stayed foreground often enough that it never opened Settings. The next Agent
+  revision should add stronger no-progress handling for repeated HOME/swipe
+  loops and give the planner an explicit foreground/home-vs-Shell summary in
+  addition to the screenshot.
+
+Evidence:
+  - report:
+    `hard-rom/inspect/v0.agent0.1-vision-guard/post-flash-settings-task-20260630-190005/report.txt`
+  - final summary screenshot:
+    `hard-rom/inspect/v0.agent0.1-vision-guard/post-flash-settings-task-20260630-190005/after-stop-summary.png`
+  - transcript screenshots:
+    `hard-rom/inspect/v0.agent0.1-vision-guard/post-flash-settings-task-20260630-190005/transcript-1.png`
+    and
+    `hard-rom/inspect/v0.agent0.1-vision-guard/post-flash-settings-task-20260630-190005/transcript-2.png`
+
+Next:
+  Keep `v0.agent0.1-vision-guard` as the live guard PASS baseline, but do not
+  accept the Settings-open capability yet. The next candidate should improve
+  planner context and loop guards before another real UI task.
+
+### 2026-06-30: v0.agent0.2 One Step Agent Build/Offline PASS
+
+Goal:
+  Teach the on-device Smartisax Agent how to enter and exit Smartisan One Step
+  mode through an explicit, narrow semantic action, while preserving the
+  v0.agent0.1 post-action guard behavior and the no-remote-HTTP-control
+  boundary.
+
+Implementation:
+  `v0.agent0.2-one-step` updates SmartisaxShell to `0.7.2`/versionCode `53`
+  on top of the live/read-only `v0.agent0.1-vision-guard` system image. It adds
+  a new Agent action:
+
+```json
+{"type":"one_step","operation":"enter|exit","confidence":0.0}
+```
+
+  The runtime executes `one_step` as a UI action, so it still receives a
+  post-action screenshot check and cannot immediately `finish` without the
+  normal guard. The programmatic path mirrors Smartisan's framework
+  `SidebarHelper` contract: `IWindowManager.transact(2001)` with mode `2` to
+  enter the right One Step/sidebar surface and mode `-1` to exit. If the
+  programmatic path does not produce the requested state, the runtime falls
+  back to a controlled right-edge swipe for enter and BACK key for exit.
+
+  Each provider prompt now includes `systemState.oneStep`, derived from
+  `Settings.Global` keys `side_bar_mode`, `side_bar_zoom_type`, and
+  `sidebar_switch_status`, plus foreground task metadata when available. MiMo
+  and DeepSeek are instructed to prefer `one_step enter/exit` over inventing
+  screen-edge coordinates, and to exit One Step first when it is visible but
+  unrelated to the user goal. The Shell transcript renders
+  `one_step(enter|exit)` and the post-action One Step visible/side state.
+
+Build result:
+  - result:
+    `PASS_BUILD_V0AGENT02_ONE_STEP`
+  - source sparse:
+    `hard-rom/build/super-otatrust-v0.agent0.1-vision-guard.sparse.img`
+  - source sparse hash:
+    `4456d0b9e3d2b05a05bebfca08424a4ee4dd5f61d3240a83a93b2a7dfb9b6458`
+  - source system_b hash:
+    `6afaa75773178b2ee613f435817bed4542ada4880e5721f9ff90345de308451f`
+  - Smartisax APK hash:
+    `6bbdf9022af6f4ba1d66a5cb67ae738ebda2be39f38d8c07cc80856681ea11c0`
+  - system_b hash:
+    `c8ffc8592067eb72ce303d3bb1e559e8553a342efca8ff6873ee98f29091c4a8`
+  - sparse hash:
+    `b30c3d6a1ed6ba0c9f31ae722b77c869810be734f73db8131d3b6f5e63efc2a9`
+
+Offline verifier:
+  - result:
+    `PASS_OFFLINE_IMAGE_V0AGENT02_ONE_STEP`
+  - extra checks:
+    `PASS_AGENT0_OFFLINE_TESTS`
+    and
+    `agent02_extra_offline_checks=ok`
+  - verified markers:
+    `SmartisaxOneStepController`, `one_step`,
+    `systemState.oneStep.visible`, `side_bar_zoom_type`,
+    `sidebar_switch_status`, `IWindowManager.transact(2001)`,
+    `right_edge_swipe`, `back_key`, MiMo/DeepSeek provider strings,
+    Shell One Step transcript strings, post-action guard markers, and no
+    `/api/input` regression.
+  - image checks:
+    system_b image hash equals sparse slice hash, AVB/FEC is intact, read-only
+    e2fsck passes, services.jar hash remains
+    `3c2775dca94a7893901d89e095d2ac1932687e5b92795dc8b4dcb5d72b67f909`,
+    and Smartisax privapp XML is unchanged.
+
+Prepared tooling:
+  - build:
+    `tools/r2-hardrom-build-v0.agent0.2-one-step.sh`
+  - offline/read-only verifier:
+    `tools/r2-verify-v0.agent0.2-one-step.sh`
+  - preflight route:
+    `tools/r2-live-flash-preflight.sh v0.agent0.2-one-step`
+  - flash helper, gated by exact confirmation:
+    `tools/r2-live-flash-v0.agent0.2-one-step.sh --confirm "确认刷入 v0.agent0.2-one-step B 槽"`
+
+Evidence:
+  - build report:
+    `hard-rom/inspect/v0.agent0.2-one-step/build-v0.agent0.2-one-step-20260630-192040.txt`
+  - offline verifier:
+    `hard-rom/inspect/v0.agent0.2-one-step/verify-v0.agent0.2-one-step-offline-image-20260630-192343.txt`
+
+Next:
+  Do not treat this as live until it is preflighted and flashed after explicit
+  confirmation. After flash/read-only verification, first smoke the dedicated
+  One Step behavior with safe goals such as "enter One Step then exit it" before
+  rerunning broader Settings-open acceptance.
+
+### 2026-06-30: v0.agent0.2 One Step Agent B-slot Live Read-only PASS
+
+Flash:
+  After exact confirmation `确认刷入 v0.agent0.2-one-step B 槽`, the live flash
+  helper reran preflight, confirmed sparse hash
+  `b30c3d6a1ed6ba0c9f31ae722b77c869810be734f73db8131d3b6f5e63efc2a9`,
+  rebooted the R2 to bootloader, flashed sparse super chunks 1/9 through 9/9
+  successfully in 232.553s, erased `misc`, and rebooted.
+
+Post-boot/read-only result:
+  - flash result:
+    `PASS_FLASH_V0AGENT02_ONE_STEP`
+  - read-only result:
+    `PASS_READ_ONLY_V0AGENT02_ONE_STEP`
+  - boot proof:
+    `sys.boot_completed=1`, slot `_b`, bootanim `stopped`, verified boot
+    `orange`, root uid=0 available, SELinux Enforcing
+  - package proof:
+    Smartisax served from
+    `/system/priv-app/SmartisaxShell/SmartisaxShell.apk`, versionCode `53`,
+    versionName `0.7.2`, APK hash
+    `6bbdf9022af6f4ba1d66a5cb67ae738ebda2be39f38d8c07cc80856681ea11c0`
+
+Evidence:
+  - flash:
+    `hard-rom/inspect/v0.agent0.2-one-step/flash-v0.agent0.2-one-step-20260630-193243.txt`
+  - boot/read-only:
+    `hard-rom/inspect/v0.agent0.2-one-step/boot-wait-v0.agent0.2-one-step-20260630-193243.txt`
+    and
+    `hard-rom/inspect/v0.agent0.2-one-step/verify-v0.agent0.2-one-step-device-read-only-20260630-193754.txt`
+
+### 2026-06-30: v0.agent0.2 One Step Smoke Diagnostic FAIL
+
+Smoke goal:
+  `Enter the Smartisan One Step mode then exit it`
+
+Observed result:
+  This is not a One Step capability PASS. MiMo correctly learned the semantic
+  action and produced:
+  - step 1: `one_step(enter)`, confidence `95%`
+  - step 2: `one_step(exit)`, confidence `95%`
+  - step 3: `finish`, confidence `100%`
+
+  The runtime transcript shows step 1 result as hidden/none:
+  `one-step: enter hidden none`, then step 2 also hidden/none. The final finish
+  was rejected by the existing guard with
+  `finish_requires_verified_screen_change`, so v0.agent0.2 did not false-complete.
+
+Diagnosis:
+  The system route is correct, but the first controller implementation sampled
+  state too quickly after the first `IWindowManager.transact(2001)`. Live
+  diagnostics proved:
+  - broadcasts `smartisanos.intent.action.ENTER_SIDEBAR_MODE` and
+    `EXIT_SIDEBAR_MODE` complete but do not change state
+  - plain `adb input swipe` probes do not reliably reproduce the human
+    corner-swipe path
+  - a later direct WMS transact does work:
+    `service call window 2001 i32 2 i32 0` changes
+    `side_bar_zoom_type` to `2` and `sidebar_switch_status` to `1`
+  - `service call window 2001 i32 -1 i32 0` exits back to `-1` / `0`
+
+Conclusion:
+  Repair the Agent controller rather than framework/Sidebar itself: wait for
+  async SidebarService binding after the programmatic WMS transact, retry once,
+  and pause immediately when the requested One Step visible state is not reached.
+
+Evidence:
+  `hard-rom/inspect/v0.agent0.2-one-step/one-step-smoke-20260630-193820/`
+
+### 2026-06-30: v0.agent0.3 One Step Bind-wait Build/Offline/Preflight PASS
+
+Goal:
+  Repair v0.agent0.2's One Step smoke failure without touching
+  services.jar/framework/Sidebar. The fix stays inside SmartisaxShell Agent
+  runtime.
+
+Implementation:
+  `v0.agent0.3-one-step-bind-wait` updates SmartisaxShell to `0.7.3` /
+  versionCode `54` on top of the live/read-only `v0.agent0.2-one-step` system
+  image. `SmartisaxOneStepController` now waits up to 2800ms after the first
+  `IWindowManager.transact(2001)`, retries the programmatic request once with an
+  additional wait, then falls back only if the requested state is still absent.
+  `SmartisaxAgentRuntime` adds `one_step_state_guard` so failed One Step
+  enter/exit pauses immediately instead of handing a false state back to the
+  planner.
+
+Build result:
+  - result:
+    `PASS_BUILD_V0AGENT03_ONE_STEP_BIND_WAIT`
+  - source sparse:
+    `hard-rom/build/super-otatrust-v0.agent0.2-one-step.sparse.img`
+  - source sparse hash:
+    `b30c3d6a1ed6ba0c9f31ae722b77c869810be734f73db8131d3b6f5e63efc2a9`
+  - source system_b hash:
+    `c8ffc8592067eb72ce303d3bb1e559e8553a342efca8ff6873ee98f29091c4a8`
+  - Smartisax APK hash:
+    `901cf3ae91f1d02e330dddd67890aaafa71cac815973cbc318df4cedcab493fc`
+  - system_b hash:
+    `574aace6c53aa704144a572040de2510c1ff8ba88119a0966f38a4799c00f942`
+  - sparse hash:
+    `afc2d90ceee5e59036c4f9dd4ae7e4096dd1284f5614f4e6afa5c7ad3c8ae056`
+
+Offline verifier:
+  - result:
+    `PASS_OFFLINE_IMAGE_V0AGENT03_ONE_STEP_BIND_WAIT`
+  - extra checks:
+    `PASS_AGENT0_OFFLINE_TESTS`
+    and
+    `agent03_extra_offline_checks=ok`
+  - verified markers:
+    `PROGRAMMATIC_WAIT_MS`, `programmaticRetry`, `one_step_state_guard`,
+    `one_step_enter_not_visible`, `IWindowManager.transact(2001)`, One Step
+    prompt/status/transcript strings, MiMo/DeepSeek provider strings, no
+    `/api/input` regression, and unchanged services.jar hash
+    `3c2775dca94a7893901d89e095d2ac1932687e5b92795dc8b4dcb5d72b67f909`.
+
+Preflight:
+  `tools/r2-live-flash-preflight.sh v0.agent0.3-one-step-bind-wait` PASS.
+  It verified the candidate sparse hash, rollback sparse availability, offline
+  report, verifier route, and live read-only device state. It did not flash,
+  reboot, erase misc, or change `/data`.
+
+Prepared tooling:
+  - build:
+    `tools/r2-hardrom-build-v0.agent0.3-one-step-bind-wait.sh`
+  - verifier:
+    `tools/r2-verify-v0.agent0.3-one-step-bind-wait.sh`
+  - flash helper:
+    `tools/r2-live-flash-v0.agent0.3-one-step-bind-wait.sh`
+  - required exact confirmation:
+    `确认刷入 v0.agent0.3-one-step-bind-wait B 槽`
+
+Evidence:
+  - build report:
+    `hard-rom/inspect/v0.agent0.3-one-step-bind-wait/build-v0.agent0.3-one-step-bind-wait-20260630-195448.txt`
+  - offline verifier:
+    `hard-rom/inspect/v0.agent0.3-one-step-bind-wait/verify-v0.agent0.3-one-step-bind-wait-offline-image-20260630-195752.txt`
+
+Next:
+  Flash only after the new exact confirmation phrase, run the read-only verifier,
+  then repeat the safe One Step enter/exit smoke before returning to the broader
+  Settings App task.
+
+### 2026-06-30: v0.agent0.3 One Step Bind-wait B-slot Live Read-only PASS
+
+Flash:
+  After exact confirmation `确认刷入 v0.agent0.3-one-step-bind-wait B 槽`, the
+  live flash helper reran preflight, confirmed sparse hash
+  `afc2d90ceee5e59036c4f9dd4ae7e4096dd1284f5614f4e6afa5c7ad3c8ae056`,
+  rebooted the R2 to bootloader, flashed sparse super chunks 1/9 through 9/9,
+  erased `misc`, and rebooted.
+
+Post-boot/read-only result:
+  - flash result:
+    `PASS_FLASH_V0AGENT03_ONE_STEP_BIND_WAIT`
+  - read-only result:
+    `PASS_READ_ONLY_V0AGENT03_ONE_STEP_BIND_WAIT`
+  - boot proof:
+    `sys.boot_completed=1`, slot `_b`, bootanim `stopped`, verified boot
+    `orange`, root uid=0 available, SELinux Enforcing
+  - package proof:
+    Smartisax served from
+    `/system/priv-app/SmartisaxShell/SmartisaxShell.apk`, versionCode `54`,
+    versionName `0.7.3`, APK hash
+    `901cf3ae91f1d02e330dddd67890aaafa71cac815973cbc318df4cedcab493fc`
+
+Evidence:
+  - flash:
+    `hard-rom/inspect/v0.agent0.3-one-step-bind-wait/flash-v0.agent0.3-one-step-bind-wait-20260630-200648.txt`
+  - boot/read-only:
+    `hard-rom/inspect/v0.agent0.3-one-step-bind-wait/boot-wait-v0.agent0.3-one-step-bind-wait-20260630-200648.txt`
+    and
+    `hard-rom/inspect/v0.agent0.3-one-step-bind-wait/verify-v0.agent0.3-one-step-bind-wait-device-read-only-20260630-201158.txt`
+
+### 2026-06-30: v0.agent0.3 One Step Smoke PASS
+
+Smoke goal:
+  `Enter the smartisan one step mode then exit it`
+
+Observed result:
+  The first run exposed stale Sidebar/keyguard/statusbar state:
+  `ZoomScreenController : request zoom failed cause keyguard showing`, even
+  though the system window policy no longer reported keyguard showing. After
+  normalizing UI state with statusbar collapse, HOME, and ShellActivity
+  restart, the same semantic route worked.
+
+Clean rerun:
+  - final state:
+    `complete`
+  - step:
+    `3/5`
+  - One Step final state:
+    `hidden`
+  - transcript:
+    step 1 `one_step(enter)`, confidence `95%`, result
+    `one-step: enter visible right`; step 2 `one_step(exit)`, confidence
+    `100%`, result `one-step: exit hidden none`; step 3 `finish`, confidence
+    `100%`, complete.
+
+Conclusion:
+  v0.agent0.3 accepts the dedicated One Step capability smoke when stale
+  keyguard/statusbar residue is cleared. A future runtime polish may pre-collapse
+  statusbar or tolerate stale Sidebar keyguard state before invoking One Step.
+
+Evidence:
+  `hard-rom/inspect/v0.agent0.3-one-step-bind-wait/one-step-smoke-20260630-201232/`
+
+### 2026-06-30: v0.agent0.3 Settings App Task Diagnostic FAIL
+
+Goal:
+  `Go home and open the Settings app.`
+
+Observed result:
+  The run did not open Settings and did not false-complete. It ended
+  `paused`, step `5/5`, last reason `max_steps_reached`, with foreground still
+  `com.smartisax.browser/.ShellActivity`. The transcript showed five repeated
+  `key(HOME)` actions; after the first, the post-action screen check reported
+  no meaningful progress.
+
+Diagnosis:
+  SmartisaxShell is a HOME candidate/default HOME target on this ROM line, so
+  pressing HOME from SmartisaxShell can keep the same Shell screen. The planner
+  needs an explicit instruction for Settings-open goals: when already in
+  SmartisaxShell, enter One Step and tap the gear-shaped Settings icon from the
+  top app strip instead of repeatedly pressing HOME. The runtime should also
+  pause repeated key actions when post-action screenshots show no screen change.
+
+Evidence:
+  `hard-rom/inspect/v0.agent0.3-one-step-bind-wait/settings-app-task-20260630-203440/`
+
+### 2026-06-30: v0.agent0.4 Home/OneStep Settings Guard Build/Offline/Preflight PASS
+
+Goal:
+  Repair the v0.agent0.3 Settings-open failure without widening the action
+  surface or adding remote HTTP Agent control.
+
+Implementation:
+  `v0.agent0.4-home-onestep-settings-guard` updates SmartisaxShell to `0.7.4` /
+  versionCode `55` on top of the live/read-only `v0.agent0.3-one-step-bind-wait`
+  system image. The provider prompt now tells MiMo/DeepSeek that SmartisaxShell
+  may itself be the HOME target, and that Settings-open goals from
+  SmartisaxShell should use `one_step enter` and tap the gear-shaped Settings
+  icon in the One Step top app strip rather than looping on HOME. The runtime
+  adds a repeated-key no-screen-change pause with reason
+  `repeated_key_no_screen_change`.
+
+Build/offline/preflight result:
+  - build:
+    `PASS_BUILD_V0AGENT04_HOME_ONESTEP_SETTINGS_GUARD`
+  - offline:
+    `PASS_OFFLINE_IMAGE_V0AGENT04_HOME_ONESTEP_SETTINGS_GUARD`
+  - extra checks:
+    `PASS_AGENT0_OFFLINE_TESTS` and `agent04_extra_offline_checks=ok`
+  - Smartisax APK hash:
+    `d200a807710af02604038050a2d6f460051e19a34e18a5b334f7b65ec4cabd6a`
+  - system_b hash:
+    `bf4c989ecd162fbcdca4d4122fc376d0444031f0def4ce658b35cad8022d8873`
+  - sparse hash:
+    `c3aa40da9294a3db7e28aa81e91bfd244b717d11a0c96fd71b1b1b28d2107fc5`
+
+Preflight:
+  `tools/r2-live-flash-preflight.sh v0.agent0.4-home-onestep-settings-guard`
+  PASS. It verified the candidate sparse hash, rollback sparse availability,
+  offline PASS evidence, verifier route, and current live read-only device
+  state. It did not flash, reboot, erase misc, or change `/data`.
+
+Prepared tooling:
+  - build:
+    `tools/r2-hardrom-build-v0.agent0.4-home-onestep-settings-guard.sh`
+  - verifier:
+    `tools/r2-verify-v0.agent0.4-home-onestep-settings-guard.sh`
+  - preflight route:
+    `tools/r2-live-flash-preflight.sh v0.agent0.4-home-onestep-settings-guard`
+  - flash helper:
+    `tools/r2-live-flash-v0.agent0.4-home-onestep-settings-guard.sh`
+  - required exact confirmation:
+    `确认刷入 v0.agent0.4-home-onestep-settings-guard B 槽`
+
+Evidence:
+  - build:
+    `hard-rom/inspect/v0.agent0.4-home-onestep-settings-guard/build-v0.agent0.4-home-onestep-settings-guard-20260630-210029.txt`
+  - offline:
+    `hard-rom/inspect/v0.agent0.4-home-onestep-settings-guard/verify-v0.agent0.4-home-onestep-settings-guard-offline-image-20260630-210333.txt`
+
+Next:
+  Flash only after exact confirmation for
+  `v0.agent0.4-home-onestep-settings-guard B 槽`, then run the read-only verifier
+  and retry the Settings-open task.
+
+### 2026-06-30: v0.agent0.4 Home/OneStep Settings Guard B-slot Live Read-only PASS
+
+Confirmed flash:
+  `确认刷入 v0.agent0.4-home-onestep-settings-guard B 槽`
+
+Result:
+  - flash:
+    `PASS_FLASH_V0AGENT04_HOME_ONESTEP_SETTINGS_GUARD`
+  - read-only:
+    `PASS_READ_ONLY_V0AGENT04_HOME_ONESTEP_SETTINGS_GUARD`
+
+Live proof:
+  - `sys.boot_completed=1`
+  - slot `_b`
+  - bootanim `stopped`
+  - verified boot `orange`
+  - root available
+  - SELinux `Enforcing`
+  - Smartisax package:
+    `/system/priv-app/SmartisaxShell/SmartisaxShell.apk`
+  - Smartisax version:
+    versionCode `55`, versionName `0.7.4`
+  - device APK hash:
+    `d200a807710af02604038050a2d6f460051e19a34e18a5b334f7b65ec4cabd6a`
+  - libjingle arm64:
+    `3e3394bc81f84994cea9ceb5814b6dcd09eae3a0ae8516549d47f3bcaa605757`
+  - libjingle arm:
+    `976ad84ff585eb7121ff7d800a172e60995f634d59a64a7f913e4dac8907b08e`
+
+Evidence:
+  - flash:
+    `hard-rom/inspect/v0.agent0.4-home-onestep-settings-guard/flash-v0.agent0.4-home-onestep-settings-guard-20260630-211650.txt`
+  - boot/read-only:
+    `hard-rom/inspect/v0.agent0.4-home-onestep-settings-guard/boot-wait-v0.agent0.4-home-onestep-settings-guard-20260630-211650.txt`
+    and
+    `hard-rom/inspect/v0.agent0.4-home-onestep-settings-guard/verify-v0.agent0.4-home-onestep-settings-guard-device-read-only-20260630-212201.txt`
+
+### 2026-06-30: v0.agent0.4 Settings App Task Diagnostic FAIL With One Step Direction PASS
+
+Goal:
+  `Go home and open the Settings app.`
+
+Observed result:
+  The first run paused at step 1 with `one_step_enter_not_visible`. Logcat
+  showed `ZoomScreenController : request zoom failed cause keyguard showing`
+  even though other window/keyguard state reported the device unlocked. Manual
+  UI normalization by collapsing statusbar, going HOME, and restarting
+  ShellActivity cleared the stale state.
+
+Clean rerun:
+  - step 1:
+    `one_step(enter) 95%`, executed; result `one-step: enter visible right`
+  - step 2:
+    `tap(9275,250) 95%`, paused by `coordinate_edge_guard`
+  - final:
+    `state=paused`, `step=2/5`, last reason
+    `tap_coordinate_in_screen_edge_band`
+
+Diagnosis:
+  v0.agent0.4 fixed the repeated-HOME planning failure: MiMo entered One Step
+  instead of looping on HOME. The remaining issue is not best handled by more
+  prompt wording. After One Step materially changes the screen, the model may
+  return a stale/top-edge coordinate; runtime should detect the changed screen,
+  skip stale coordinates, and reobserve/replan before pausing.
+
+Evidence:
+  `hard-rom/inspect/v0.agent0.4-home-onestep-settings-guard/settings-app-task-20260630-212239/`
+
+### 2026-06-30: v0.agent0.5 Reobserve On Screen Change Build/Offline/Preflight PASS
+
+Goal:
+  Move stale-coordinate recovery from prompt-only guidance into the on-device
+  Agent Runtime.
+
+Implementation:
+  `v0.agent0.5-reobserve-on-screen-change` updates SmartisaxShell to `0.7.5` /
+  versionCode `56` on top of the live/read-only
+  `v0.agent0.4-home-onestep-settings-guard` system image. Each Agent
+  observation now carries a 12x12 visual signature. Runtime post-action checks
+  use material visual diff instead of exact JPEG hash equality, recording
+  `visualDistance`, `changedCells`, and `exactFingerprintChanged`.
+
+  Before executing a vision-planned UI action or finish, the runtime captures a
+  fresh lightweight observation. If the screen materially changed after
+  planning, it records `screen_freshness_guard` /
+  `screen_changed_before_action`, skips the stale action, and reobserves. If
+  the previous action materially changed the screen and the next model action
+  hits the edge coordinate guard, it records
+  `coordinate_guard_after_screen_change_reobserve` /
+  `skipped_coordinate_guard_reobserve` and lets the model see a fresh screen
+  before pausing. Reobserve skips are bounded at two.
+
+Build/offline/preflight result:
+  - build:
+    `PASS_BUILD_V0AGENT05_REOBSERVE_ON_SCREEN_CHANGE`
+  - offline:
+    `PASS_OFFLINE_IMAGE_V0AGENT05_REOBSERVE_ON_SCREEN_CHANGE`
+  - extra checks:
+    `PASS_AGENT0_OFFLINE_TESTS` and `agent05_extra_offline_checks=ok`
+  - Smartisax APK hash:
+    `6e1aba0b426957bc88b561dfc4cc40677a8f42c5fde1b908f9896a5a1879e45f`
+  - system_b hash:
+    `90622eefcf994ebbf5f58aeca9cb4f7bd67b67e9782b7a24d983f8f5de16e8e1`
+  - sparse hash:
+    `09c157326d12dd95b5b0aaaa7783daebb0292e46cd1fb064923cd33654f17f47`
+
+Preflight:
+  `tools/r2-live-flash-preflight.sh v0.agent0.5-reobserve-on-screen-change`
+  PASS. It verified the candidate sparse hash, rollback sparse availability,
+  offline PASS evidence, verifier route, and current live read-only device
+  state. It did not flash, reboot, erase misc, or change `/data`.
+
+Prepared tooling:
+  - build:
+    `tools/r2-hardrom-build-v0.agent0.5-reobserve-on-screen-change.sh`
+  - verifier:
+    `tools/r2-verify-v0.agent0.5-reobserve-on-screen-change.sh`
+  - preflight route:
+    `tools/r2-live-flash-preflight.sh v0.agent0.5-reobserve-on-screen-change`
+  - flash helper:
+    `tools/r2-live-flash-v0.agent0.5-reobserve-on-screen-change.sh`
+  - required exact confirmation:
+    `确认刷入 v0.agent0.5-reobserve-on-screen-change B 槽`
+
+Evidence:
+  - build:
+    `hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/build-v0.agent0.5-reobserve-on-screen-change-20260630-214854.txt`
+  - offline:
+    `hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/verify-v0.agent0.5-reobserve-on-screen-change-offline-image-20260630-215157.txt`
+
+Next:
+  Flash only after exact confirmation for
+  `v0.agent0.5-reobserve-on-screen-change B 槽`, then run the read-only verifier
+  and retry the Settings-open task.
+
+### 2026-06-30: v0.agent0.5 Reobserve On Screen Change B-slot Live Read-only PASS
+
+Confirmed flash:
+  `确认刷入 v0.agent0.5-reobserve-on-screen-change B 槽`
+
+Result:
+  - flash:
+    `PASS_FLASH_V0AGENT05_REOBSERVE_ON_SCREEN_CHANGE`
+  - read-only:
+    `PASS_READ_ONLY_V0AGENT05_REOBSERVE_ON_SCREEN_CHANGE`
+
+Live proof:
+  - `sys.boot_completed=1`
+  - slot `_b`
+  - bootanim `stopped`
+  - verified boot `orange`
+  - root available
+  - SELinux `Enforcing`
+  - current focus:
+    `com.smartisax.browser/com.smartisax.browser.ShellActivity`
+  - keyguard:
+    `isKeyguardShowing=false`
+  - Smartisax package:
+    `/system/priv-app/SmartisaxShell/SmartisaxShell.apk`
+  - Smartisax version:
+    versionCode `56`, versionName `0.7.5`
+  - device APK hash:
+    `6e1aba0b426957bc88b561dfc4cc40677a8f42c5fde1b908f9896a5a1879e45f`
+  - libjingle arm64:
+    `3e3394bc81f84994cea9ceb5814b6dcd09eae3a0ae8516549d47f3bcaa605757`
+  - libjingle arm:
+    `976ad84ff585eb7121ff7d800a172e60995f634d59a64a7f913e4dac8907b08e`
+
+Flash summary:
+  The helper reran preflight, confirmed candidate sparse hash
+  `09c157326d12dd95b5b0aaaa7783daebb0292e46cd1fb064923cd33654f17f47`,
+  confirmed rollback sparse availability, rebooted to bootloader, observed
+  fastboot current-slot `b`, unlocked `yes`, is-userspace `no`, wrote sparse
+  super chunks 1/9 through 9/9 in `233.454s`, erased `misc`, and rebooted.
+
+Evidence:
+  - flash:
+    `hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/flash-v0.agent0.5-reobserve-on-screen-change-20260630-220422.txt`
+  - boot/read-only:
+    `hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/boot-wait-v0.agent0.5-reobserve-on-screen-change-20260630-220422.txt`
+    and
+    `hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/verify-v0.agent0.5-reobserve-on-screen-change-device-read-only-20260630-220932.txt`
+  - focus/keyguard:
+    `hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/post-flash-focus-v0.agent0.5-reobserve-on-screen-change-20260630-221006.txt`
+
+Next:
+  Run the Settings-open acceptance task on live v0.agent0.5 and verify whether
+  the runtime reobserves/replans after the One Step screen transition instead
+  of pausing immediately on a stale edge coordinate.
+
+### 2026-06-30: v0.agent0.5 Settings App Task Diagnostic FAIL With One Step Tap No-change
+
+Goal:
+  `Go home and open the Settings app.`
+
+Result:
+  This is not an accepted Settings-open task. It is a useful diagnostic for the
+  next repair: v0.agent0.5 no longer fails on the old stale top-edge coordinate
+  path, but Settings still does not open from the visible One Step top app strip.
+
+Observed Agent state:
+  - final state:
+    `paused`
+  - step:
+    `5/5`
+  - One Step:
+    `visible right`
+  - last:
+    `repeated_tap_no_screen_change`
+
+Transcript:
+  - step 1:
+    `one_step(enter) 90%` with result `one-step: enter visible right`
+  - step 2:
+    `tap(9100,1700) 50%`
+    `Tap Settings icon in One Step top app strip`
+    `post-check: no change ca55e4b54bf94213->ca55e4b54bf94213`
+  - step 3:
+    `one_step(exit) 100%` with result `one-step: exit hidden none`
+  - step 4:
+    `one_step(enter) 100%` with result `one-step: enter visible right`
+  - step 5:
+    `tap(9250,1700) 90%`
+    `Tap the gear-shaped Settings icon in the One Step top app strip`
+    paused with `repeated_tap_no_screen_change`
+
+Manual probe:
+  With One Step still visible, a direct operator probe used `input tap 982 398`
+  on the apparent top-strip Settings gear area. Focus stayed on
+  `com.smartisax.browser/.ShellActivity`, `isKeyguardShowing=false`, and the
+  screenshot did not show Settings opening.
+
+Interpretation:
+  v0.agent0.5 moved the old stale-coordinate failure out of the prompt layer and
+  into guarded runtime behavior: the model now returns non-edge top-strip
+  coordinates, and the runtime correctly pauses instead of false-completing.
+  The remaining failure is probably not only model grounding. The next repair
+  should investigate the Smartisan One Step top app strip launch/click route, or
+  add a narrow, allowlisted semantic Android intent action for Settings, rather
+  than continuing to rely on prompt wording.
+
+Evidence:
+  - task screenshots/status:
+    `hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/settings-app-task-20260630-221422/`
+  - manual tap probe:
+    `hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/settings-app-task-20260630-221422/manual-tap-probe.txt`
+
+### 2026-06-30: v0.agent0.6 Accessibility Tree Build/Offline/Preflight PASS
+
+Goal:
+  Move the next Agent repair from pixel-only targeting toward an on-device
+  semantic click path. SmartisaxShell now registers an AccessibilityService,
+  auto-attempts enabling its own service with `WRITE_SECURE_SETTINGS`, captures
+  a bounded compact active-window node tree, sends that tree in each Agent step
+  prompt, and adds a narrow `click_node` action backed by
+  `AccessibilityNodeInfo.performAction(ACTION_CLICK)`.
+
+Implementation:
+  `v0.agent0.6-accessibility-tree` updates SmartisaxShell to `0.7.6` /
+  versionCode `57` on top of the live/read-only
+  `v0.agent0.5-reobserve-on-screen-change` image. The action surface is still
+  bounded: it adds `click_node` to the existing tap, swipe, key, wait,
+  one_step, finish, and ask_user set, but does not add shell, root, ADB,
+  fastboot, erase, delete, or remote HTTP Agent-control actions. Runtime
+  re-queries the Accessibility tree before executing a model-selected node id
+  and pauses with `accessibility_action_guard` if the node is missing or
+  `performAction` fails.
+
+Build/offline/preflight result:
+  - build:
+    `PASS_BUILD_V0AGENT06_ACCESSIBILITY_TREE`
+  - offline:
+    `PASS_OFFLINE_IMAGE_V0AGENT06_ACCESSIBILITY_TREE`
+  - extra checks:
+    `PASS_AGENT0_OFFLINE_TESTS` and `agent06_extra_offline_checks=ok`
+  - Smartisax APK hash:
+    `a0109ab1ceaea4c6039eb43227c5c601edb5464bda52f2a7e889c39964387389`
+  - system_b hash:
+    `143cc0674a8d451d76d63b4c9d61a8bda857310d5d26a6eb84f0ce19ff1269b9`
+  - sparse hash:
+    `8f9c050815555ca38c0c7aa35fb3ed88497f4680e57ad8e15a3d75072c298fa7`
+
+Preflight:
+  `tools/r2-live-flash-preflight.sh v0.agent0.6-accessibility-tree` PASS for
+  local image, rollback sparse, verifier route, and offline evidence. The R2
+  was not online over ADB during this preflight, so live read-only device state
+  was skipped. The script did not flash, reboot, erase `misc`, or change
+  `/data`.
+
+Prepared tooling:
+  - build:
+    `tools/r2-hardrom-build-v0.agent0.6-accessibility-tree.sh`
+  - verifier:
+    `tools/r2-verify-v0.agent0.6-accessibility-tree.sh`
+  - preflight route:
+    `tools/r2-live-flash-preflight.sh v0.agent0.6-accessibility-tree`
+  - flash helper:
+    `tools/r2-live-flash-v0.agent0.6-accessibility-tree.sh`
+  - required exact confirmation:
+    `确认刷入 v0.agent0.6-accessibility-tree B 槽`
+
+Evidence:
+  - build:
+    `hard-rom/inspect/v0.agent0.6-accessibility-tree/build-v0.agent0.6-accessibility-tree-20260701-000041.txt`
+  - offline:
+    `hard-rom/inspect/v0.agent0.6-accessibility-tree/verify-v0.agent0.6-accessibility-tree-offline-image-20260701-000415.txt`
+
+Next:
+  Flash only after exact confirmation for
+  `v0.agent0.6-accessibility-tree B 槽`, then verify Accessibility status in
+  the Shell Agent panel and rerun a Settings task. The key live question is
+  whether Smartisan One Step exposes a usable top-strip Settings node. If it
+  does not, the next repair should either patch the One Step/Sidebar surface to
+  expose agent-friendly accessibility nodes or add a deliberately narrow
+  semantic Settings action.
+
+### 2026-07-01: v0.agent0.6 Accessibility Tree B-slot Live Read-only PASS
+
+Goal:
+  Flash the prepared Accessibility-tree Agent candidate to B slot after exact
+  confirmation and verify that the on-device AccessibilityService is really
+  enabled/bound, not merely present in the APK.
+
+Command:
+  - flash helper:
+    `tools/r2-live-flash-v0.agent0.6-accessibility-tree.sh --confirm "确认刷入 v0.agent0.6-accessibility-tree B 槽"`
+  - exact confirmation used:
+    `确认刷入 v0.agent0.6-accessibility-tree B 槽`
+
+Preflight and flash result:
+  The flash helper reran the exact live preflight before mutating the device.
+  Local image, rollback sparse, verifier route, and offline evidence passed.
+  Live preflight saw `sys.boot_completed=1`, slot `_b`, bootanim `stopped`,
+  verified boot `orange`, ADB online, root `uid=0`, and SELinux `Enforcing`.
+  It flashed sparse super chunks 1/9 through 9/9 in `233.062s`, erased `misc`,
+  rebooted, and waited until post-boot `sys.boot_completed=1` on slot `_b`.
+  Result:
+  `PASS_FLASH_V0AGENT06_ACCESSIBILITY_TREE`.
+
+Live read-only verifier:
+  - result:
+    `PASS_READ_ONLY_V0AGENT06_ACCESSIBILITY_TREE`
+  - package path:
+    `/system/priv-app/SmartisaxShell/SmartisaxShell.apk`
+  - version:
+    versionCode `57`, versionName `0.7.6`
+  - Smartisax APK hash:
+    `a0109ab1ceaea4c6039eb43227c5c601edb5464bda52f2a7e889c39964387389`
+  - libjingle arm64 hash:
+    `3e3394bc81f84994cea9ceb5814b6dcd09eae3a0ae8516549d47f3bcaa605757`
+  - libjingle arm hash:
+    `976ad84ff585eb7121ff7d800a172e60995f634d59a64a7f913e4dac8907b08e`
+  - expected verifier warning:
+    `WARN: primaryCpuAbi arm64-v8a not visible in dumpsys`
+
+Accessibility probe:
+  A post-flash probe brought `ShellActivity` foreground and confirmed the
+  service binding through Android settings and `dumpsys accessibility`.
+  `settings get secure accessibility_enabled` returned `1`, and
+  `enabled_accessibility_services` returned
+  `com.smartisax.browser/com.smartisax.browser.SmartisaxAccessibilityService`.
+  `dumpsys accessibility` showed the Smartisax service in `Bound services` with
+  `FEEDBACK_GENERIC`, capabilities `1`, and event types
+  `TYPE_WINDOW_STATE_CHANGED`, `TYPE_WINDOW_CONTENT_CHANGED`, and
+  `TYPE_WINDOWS_CHANGED`. The active window was the Smartisax application
+  window with `focused=true` and `active=true`.
+
+UI note:
+  The post-flash screenshot still shows the Shell header text
+  `SMARTISAX 0.7.5` even though PackageManager and the verifier prove the live
+  package is `0.7.6`/versionCode `57`. Treat this as a low-risk Shell UI
+  metadata bug on the current flashed APK, not as a package/install failure.
+  The source metadata was corrected to `0.7.6` after this flash and will only
+  appear on-device after the next rebuild/flash.
+
+Evidence:
+  - flash:
+    `hard-rom/inspect/v0.agent0.6-accessibility-tree/flash-v0.agent0.6-accessibility-tree-20260701-154742.txt`
+  - boot wait:
+    `hard-rom/inspect/v0.agent0.6-accessibility-tree/boot-wait-v0.agent0.6-accessibility-tree-20260701-154742.txt`
+  - read-only verifier:
+    `hard-rom/inspect/v0.agent0.6-accessibility-tree/verify-v0.agent0.6-accessibility-tree-device-read-only-20260701-155253.txt`
+  - Accessibility binding probe:
+    `hard-rom/inspect/v0.agent0.6-accessibility-tree/post-flash-accessibility-v0.agent0.6-accessibility-tree-20260701-155309.txt`
+  - screenshot:
+    `hard-rom/inspect/v0.agent0.6-accessibility-tree/post-flash-accessibility-ui-20260701-155309/shell-a11y-status.png`
+
+Next:
+  Run the live Settings task on v0.agent0.6 and inspect whether One Step's top
+  app strip exposes a usable Settings node to the Smartisax Accessibility tree.
+  If it does not, patch or replace the One Step/Sidebar surface with
+  agent-friendly accessibility nodes, or add a deliberately narrow allowlisted
+  Settings semantic action. Carry the corrected Shell header version text into
+  the next image candidate.
+
+### 2026-07-01: v0.agent0.6 Settings Task Diagnostic Blocked By Device Network And One Step A11y Gap
+
+Goal:
+  Run the live `v0.agent0.6-accessibility-tree` Settings task and observe
+  whether One Step's top app strip exposes a Settings node that the Agent can
+  select with `click_node`.
+
+Preflight:
+  The R2 was live on slot `_b` with `sys.boot_completed=1`, bootanim
+  `stopped`, verified boot `orange`, root available, SELinux `Enforcing`,
+  `ShellActivity` foreground, keyguard hidden, and
+  `SmartisaxAccessibilityService` enabled/bound. One Step started hidden:
+  `side_bar_zoom_type=-1`, `sidebar_switch_status=0`.
+
+Agent task result:
+  The Shell Agent task was started with MiMo vision provider selected. After a
+  second Start tap the UI changed to `state=running`,
+  `provider=mimo_v25_vision`, `step=0/5`, One Step hidden, and `A11y=36
+  nodes`, but it stayed at `step=0/5` for more than 36 seconds with no
+  transcript/action. Device network probes showed
+  `ping: unknown host api.xiaomimimo.com` and `connect: Network is
+  unreachable`; connectivity dumps showed only IMS mobile networks, not a
+  usable general Internet path. This blocked the MiMo provider before any model
+  action was returned.
+
+Manual One Step Accessibility probe:
+  To isolate the Accessibility question from the network failure, One Step was
+  entered manually with `service call window 2001 i32 2 i32 0`, changing
+  system state to `side_bar_zoom_type=2` and `sidebar_switch_status=1`. The
+  screenshot showed the top strip visually present, including the gear-shaped
+  Settings icon. However, `uiautomator dump` exposed only the Smartisax WebView
+  tree; searching for `Settings`, `settings`, `设置`, and
+  `com.android.settings` found only the Agent goal input text, not a top-strip
+  app node. `dumpsys accessibility` saw two additional unknown overlay windows
+  matching One Step top/right regions, while `dumpsys window` confirmed visible
+  `com.smartisanos.sidebar` `sidebar_top_area` and `sidebar_side_area_layout`
+  surfaces.
+
+Conclusion:
+  Current live v0.agent0.6 does not expose a usable Settings `click_node` from
+  the One Step top app strip through the active Accessibility tree. The top
+  strip is visible as a Sidebar overlay, but `getRootInActiveWindow()` remains
+  the Smartisax application window. Next repair should add a provider/network
+  preflight or request-timeout UI, collect roots from `AccessibilityService`
+  `getWindows()` where possible, and if those One Step windows still lack
+  usable nodes, patch/rewrite One Step/Sidebar to expose agent-friendly
+  accessibility nodes or add a narrow allowlisted Settings semantic action.
+
+Cleanup note:
+  ADB transport disappeared during cleanup, so final Agent stop / One Step exit
+  state could not be reverified in this run.
+
+Evidence:
+  `hard-rom/inspect/v0.agent0.6-accessibility-tree/settings-task-20260701-160601/report.md`
+
+### 2026-07-01: v0.agent0.7 Window/Provider Preflight Build/Offline/Preflight PASS
+
+Goal:
+  Prepare the next Agent repair on top of live/read-only
+  `v0.agent0.6-accessibility-tree` without flashing. The candidate extends
+  `SmartisaxAccessibilityService` from active-root-only collection to active
+  root plus `AccessibilityService.getWindows()` interactive-window roots, and
+  adds visible provider planning/network/timeout transcript guards so MiMo or
+  DeepSeek failures do not sit silently at `running step=0/5`.
+
+Commands:
+
+```bash
+tools/r2-build-smartisax-shell.sh
+tools/r2-agent0-offline-tests.py
+tools/r2-hardrom-build-v0.agent0.7-window-preflight.sh
+tools/r2-verify-v0.agent0.7-window-preflight.sh --offline-image
+tools/r2-live-flash-preflight.sh v0.agent0.7-window-preflight
+```
+
+Result:
+  - build result:
+    `PASS_BUILD_V0AGENT07_WINDOW_PREFLIGHT`
+  - offline result:
+    `PASS_OFFLINE_IMAGE_V0AGENT07_WINDOW_PREFLIGHT`
+  - extra checks:
+    `PASS_AGENT0_OFFLINE_TESTS` and `agent07_extra_offline_checks=ok`
+  - exact preflight:
+    PASS for local sparse hash, v0.4 rollback sparse, verifier route, and
+    offline evidence. ADB was still not online, so live read-only device state
+    was skipped. The preflight did not flash, reboot, erase `misc`, or change
+    `/data`.
+
+Build outputs:
+  - Smartisax APK:
+    Smartisax v0.7.7/versionCode 58
+  - APK hash:
+    `68b9cc0da7fd8e8d03ac4606fb9dd46329993af05b92896890d787db5317a74b`
+  - system_b hash:
+    `4c1cee130f776f3fe83340dbef7592cc56ea4e37446aefa548f5cf3f378bc892`
+  - sparse hash:
+    `d16518056abea641cf51e8d944eb517a00dfdbd3d4ba7ef44a5cbad30400c7cc`
+
+Verifier evidence:
+  The decoded APK contains the v0.agent0.7 marker, `getWindows`,
+  `android_accessibility_active_plus_windows`, `windowCount`, `click_node`,
+  `performAction`, `provider_network_guard`,
+  `provider_network_dns_unavailable`, `provider_request_timeout`, and
+  `paused_provider_error`. `/api/input` remains absent, the existing WebRTC
+  and privapp permission gates remain intact, and `services.jar` remains the
+  expected hash.
+
+Prepared tooling:
+  - build:
+    `tools/r2-hardrom-build-v0.agent0.7-window-preflight.sh`
+  - verifier:
+    `tools/r2-verify-v0.agent0.7-window-preflight.sh`
+  - preflight route:
+    `tools/r2-live-flash-preflight.sh v0.agent0.7-window-preflight`
+  - flash helper:
+    `tools/r2-live-flash-v0.agent0.7-window-preflight.sh`
+  - required exact confirmation:
+    `确认刷入 v0.agent0.7-window-preflight B 槽`
+
+Evidence:
+  - build:
+    `hard-rom/inspect/v0.agent0.7-window-preflight/build-v0.agent0.7-window-preflight-20260701-162941.txt`
+  - offline:
+    `hard-rom/inspect/v0.agent0.7-window-preflight/verify-v0.agent0.7-window-preflight-offline-image-20260701-163244.txt`
+  - preflight:
+    `hard-rom/inspect/v0.agent0.7-window-preflight/preflight-v0.agent0.7-window-preflight-20260701-163520.txt`
+
+Next:
+  Flash only after exact confirmation for
+  `v0.agent0.7-window-preflight B 槽`. After boot/read-only verification, rerun
+  the Settings task. The first live question is whether One Step's unknown
+  Sidebar overlay windows now expose usable roots/nodes through `getWindows()`.
+  If not, patch or rewrite One Step/Sidebar to expose agent-friendly
+  accessibility nodes, or add a deliberately narrow allowlisted Settings
+  semantic action.
+
+### 2026-07-01: v0.agent0.7 Window/Provider Preflight Flash Attempt Blocked Before Mutation
+
+Goal:
+  Flash the confirmed `v0.agent0.7-window-preflight` candidate to the R2 B
+  slot after the user provided the exact confirmation phrase.
+
+Command:
+
+```bash
+tools/r2-live-flash-v0.agent0.7-window-preflight.sh \
+  --confirm "确认刷入 v0.agent0.7-window-preflight B 槽"
+```
+
+Result:
+  The flash did not occur. The helper revalidated the local sparse image,
+  rollback sparse, verifier route, and offline evidence, then attempted to
+  move the device into bootloader. ADB reported `device 'bb12d264' not found`,
+  and `adb devices` showed no attached devices. The run did not reach any
+  `fastboot flash`, `fastboot erase misc`, or reboot-from-fastboot step.
+
+Evidence:
+  - flash attempt:
+    `hard-rom/inspect/v0.agent0.7-window-preflight/flash-v0.agent0.7-window-preflight-20260701-163916.txt`
+
+Next:
+  Reconnect the R2 or put it in bootloader fastboot with USB visible, then run
+  the same confirmed helper again. After a successful boot, run:
+
+```bash
+tools/r2-verify-v0.agent0.7-window-preflight.sh --read-only
+```
+
+### 2026-07-01: v0.agent0.7 Window/Provider Preflight B-slot Live Read-only PASS
+
+Goal:
+  Retry the confirmed `v0.agent0.7-window-preflight` B-slot flash after the R2
+  USB cable was replugged and ADB rediscovered `bb12d264`.
+
+Command:
+
+```bash
+tools/r2-live-flash-v0.agent0.7-window-preflight.sh \
+  --confirm "确认刷入 v0.agent0.7-window-preflight B 槽"
+```
+
+Result:
+  PASS. The helper reran preflight, confirmed the candidate sparse and rollback
+  sparse hashes, observed live ADB state, rebooted the R2 into bootloader,
+  confirmed `current-slot: b`, `unlocked: yes`, and `is-userspace: no`, flashed
+  sparse `super` chunks 1/9 through 9/9 successfully, erased `misc`, rebooted,
+  waited for `sys.boot_completed=1`, and ran the v0.agent0.7 read-only
+  verifier.
+
+Live verification:
+  - flash result:
+    `PASS_FLASH_V0AGENT07_WINDOW_PREFLIGHT`
+  - read-only result:
+    `PASS_READ_ONLY_V0AGENT07_WINDOW_PREFLIGHT`
+  - boot state:
+    `sys.boot_completed=1`, slot `_b`, bootanim `stopped`, verified boot
+    `orange`
+  - root/SELinux:
+    root uid=0 available through APatch/kp, SELinux `Enforcing`
+  - package:
+    `com.smartisax.browser` served from
+    `/system/priv-app/SmartisaxShell/SmartisaxShell.apk`, versionName `0.7.7`,
+    versionCode `58`
+  - hashes:
+    device Smartisax APK hash
+    `68b9cc0da7fd8e8d03ac4606fb9dd46329993af05b92896890d787db5317a74b`;
+    system libwebrtc arm64/arm hashes match the expected retained payloads
+  - UI/accessibility:
+    current focus is `com.smartisax.browser/.ShellActivity`,
+    `isKeyguardShowing=false`, and enabled Accessibility services include
+    `com.smartisax.browser/com.smartisax.browser.SmartisaxAccessibilityService`
+
+Evidence:
+  - flash:
+    `hard-rom/inspect/v0.agent0.7-window-preflight/flash-v0.agent0.7-window-preflight-20260701-165128.txt`
+  - boot/read-only:
+    `hard-rom/inspect/v0.agent0.7-window-preflight/boot-wait-v0.agent0.7-window-preflight-20260701-165128.txt`
+  - verifier:
+    `hard-rom/inspect/v0.agent0.7-window-preflight/verify-v0.agent0.7-window-preflight-device-read-only-20260701-165639.txt`
+  - focus/accessibility:
+    `hard-rom/inspect/v0.agent0.7-window-preflight/post-flash-focus-accessibility-v0.agent0.7-window-preflight-20260701-165715.txt`
+
+Next:
+  Rerun the Settings task on live v0.agent0.7. The first diagnostic question is
+  whether One Step's visible Sidebar overlay windows now expose usable
+  roots/nodes via `AccessibilityService.getWindows()` and whether the Agent can
+  choose a `click_node` action instead of coordinate-tapping the top app strip.
+
+### 2026-07-01: v0.agent0.7 Settings Task And One Step getWindows Diagnostic
+
+Goal:
+  Run the Settings task on live `v0.agent0.7-window-preflight` after the USB
+  reconnect, then verify whether `AccessibilityService.getWindows()` exposes
+  One Step overlay roots with usable Settings nodes.
+
+Live state:
+  The R2 stayed on slot `_b` with `sys.boot_completed=1`, APatch/kp root
+  available, SELinux `Enforcing`, verified boot `orange`, Smartisax Shell
+  focused, `isKeyguardShowing=false`, and the Smartisax Accessibility service
+  enabled.
+
+Settings task result:
+  The first post-reconnect Start tap was rejected as `missing_goal` because the
+  Goal field was empty after the WebView state refresh. A clean rerun used:
+
+```text
+open_settings_with_onestep_click_settings_node
+```
+
+  MiMo responded, and the visible transcript showed:
+
+```text
+#1 mimo_v25_vision planning 0ms
+planning: 100 nodes / 3 roots / 2 windows
+
+#1 mimo_v25_vision paused_action_not_satisfied 4727ms
+one_step(enter) 95%
+Enter One Step to access Settings app icon in top strip
+one_step_state_guard: one_step_enter_not_visible
+```
+
+  During the failed Agent-enter run, WindowManager already listed
+  `sidebar_content_area`, `sidebar_top_area`, `sidebar_side_area_suck_view`,
+  and `sidebar_side_area_layout`, but the One Step global state stayed hidden:
+
+```text
+side_bar_mode=1
+side_bar_zoom_type=-1
+sidebar_switch_status=0
+```
+
+  `dumpsys accessibility` showed only the status bar system window plus the
+  Smartisax application window, so the Agent did not reach a visible One Step
+  overlay state in that task.
+
+Manual getWindows probe:
+  A direct manual `service call window 2001 i32 2 i32 0` while the task page was
+  left in its failed state returned OK but did not change the One Step globals.
+  Reusing the earlier v0.agent0.4 normalization pattern did work:
+
+```text
+cmd statusbar collapse
+wm dismiss-keyguard
+input keyevent HOME
+am start -n com.smartisax.browser/.ShellActivity
+service call window 2001 i32 -1 i32 0
+service call window 2001 i32 2 i32 0
+```
+
+  After that normalized exit+enter sequence, One Step became truly visible:
+
+```text
+side_bar_mode=1
+side_bar_zoom_type=2
+sidebar_switch_status=1
+```
+
+  The screenshot shows the One Step top app strip and right sidebar visually
+  present, including the gear-shaped Settings icon. `dumpsys accessibility`
+  then exposed the overlay windows:
+
+```text
+Window id=16 type=<UNKNOWN:-1> bounds=Rect(0, 0 - 1080, 592)
+Window id=14 type=<UNKNOWN:-1> bounds=Rect(807, 592 - 1080, 2340)
+Window id=18 title=Smartisax type=TYPE_APPLICATION bounds=Rect(0, 0 - 1080, 2340)
+```
+
+  A Smartisax Agent-panel refresh while One Step was visible reported:
+
+```text
+One Step = visible right
+A11y = 91 nodes / 4 roots / 3 windows
+```
+
+Conclusion:
+  `getWindows()` does expose the visible One Step overlay windows/roots in
+  v0.agent0.7 after One Step is actually opened. However, those overlay roots
+  still do not expose a usable `Settings` app node for `click_node`: the top
+  strip icon is visible in pixels, but `uiautomator` and the compact
+  Accessibility tree do not contain a `Settings`/`设置`/`com.android.settings`
+  node from the overlay. The remaining failure is therefore not just missing
+  `getWindows()` collection. It is a Sidebar/One Step accessibility semantics
+  gap plus a brittle enter-state precondition.
+
+Next:
+  Patch the next candidate in two parts:
+
+  1. Make `one_step(enter)` normalize the UI state or perform an exit+enter
+     recovery when WindowManager surfaces exist but
+     `side_bar_zoom_type=-1/sidebar_switch_status=0`.
+  2. Add agent-friendly One Step accessibility semantics by patching/replacing
+     the Sidebar top strip, or add a narrow allowlisted semantic action for
+     opening Settings from One Step if the stock overlay still cannot expose a
+     clickable Settings node.
+
+Evidence:
+  - Settings clean goal run:
+    `hard-rom/inspect/v0.agent0.7-window-preflight/settings-task-20260701-170535/retry-after-replug/settings-task-clean-goal-20260701-171530/`
+  - Direct manual enter probe:
+    `hard-rom/inspect/v0.agent0.7-window-preflight/settings-task-20260701-170535/retry-after-replug/manual-onestep-getwindows-20260701-171736/`
+  - Normalized visible One Step getWindows probe:
+    `hard-rom/inspect/v0.agent0.7-window-preflight/settings-task-20260701-170535/retry-after-replug/normalized-onestep-getwindows-20260701-171943/`
+
+### 2026-07-01: v0.agent0.8 One Step Accessibility Nodes Build/Offline PASS
+
+Goal:
+  Build the next Agent candidate on top of live/read-only
+  `v0.agent0.7-window-preflight` without touching the live phone. The repair
+  has two parts:
+
+  1. SmartisaxShell v0.7.8 adds `one_step_visibility_recovery_home_exit_enter`,
+     a guarded `HOME -> exit -> enter` recovery path before touch fallback when
+     `one_step(enter)` does not become visible.
+  2. Sidebar is patched from the current v0.agent0.7 system image so the
+     dynamic One Step top app strip binds each `AppItem` to an Agent-friendly
+     Accessibility node and a real `ACTION_CLICK -> AppItem.openUI` listener.
+
+Offline implementation:
+  - Added `tools/r2-build-sidebar-onestep-a11y-apk.sh`.
+  - It dumps `/system/priv-app/Sidebar/Sidebar.apk` from the v0.agent0.7
+    system_b image, patches `AppListAdapter.onBindViewHolder`, adds
+    `AppListAdapter$AgentAppClickListener`, rebuilds only `classes.dex`, and
+    copies the current APK v2/v3 signing block back.
+  - The patched node description starts:
+    `smartisax:onestep:app|label=...|package=...|component=...|user=...|id=...`
+  - The APK delta is limited to `classes.dex`; Sidebar keeps
+    `com.smartisanos.sidebar`, `android.uid.system`, `coreApp`,
+    `SidebarService`, and providers.
+  - Added `tools/r2-hardrom-build-v0.agent0.8-onestep-a11y-nodes.sh`,
+    `tools/r2-verify-v0.agent0.8-onestep-a11y-nodes.sh`,
+    `tools/r2-live-flash-v0.agent0.8-onestep-a11y-nodes.sh`, and preflight
+    routing.
+
+Build details:
+  - During the first combined build, the old held-stock Sidebar replacement
+    pattern failed with `Could not allocate block in ext2 filesystem` because
+    Smartisax v0.7.8 left only 240 free ext4 blocks. The final builder now
+    dumps the stock Sidebar APK to the work dir, removes the public APK path,
+    writes the patched APK directly, and verifies the post-fsck hash.
+  - A second issue was local disk pressure: the Smartisax-only intermediate
+    sparse and final sparse used the same path. The final builder now deletes
+    the intermediate sparse before writing the final one, avoiding two 8GB
+    sparse files at once.
+
+Hashes:
+```text
+SmartisaxShell.apk sha256=b9eeece7776a35dff470bfae30ec9e6d61ea0e8856ae8df081550a30c1259fea
+Sidebar.apk sha256=2ceb4dca8d6e9b2c709cf19064b064d3376e24a12190592ca3cf969cdf6206af
+system_b sha256=59513487018c33383f24c9f163238192f82a596c65d3b89db6ed8a93b0c5ffdc
+super sparse sha256=3f0ea7fb8f3bed0dcf9e8c3582e40c02f0b2db59991ef606a887b8d7cd979f8b
+```
+
+Results:
+```text
+PASS_BUILD_V0AGENT08_ONESTEP_A11Y_NODES
+PASS_OFFLINE_IMAGE_V0AGENT08_ONESTEP_A11Y_NODES
+PASS_AGENT0_OFFLINE_TESTS
+sidebar_agent_onestep_a11y_nodes=ok
+agent08_extra_offline_checks=ok
+```
+
+Evidence:
+  - Build:
+    `hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/build-v0.agent0.8-onestep-a11y-nodes-20260701-185031.txt`
+  - Offline verify:
+    `hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/verify-v0.agent0.8-onestep-a11y-nodes-offline-image-20260701-190024.txt`
+  - APK manifest:
+    `hard-rom/build/apk/sidebar-onestep-a11y-apk-manifest.tsv`
+  - ROM manifests:
+    `hard-rom/build/system-otatrust-v0.agent0.8-onestep-a11y-nodes.SHA256SUMS.txt`
+    and
+    `hard-rom/build/super-otatrust-v0.agent0.8-onestep-a11y-nodes.SHA256SUMS.txt`
+
+Next:
+  Do not flash automatically. Wait for the exact confirmation phrase:
+  `确认刷入 v0.agent0.8-onestep-a11y-nodes B 槽`. After flash, run read-only
+  verification, then a safe One Step enter/exit smoke, then return to the
+  Settings task and check that the top-strip Settings AppItem appears as a
+  `click_node` candidate.
+
+### 2026-07-01: v0.agent0.8 One Step Accessibility Nodes B-slot Live Read-only PASS And Diagnostic
+
+Goal:
+  Flash the confirmed `v0.agent0.8-onestep-a11y-nodes` candidate to B slot,
+  verify the live ROM, then run a safe One Step enter/exit smoke and return to
+  the Settings task.
+
+Command:
+```bash
+tools/r2-live-flash-v0.agent0.8-onestep-a11y-nodes.sh \
+  --confirm "确认刷入 v0.agent0.8-onestep-a11y-nodes B 槽"
+```
+
+Flash/read-only result:
+  - Preflight confirmed candidate sparse sha256
+    `3f0ea7fb8f3bed0dcf9e8c3582e40c02f0b2db59991ef606a887b8d7cd979f8b` and
+    rollback sparse sha256
+    `313ec839f962a6ed5fddadc8c2180f40912b86da4c40f27f90bcb75e2fd4bfc5`.
+  - Fastboot current slot was `b`, bootloader unlocked `yes`, userspace
+    fastboot `no`.
+  - `fastboot flash super` wrote sparse chunks 1/9 through 9/9 successfully,
+    then `erase misc` and reboot succeeded.
+  - Post-boot verification passed with `sys.boot_completed=1`, slot `_b`,
+    bootanim `stopped`, verified boot `orange`, root uid=0, SELinux Enforcing,
+    Smartisax versionName `0.7.8`/versionCode `59`, device Smartisax APK hash
+    `b9eeece7776a35dff470bfae30ec9e6d61ea0e8856ae8df081550a30c1259fea`,
+    Sidebar APK hash
+    `2ceb4dca8d6e9b2c709cf19064b064d3376e24a12190592ca3cf969cdf6206af`,
+    and system libwebrtc hashes unchanged.
+
+Results:
+```text
+PASS_FLASH_V0AGENT08_ONESTEP_A11Y_NODES
+PASS_READ_ONLY_V0AGENT08_ONESTEP_A11Y_NODES
+```
+
+Smoke/diagnostic:
+  - One Step smoke passed at the state level: programmatic enter set
+    `side_bar_zoom_type=2` and `sidebar_switch_status=1`, then exit returned
+    to `-1` / `0`.
+  - `getWindows()` exposed visible One Step overlay windows during enter, but
+    `uiautomator dump` did not show `smartisax:onestep:app`,
+    `com.android.settings`, `Settings`, or `设置`; this may be an
+    active-root-vs-interactive-window dump limitation rather than proof that
+    the Agent cannot see those nodes.
+  - The retry Settings task reached a live Agent status with
+    `A11y=100 nodes / 3 roots / 2 windows` and One Step visible, but step stayed
+    `0/5` for about 50s and no transcript/action appeared. Thread inspection
+    showed no live `SmartisaxAgentRuntime` worker, so v0.8 has a status
+    diagnosis bug: the worker can die while UI status remains fake `running`.
+
+Evidence:
+  - Flash:
+    `hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/flash-v0.agent0.8-onestep-a11y-nodes-20260701-191116.txt`
+  - Boot/read-only:
+    `hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/boot-wait-v0.agent0.8-onestep-a11y-nodes-20260701-191116.txt`
+    and
+    `hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/verify-v0.agent0.8-onestep-a11y-nodes-device-read-only-20260701-191628.txt`
+  - One Step smoke:
+    `hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/one-step-smoke-20260701-191739/report.txt`
+  - uiautomator probe:
+    `hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/uiautomator-onestep-20260701-191847/`
+  - Settings retry diagnostic:
+    `hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/settings-task-retry-ui-20260701-192212/effective-run-report.txt`
+
+Next:
+  Build a small v0.agent0.9 repair that does not change the Sidebar patch:
+  reconcile dead Agent workers in status and expose Agent-visible
+  One Step/Settings target counts directly in Shell/`/api/agent/status`.
+
+### 2026-07-01: v0.agent0.9 Worker/A11y Targets Build/Offline/Preflight PASS
+
+Goal:
+  Build the smallest diagnostic repair on top of live/read-only v0.agent0.8
+  before the next Settings task. Do not flash without a new exact confirmation.
+
+Implementation:
+  - SmartisaxShell v0.7.9/versionCode 60 changes Agent status from fake
+    `running` to `error/agent_worker_not_alive` when the worker thread is gone.
+  - The worker loop catches `Throwable` after normal `Exception` handling so
+    fatal runtime failures still become visible status.
+  - Agent status adds `accessibilityTargets`, including
+    `oneStepAppNodeCount`, `settingsNodeCount`, and compact samples, so the
+    next run can show whether the dynamic One Step Settings AppItem is visible
+    to the Agent tree.
+  - Sidebar APK is intentionally reused from v0.8 unchanged, with sha256
+    `2ceb4dca8d6e9b2c709cf19064b064d3376e24a12190592ca3cf969cdf6206af`.
+
+Commands:
+```bash
+tools/r2-hardrom-build-v0.agent0.9-worker-a11y-targets.sh
+tools/r2-verify-v0.agent0.9-worker-a11y-targets.sh --offline-image
+tools/r2-live-flash-preflight.sh v0.agent0.9-worker-a11y-targets
+```
+
+Hashes:
+```text
+SmartisaxShell.apk sha256=6467308d01a308526f2f5f652372942d709e8257e4b7a40ce194645a7b7e26fc
+Sidebar.apk sha256=2ceb4dca8d6e9b2c709cf19064b064d3376e24a12190592ca3cf969cdf6206af
+system_b sha256=65867365776dbf8d4c73c1ab26a16f8e9d8bf5e47758909b811b698586cf589f
+super sparse sha256=648320622194a61fa0f4c4b9d30f5d395c6f20928e5c53bd98896c4a705a6cfc
+rollback sparse sha256=313ec839f962a6ed5fddadc8c2180f40912b86da4c40f27f90bcb75e2fd4bfc5
+```
+
+Results:
+```text
+PASS_BUILD_V0AGENT09_WORKER_A11Y_TARGETS
+PASS_OFFLINE_IMAGE_V0AGENT09_WORKER_A11Y_TARGETS
+PASS_AGENT0_OFFLINE_TESTS
+sidebar_agent_onestep_a11y_nodes=ok
+agent09_extra_offline_checks=ok
+```
+
+Preflight:
+  Read-only live preflight passed. It confirmed the v0.9 sparse hash, rollback
+  image readiness, verifier/offline PASS evidence, and current live state:
+  `sys.boot_completed=1`, slot `_b`, bootanim `stopped`, verified boot
+  `orange`, root uid=0, and SELinux Enforcing. It did not flash, reboot, erase
+  `misc`, or change `/data`.
+
+Evidence:
+  - Build:
+    `hard-rom/inspect/v0.agent0.9-worker-a11y-targets/build-v0.agent0.9-worker-a11y-targets-20260701-193038.txt`
+  - Offline verify:
+    `hard-rom/inspect/v0.agent0.9-worker-a11y-targets/verify-v0.agent0.9-worker-a11y-targets-offline-image-20260701-193733.txt`
+  - Live preflight:
+    `hard-rom/inspect/v0.agent0.9-worker-a11y-targets/preflight-v0.agent0.9-worker-a11y-targets-20260701-194145.txt`
+  - ROM manifests:
+    `hard-rom/build/system-otatrust-v0.agent0.9-worker-a11y-targets.SHA256SUMS.txt`
+    and
+    `hard-rom/build/super-otatrust-v0.agent0.9-worker-a11y-targets.SHA256SUMS.txt`
+
+Next:
+  Do not flash automatically. Wait for the exact confirmation phrase:
+  `确认刷入 v0.agent0.9-worker-a11y-targets B 槽`. After flash, run read-only
+  verification, run a safe One Step enter/exit smoke, then rerun the Settings
+  task and inspect `A11y Targets`.
+
+### 2026-07-01: v0.agent0.9 Worker/A11y Targets B-slot Live Read-only PASS And Settings click_node PASS
+
+Goal:
+  Flash the confirmed `v0.agent0.9-worker-a11y-targets` candidate to B slot,
+  verify the live device, then run One Step and Settings task diagnostics.
+
+Flash:
+```bash
+tools/r2-live-flash-v0.agent0.9-worker-a11y-targets.sh \
+  --confirm "确认刷入 v0.agent0.9-worker-a11y-targets B 槽"
+```
+
+Results:
+```text
+PASS_FLASH_V0AGENT09_WORKER_A11Y_TARGETS
+PASS_READ_ONLY_V0AGENT09_WORKER_A11Y_TARGETS
+```
+
+Live read-only proof:
+  The flash preflight passed for sparse hash
+  `648320622194a61fa0f4c4b9d30f5d395c6f20928e5c53bd98896c4a705a6cfc`
+  and rollback hash
+  `313ec839f962a6ed5fddadc8c2180f40912b86da4c40f27f90bcb75e2fd4bfc5`.
+  Fastboot flashed sparse chunks 1/9 through 9/9, erased `misc`, rebooted, and
+  boot reached `sys.boot_completed=1` on slot `_b`. The read-only verifier
+  confirmed bootanim `stopped`, verified boot `orange`, root uid=0, SELinux
+  Enforcing, Smartisax package path
+  `/system/priv-app/SmartisaxShell/SmartisaxShell.apk`, versionName `0.7.9`,
+  versionCode `60`, and granted privileged permissions. Device Smartisax APK
+  hash is
+  `6467308d01a308526f2f5f652372942d709e8257e4b7a40ce194645a7b7e26fc`;
+  system WebRTC library hashes match the v0.9 verifier expectations.
+
+One Step smoke:
+  The first direct Binder enter was diagnostic-only: WindowManager showed
+  Sidebar windows, but globals stayed `side_bar_zoom_type=-1` /
+  `sidebar_switch_status=0`, and the screenshot still showed SmartisaxShell.
+  After UI normalization (`statusbar collapse`, HOME, ShellActivity start,
+  exit+enter), One Step entered with globals `2/1`, exposed two unknown overlay
+  windows through Accessibility, and exited cleanly back to `-1/0`. Treat the
+  normalized smoke as PASS and keep the direct Binder result as a stale UI state
+  reminder.
+
+Settings task:
+  Goal text used for the live task was effectively "Open Settings from the One
+  Step top app bar and finish". At 10s after Start, screenshots and window dumps
+  showed `com.android.settings/.Settings` focused with One Step visible. After
+  returning to SmartisaxShell, Agent status showed:
+
+```text
+State: paused
+Provider: mimo_v25_vision
+Step: 4/5
+One Step: visible right
+A11y: 105 nodes / 4 roots / 3 windows
+A11y Targets: 14 One Step apps / 1 Settings
+Last: finish_requires_verified_screen_change
+```
+
+  Transcript:
+  - Step 2: `one_step(enter) 95%`, result `one-step: enter visible right`.
+  - Step 3: `click_node(n7759ef50f9) 100%`; model text says the Settings icon
+    is visible in the One Step top app bar and should be clicked; result
+    `accessibility: ok`.
+  - Step 4: `finish 100%`; Settings is already open and visible in the
+    foreground, but finish paused at `finish_requires_verified_screen_change`.
+
+Conclusion:
+  v0.agent0.9 proves the top-strip Settings AppItem is now Agent-visible and
+  actionable as a real `click_node`, not just a vision coordinate. The remaining
+  issue is finish verification: for target-app-open goals, foreground
+  `com.android.settings` plus visible Settings title should satisfy completion
+  instead of requiring another material screen transition after `finish`.
+
+Evidence:
+  - Flash:
+    `hard-rom/inspect/v0.agent0.9-worker-a11y-targets/flash-v0.agent0.9-worker-a11y-targets-20260701-194953.txt`
+  - Boot wait:
+    `hard-rom/inspect/v0.agent0.9-worker-a11y-targets/boot-wait-v0.agent0.9-worker-a11y-targets-20260701-194953.txt`
+  - Read-only verify:
+    `hard-rom/inspect/v0.agent0.9-worker-a11y-targets/verify-v0.agent0.9-worker-a11y-targets-device-read-only-20260701-195505.txt`
+  - Direct One Step diagnostic:
+    `hard-rom/inspect/v0.agent0.9-worker-a11y-targets/one-step-smoke-20260701-195540/report.txt`
+  - Normalized One Step PASS:
+    `hard-rom/inspect/v0.agent0.9-worker-a11y-targets/one-step-smoke-normalized-20260701-195625/report.txt`
+  - Settings task report:
+    `hard-rom/inspect/v0.agent0.9-worker-a11y-targets/settings-task-20260701-195648/report.md`
+  - Settings screenshot:
+    `hard-rom/inspect/v0.agent0.9-worker-a11y-targets/settings-task-20260701-195648/after-start-10s.png`
+  - Agent status/transcript dump:
+    `hard-rom/inspect/v0.agent0.9-worker-a11y-targets/settings-task-20260701-195648/status-return.xml`
+
+Next:
+  Build the next smallest Agent repair on top of live/read-only v0.agent0.9:
+  make `finish` verification target-aware for known app-open goals, starting
+  with foreground `com.android.settings` / visible Settings title.
+
+### 2026-07-01: Local Space Recovery And v0.agent0.10 Finish Target Candidate PASS
+
+Goal:
+  First recover local disk space to about 50 GiB available, then continue the
+  smallest Agent repair on top of live/read-only v0.agent0.9: allow known
+  app-open goals to complete when foreground/accessibility evidence proves the
+  target app is already visible.
+
+Disk cleanup:
+  - Before cleanup, `/System/Volumes/Data` had about 2.6 GiB available and the
+    v0.agent0.10 build failed with `No space left on device` while rebuilding
+    system_b.
+  - Removed regenerable `hard-rom/work/*`, superseded raw
+    `system-otatrust-*.img` intermediates except the v0.agent0.9 source image,
+    failed partial v0.agent0.10 outputs, superseded Agent sparse images
+    v0.agent0 through v0.agent0.7, and superseded Portal sparse images
+    v0.portal5y through v0.portal6f.
+  - After cleanup, free space reached about 61 GiB. After rebuilding and
+    verifying v0.agent0.10, free space remains about 53 GiB; `hard-rom/build`
+    is about 49 GiB, `hard-rom/work` about 508 MiB, and `hard-rom/inspect`
+    about 6.9 GiB.
+
+Retained local large targets after cleanup:
+```text
+hard-rom/build/super-otatrust-v0.4-debloat-exact-current.sparse.img
+  sha256=313ec839f962a6ed5fddadc8c2180f40912b86da4c40f27f90bcb75e2fd4bfc5
+hard-rom/build/super-otatrust-v0.portal6g-rvfc-media-tail.sparse.img
+  sha256=d3a938546f197e54ea1f7c08bf300b8d61bf91b9c389bca92a9ddfa018a038fb
+hard-rom/build/super-otatrust-v0.agent0.8-onestep-a11y-nodes.sparse.img
+  sha256=3f0ea7fb8f3bed0dcf9e8c3582e40c02f0b2db59991ef606a887b8d7cd979f8b
+hard-rom/build/super-otatrust-v0.agent0.9-worker-a11y-targets.sparse.img
+  sha256=648320622194a61fa0f4c4b9d30f5d395c6f20928e5c53bd98896c4a705a6cfc
+hard-rom/build/super-otatrust-v0.agent0.10-finish-target-verify.sparse.img
+  sha256=66ce7c3013138f05e7789d851ebadd8f5cb686b208084331270b11e82df0d8bc
+hard-rom/build/system-otatrust-v0.agent0.9-worker-a11y-targets.img
+  sha256=65867365776dbf8d4c73c1ab26a16f8e9d8bf5e47758909b811b698586cf589f
+hard-rom/build/system-otatrust-v0.agent0.10-finish-target-verify.img
+  sha256=79508a660d2b412fba6eb94582f11aba4947ce4e2fa85e500d33742eb2ad2ca0
+```
+
+Implementation:
+  - SmartisaxShell v0.7.10/versionCode 61 adds target-aware finish verification
+    for Settings-open goals.
+  - `finishTargetVerification` now accepts completion when foreground package
+    is `com.android.settings`, when Accessibility windows/titles indicate
+    Settings, or when an actual Accessibility node's package field is
+    `com.android.settings`.
+  - The guard deliberately does not treat One Step app-node descriptions
+    containing `package=com.android.settings` as package-node proof; only the
+    real node package field counts.
+  - Provider prompt now allows `finish` when `foreground.isSettings=true` for
+    Settings goals, and `SmartisaxOneStepController` exposes that foreground
+    boolean.
+  - The verifier checks `finishTargetVerification`, `finish_target_verified`,
+    `settings_target_visible`, `foregroundPackageMatched`,
+    `accessibilityWindowMatched`, `accessibilityPackageNodeMatched`, and
+    `isSettings` markers in the decoded APK.
+
+Commands:
+```bash
+tools/r2-agent0-offline-tests.py
+tools/r2-build-smartisax-shell.sh
+tools/r2-hardrom-build-v0.agent0.10-finish-target-verify.sh
+tools/r2-verify-v0.agent0.10-finish-target-verify.sh --offline-image
+tools/r2-live-flash-preflight.sh v0.agent0.10-finish-target-verify
+```
+
+Hashes:
+```text
+SmartisaxShell.apk sha256=eba484b5ab51ceb08e2afe8413e3bbd6339fde91782540cd4fbc9512687cff37
+Sidebar.apk sha256=2ceb4dca8d6e9b2c709cf19064b064d3376e24a12190592ca3cf969cdf6206af
+system_b sha256=79508a660d2b412fba6eb94582f11aba4947ce4e2fa85e500d33742eb2ad2ca0
+super sparse sha256=66ce7c3013138f05e7789d851ebadd8f5cb686b208084331270b11e82df0d8bc
+rollback sparse sha256=313ec839f962a6ed5fddadc8c2180f40912b86da4c40f27f90bcb75e2fd4bfc5
+```
+
+Results:
+```text
+PASS_AGENT0_OFFLINE_TESTS
+PASS_BUILD_V0AGENT010_FINISH_TARGET_VERIFY
+PASS_OFFLINE_IMAGE_V0AGENT010_FINISH_TARGET_VERIFY
+sidebar_agent_onestep_a11y_nodes=ok
+agent010_extra_offline_checks=ok
+```
+
+Preflight:
+  Local image gates passed for the v0.agent0.10 sparse, rollback sparse,
+  verifier, and latest offline evidence. The live ADB state check was skipped
+  because `bb12d264` was not online; no flash, reboot, `misc` erase, or `/data`
+  change was performed. Required exact flash phrase remains:
+  `确认刷入 v0.agent0.10-finish-target-verify B 槽`.
+
+One Step reserved-top Agent UI mockups:
+  Based on the live v0.agent0.9 Settings-task screenshot, generated three local
+  visual options for moving Agent content into the One Step top reserved area:
+  compact HUD, expanded transcript board, and command dock.
+
+Evidence:
+  - Build:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/build-v0.agent0.10-finish-target-verify-20260701-203435.txt`
+  - Offline verify:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/verify-v0.agent0.10-finish-target-verify-offline-image-20260701-204145.txt`
+  - Local preflight:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/preflight-v0.agent0.10-finish-target-verify-20260701-204456.txt`
+  - ROM manifests:
+    `hard-rom/build/system-otatrust-v0.agent0.10-finish-target-verify.SHA256SUMS.txt`
+    and
+    `hard-rom/build/super-otatrust-v0.agent0.10-finish-target-verify.SHA256SUMS.txt`
+  - Mockups:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/ui-mockups-20260701/mockup-a-compact-hud.png`
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/ui-mockups-20260701/mockup-b-transcript-board.png`
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/ui-mockups-20260701/mockup-c-command-dock.png`
+
+Next:
+  Once the R2 is visible again over ADB/fastboot and the exact flash phrase is
+  confirmed, flash v0.agent0.10, run read-only verification, then rerun the
+  Settings task. Acceptance target: after `click_node(...)` opens Settings, a
+  model `finish` should end `complete` when foreground/accessibility verifies
+  Settings, instead of pausing at `finish_requires_verified_screen_change`.
+
+### 2026-07-02: v0.agent0.10 Finish Target B-slot Live Read-only PASS, Settings Task Blocked By Network
+
+Goal:
+  Flash the prepared v0.agent0.10 finish-target verifier to the active B slot,
+  run the standard post-flash read-only verification, then retry the Settings
+  task to see whether target-aware finish verification completes after Settings
+  is foreground/visible.
+
+User confirmation:
+```text
+确认刷入 v0.agent0.10-finish-target-verify B 槽
+```
+
+Flash and boot:
+  - Preflight accepted the v0.agent0.10 candidate sparse hash
+    `66ce7c3013138f05e7789d851ebadd8f5cb686b208084331270b11e82df0d8bc`
+    and rollback sparse hash
+    `313ec839f962a6ed5fddadc8c2180f40912b86da4c40f27f90bcb75e2fd4bfc5`.
+  - Live preflash state was healthy: `sys.boot_completed=1`, slot `_b`,
+    bootanim `stopped`, verified boot `orange`, root available, SELinux
+    Enforcing.
+  - Bootloader fastboot reported current slot `b`, unlocked `yes`, and
+    userspace fastboot `no`.
+  - The sparse `super` flashed in 9 chunks, `misc` was erased, and the device
+    rebooted.
+  - Boot polling reached `boot_completed=1`, slot `_b`, bootanim `stopped`,
+    verified boot `orange`.
+
+Commands:
+```bash
+tools/r2-live-flash-v0.agent0.10-finish-target-verify.sh --confirm "确认刷入 v0.agent0.10-finish-target-verify B 槽"
+tools/r2-verify-v0.agent0.10-finish-target-verify.sh
+```
+
+Results:
+```text
+PASS_FLASH_V0AGENT010_FINISH_TARGET_VERIFY
+PASS_READ_ONLY_V0AGENT010_FINISH_TARGET_VERIFY
+```
+
+Read-only verification:
+  Device SmartisaxShell is served from
+  `/system/priv-app/SmartisaxShell/SmartisaxShell.apk` with
+  versionName `0.7.10` and versionCode `61`. The device APK hash matches
+  `eba484b5ab51ceb08e2afe8413e3bbd6339fde91782540cd4fbc9512687cff37`, and
+  the system WebRTC library hashes still match.
+
+Settings task:
+  Diagnostic blocked before the target-aware finish logic could be exercised.
+  The Shell UI showed provider `mimo_v25_vision`, MiMo key saved, and then
+  paused on step `1/5` with `provider_network_dns_unavailable`. Transcript:
+  `#1 mimo_v25_vision planning 0ms` followed by
+  `#1 mimo_v25_vision paused_provider_error 1ms` and
+  `provider_network_guard: provider_network_dns_unavailable`.
+
+Network diagnostic:
+  Wi-Fi was disabled, `wlan0` was DOWN, Active default network was `none`,
+  `ping 223.5.5.5` returned `Network is unreachable`, and
+  `ping api.xiaomimimo.com` returned `unknown host`. Window captures at 1s,
+  10s, 25s, and 50s all kept focus on
+  `com.smartisax.browser/com.smartisax.browser.ShellActivity`; One Step globals
+  stayed hidden at `-1/0`. No `one_step`, `click_node`, foreground Settings
+  transition, or `finish` action occurred.
+
+UI mockup note:
+  The previous One Step reserved-top Agent UI mockups are not accepted as design
+  evidence. Treat them as discarded exploration rather than a product direction.
+
+Evidence:
+  - Flash:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/flash-v0.agent0.10-finish-target-verify-20260702-140853.txt`
+  - Boot wait:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/boot-wait-v0.agent0.10-finish-target-verify-20260702-140853.txt`
+  - Read-only verify:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/verify-v0.agent0.10-finish-target-verify-device-read-only-20260702-141359.txt`
+  - Settings task diagnostic:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-20260702-141444/report.md`
+  - Network diagnostic:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-20260702-141444/network-diagnostic.txt`
+
+Next:
+  Put the R2 on a working default network, then rerun the Settings task with
+  normal goal text entry. Acceptance target remains: after `click_node(...)`
+  opens Settings, a model `finish` should end `complete` when foreground or
+  Accessibility evidence verifies Settings, instead of pausing at
+  `finish_requires_verified_screen_change`.
+
+### 2026-07-02: v0.agent0.10 Settings Task PASS After Network And Keyguard Normalization
+
+Goal:
+  Rerun the live v0.agent0.10 Settings-open task after the R2 network was
+  restored, and verify whether target-aware finish can accept Settings once it
+  is foreground/visible.
+
+Network baseline:
+  The R2 was connected to Wi-Fi SSID `5R`, had active default network `102`,
+  `wlan0=192.168.31.103/24`, and both `ping 223.5.5.5` and
+  `ping api.xiaomimimo.com` succeeded. This clears the previous
+  `provider_network_dns_unavailable` blocker.
+
+First rerun:
+  The same goal text, `Open Settings from the One Step top app bar and finish.`,
+  reached MiMo and returned a valid `one_step(enter)` action, but paused on
+  step `1/5` with `one_step_enter_not_visible`. Logcat showed the execution
+  cause in Sidebar/ZoomScreenController:
+  `request zoom failed cause keyguard showing`. This is a One Step readiness
+  preflight issue, not a provider/network failure.
+
+Normalization:
+  Before the accepted rerun, the UI was normalized by waking/dismissing
+  keyguard, collapsing status bar, going HOME, forcing One Step exit, and
+  relaunching Smartisax Shell. The normalized state was
+  `isKeyguardShowing=false`, global `side_bar_zoom_type=-1`,
+  `sidebar_switch_status=0`, `side_bar_mode=1`, and focus
+  `com.smartisax.browser/.ShellActivity`.
+
+Accepted rerun:
+  The same goal was started again from the Shell Agent panel. At 2s, One Step
+  was visible right (`side_bar_zoom_type=2`, `sidebar_switch_status=1`) while
+  focus remained ShellActivity. At 10s, focus was
+  `com.android.settings/com.android.settings.Settings` and Accessibility showed
+  the Settings window title `设置`; focus remained Settings at 18s and 30s.
+  After returning to Shell and refreshing status, Agent state was `complete`,
+  provider `mimo_v25_vision`, step `4/5`, One Step `visible right`,
+  `A11y=36 nodes / 4 roots / 3 windows`, and
+  `A11y Targets=13 One Step apps / 1 Settings`. The visible transcript
+  included `click_node(ncd691c1cce) 100%`, `accessibility: ok`, and
+  `finish 100%` with last reason
+  `Settings app is already visible and active in the foreground, goal satisfied.`
+
+Cleanup:
+  A final One Step exit restored `side_bar_zoom_type=-1`,
+  `sidebar_switch_status=0`, and focus `com.smartisax.browser/.ShellActivity`.
+
+Conclusion:
+  v0.agent0.10 target-aware finish verification is accepted for the Settings
+  task. The Agent opened Settings through the real One Step Accessibility node
+  path and completed once foreground/Accessibility evidence proved Settings was
+  visible. Follow-up repairs are Shell Agent panel running-status auto-refresh
+  and One Step keyguard/readiness preflight before `one_step enter`.
+
+Evidence:
+  - Rerun report:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-rerun-20260702-142354/report.md`
+  - Network baseline:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-rerun-20260702-142354/baseline-network.txt`
+  - First rerun paused status:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-rerun-20260702-142354/after-stop.xml`
+  - First rerun logcat excerpt:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-rerun-20260702-142354/logcat-agent-after-stop.txt`
+  - Normalized accepted rerun window/accessibility evidence:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-rerun-20260702-142354/rerun2-after-start-10s-window.txt`
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-rerun-20260702-142354/rerun2-after-start-10s-accessibility.txt`
+  - Accepted rerun returned Agent status:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-rerun-20260702-142354/rerun2-status-return.xml`
+  - Cleanup:
+    `hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-rerun-20260702-142354/rerun2-cleanup-onestep-exit.txt`
+
+Next:
+  Implement Shell Agent panel auto-refresh for live transcript/status and a
+  One Step entry preflight that handles keyguard/readiness before invoking
+  `IWindowManager.transact(2001)`.

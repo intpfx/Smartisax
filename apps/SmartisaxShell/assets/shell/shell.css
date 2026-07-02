@@ -40,7 +40,9 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -86,14 +88,26 @@ h2 {
   gap: 10px;
 }
 
-input {
+input,
+select,
+textarea {
   min-width: 0;
-  height: 48px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 0 14px;
   background: var(--panel);
   color: var(--fg);
+}
+
+input,
+select {
+  height: 48px;
+  padding: 0 14px;
+}
+
+textarea {
+  min-height: 86px;
+  padding: 12px 14px;
+  resize: vertical;
 }
 
 button {
@@ -149,6 +163,29 @@ button {
   padding: 0 12px;
 }
 
+.agentForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.agentForm label {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.agentForm span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.agentForm .wide {
+  grid-column: 1 / -1;
+}
+
 dl {
   display: grid;
   grid-template-columns: minmax(96px, auto) minmax(0, 1fr);
@@ -182,6 +219,44 @@ dd {
   overflow-wrap: anywhere;
 }
 
+.transcript {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding-left: 0;
+  color: var(--muted);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 12px;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+
+.transcriptItem {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+.transcriptHeader {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.transcriptSummary {
+  color: var(--muted);
+}
+
+.transcriptResult {
+  color: var(--good);
+}
+
+.transcriptWarn .transcriptHeader,
+.transcriptWarn .transcriptResult {
+  color: var(--warn);
+}
+
 @media (max-width: 440px) {
   .panelHead {
     align-items: stretch;
@@ -194,5 +269,9 @@ dd {
 
   .actions button {
     flex: 1 1 0;
+  }
+
+  .agentForm {
+    grid-template-columns: 1fr;
   }
 }

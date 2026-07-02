@@ -3,6 +3,8 @@ package com.smartisax.browser;
 import android.os.SystemClock;
 import android.view.InputDevice;
 import android.view.InputEvent;
+import android.view.KeyCharacterMap;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -54,6 +56,10 @@ final class SmartisaxInputController {
             ok = injectedEvents > 0;
             markerX = x2;
             markerY = y2;
+        } else if ("key".equals(type)) {
+            normalizedType = "key";
+            ok = injectKey(keyCode(body.optString("key", "")));
+            injectedEvents = 2;
         } else if (isTouchStart(type)) {
             normalizedType = "touchStart";
             int x = coordinate(body, "x");
@@ -158,8 +164,21 @@ final class SmartisaxInputController {
     }
 
     private static boolean shouldFlashMarker(JSONObject body, String normalizedType) {
+        if ("key".equals(normalizedType)) {
+            return false;
+        }
         boolean defaultValue = !"touchMove".equals(normalizedType) && !"touchMoveBatch".equals(normalizedType);
         return body.optBoolean("marker", defaultValue);
+    }
+
+    private static int keyCode(String key) throws IOException {
+        if ("BACK".equalsIgnoreCase(key)) {
+            return KeyEvent.KEYCODE_BACK;
+        }
+        if ("HOME".equalsIgnoreCase(key)) {
+            return KeyEvent.KEYCODE_HOME;
+        }
+        throw new IOException("unsupported_key_" + key);
     }
 
     private static int pointCount(JSONObject body) {
@@ -182,6 +201,32 @@ final class SmartisaxInputController {
         long now = SystemClock.uptimeMillis();
         return injectMotion(MotionEvent.ACTION_DOWN, now, now, x, y)
                 && injectMotion(MotionEvent.ACTION_UP, now, now + 40, x, y);
+    }
+
+    private static boolean injectKey(int keyCode) throws IOException {
+        long downTime = SystemClock.uptimeMillis();
+        return injectInputEvent(new KeyEvent(
+                downTime,
+                downTime,
+                KeyEvent.ACTION_DOWN,
+                keyCode,
+                0,
+                0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD,
+                0,
+                KeyEvent.FLAG_FROM_SYSTEM,
+                InputDevice.SOURCE_KEYBOARD))
+                && injectInputEvent(new KeyEvent(
+                downTime,
+                downTime + 40,
+                KeyEvent.ACTION_UP,
+                keyCode,
+                0,
+                0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD,
+                0,
+                KeyEvent.FLAG_FROM_SYSTEM,
+                InputDevice.SOURCE_KEYBOARD));
     }
 
     private static int injectSwipe(int x1, int y1, int x2, int y2, int duration) throws IOException {
@@ -353,6 +398,18 @@ final class SmartisaxInputController {
         MotionEvent event = MotionEvent.obtain(downTime, eventTime, action, x, y, 0);
         event.setSource(InputDevice.SOURCE_TOUCHSCREEN);
         try {
+            boolean ok = injectInputEvent(event);
+            if (ok) {
+                lastInjectedMotionEventTimeUptimeMs = eventTime;
+            }
+            return ok;
+        } finally {
+            event.recycle();
+        }
+    }
+
+    private static boolean injectInputEvent(InputEvent event) throws IOException {
+        try {
             Object manager;
             Method inject;
             synchronized (INJECT_LOCK) {
@@ -366,17 +423,11 @@ final class SmartisaxInputController {
                 inject = injectInputEventMethod;
             }
             Object result = inject.invoke(manager, event, 0);
-            boolean ok = Boolean.TRUE.equals(result);
-            if (ok) {
-                lastInjectedMotionEventTimeUptimeMs = eventTime;
-            }
-            return ok;
+            return Boolean.TRUE.equals(result);
         } catch (ReflectiveOperationException e) {
             throw new IOException("inputmanager_reflection_failed", e);
         } catch (RuntimeException e) {
             throw new IOException("inputmanager_runtime_failed", e);
-        } finally {
-            event.recycle();
         }
     }
 

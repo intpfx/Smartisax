@@ -378,3 +378,36 @@ Generated navigation for `docs/hard-rom-ota-trust.md`. The evidence log remains 
     - L42952: 2026-06-30: v0.portal6g In-app Browser Manual-open Smoke Control FAIL With Code 808364
     - L43017: 2026-06-30: v0.portal6g Direct In-app Browser Portal Smoke Diagnostic
     - L43074: 2026-06-30: v0.portal6g Safari Fresh-code Strict Smoke With Code 223229
+    - L43154: 2026-06-30: v0.agent0 Vision Agent MVP Offline Build And Verification
+    - L43217: 2026-06-30: v0.agent0 Vision Agent MVP B-slot Live Read-only PASS
+    - L43294: 2026-06-30: v0.agent0 MiMo Vision Agent Safe Finish Smoke PASS
+    - L43346: 2026-06-30: v0.agent0 MiMo Vision Agent Settings Tap Smoke Diagnostic FAIL
+    - L43402: 2026-06-30: v0.agent0.1 Vision Guard Build/Offline PASS
+    - L43471: 2026-06-30: v0.agent0.1 Vision Guard B-slot Live Read-only PASS
+    - L43547: 2026-06-30: v0.agent0.1 Settings Tap Smoke Diagnostic FAIL With Guard PASS
+    - L43614: 2026-06-30: v0.agent0.2 One Step Agent Build/Offline PASS
+    - L43705: 2026-06-30: v0.agent0.2 One Step Agent B-slot Live Read-only PASS
+    - L43736: 2026-06-30: v0.agent0.2 One Step Smoke Diagnostic FAIL
+    - L43774: 2026-06-30: v0.agent0.3 One Step Bind-wait Build/Offline/Preflight PASS
+    - L43848: 2026-06-30: v0.agent0.3 One Step Bind-wait B-slot Live Read-only PASS
+    - L43879: 2026-06-30: v0.agent0.3 One Step Smoke PASS
+    - L43912: 2026-06-30: v0.agent0.3 Settings App Task Diagnostic FAIL
+    - L43935: 2026-06-30: v0.agent0.4 Home/OneStep Settings Guard Build/Offline/Preflight PASS
+    - L43994: 2026-06-30: v0.agent0.4 Home/OneStep Settings Guard B-slot Live Read-only PASS
+    - L44031: 2026-06-30: v0.agent0.4 Settings App Task Diagnostic FAIL With One Step Direction PASS
+    - L44062: 2026-06-30: v0.agent0.5 Reobserve On Screen Change Build/Offline/Preflight PASS
+    - L44129: 2026-06-30: v0.agent0.5 Reobserve On Screen Change B-slot Live Read-only PASS
+    - L44184: 2026-06-30: v0.agent0.5 Settings App Task Diagnostic FAIL With One Step Tap No-change
+    - L44241: 2026-06-30: v0.agent0.6 Accessibility Tree Build/Offline/Preflight PASS
+    - L44310: 2026-07-01: v0.agent0.6 Accessibility Tree B-slot Live Read-only PASS
+    - L44389: 2026-07-01: v0.agent0.6 Settings Task Diagnostic Blocked By Device Network And One Step A11y Gap
+    - L44444: 2026-07-01: v0.agent0.7 Window/Provider Preflight Build/Offline/Preflight PASS
+    - L44525: 2026-07-01: v0.agent0.7 Window/Provider Preflight Flash Attempt Blocked Before Mutation
+    - L44557: 2026-07-01: v0.agent0.7 Window/Provider Preflight B-slot Live Read-only PASS
+    - L44732: 2026-07-01: v0.agent0.8 One Step Accessibility Nodes Build/Offline PASS
+    - L44809: 2026-07-01: v0.agent0.8 One Step Accessibility Nodes B-slot Live Read-only PASS And Diagnostic
+    - L44879: 2026-07-01: v0.agent0.9 Worker/A11y Targets Build/Offline/Preflight PASS
+    - L44947: 2026-07-01: v0.agent0.9 Worker/A11y Targets B-slot Live Read-only PASS And Settings click_node PASS
+    - L45044: 2026-07-01: Local Space Recovery And v0.agent0.10 Finish Target Candidate PASS
+    - L45164: 2026-07-02: v0.agent0.10 Finish Target B-slot Live Read-only PASS, Settings Task Blocked By Network
+    - L45251: 2026-07-02: v0.agent0.10 Settings Task PASS After Network And Keyguard Normalization

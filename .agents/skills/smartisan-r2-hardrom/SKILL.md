@@ -43,7 +43,106 @@ rollback local: v0.4 hard debloat
   hard-rom/build/super-otatrust-v0.4-debloat-exact-current.sparse.img
   sha256: 313ec839f962a6ed5fddadc8c2180f40912b86da4c40f27f90bcb75e2fd4bfc5
 
-current live flashed state: v0.portal6g-rvfc-media-tail
+current live Agent line: v0.agent0.10-finish-target-verify
+  flashed to B slot after exact confirmation and read-only verified. It updates
+  Smartisax to v0.7.10/versionCode 61 on top of live/read-only v0.agent0.9 and makes
+  finish verification target-aware for Settings-open goals: foreground package
+  `com.android.settings`, a Settings Accessibility window/title, or an actual
+  Accessibility node whose package is `com.android.settings` can satisfy
+  completion. It preserves worker reconciliation, `accessibilityTargets`,
+  `click_node`, the v0.8 Sidebar app-node patch, Portal `/api/agent/status`,
+  and the no-HTTP-input boundary. Hashes: Smartisax APK
+  `eba484b5ab51ceb08e2afe8413e3bbd6339fde91782540cd4fbc9512687cff37`,
+  Sidebar APK
+  `2ceb4dca8d6e9b2c709cf19064b064d3376e24a12190592ca3cf969cdf6206af`,
+  system_b `79508a660d2b412fba6eb94582f11aba4947ce4e2fa85e500d33742eb2ad2ca0`,
+  sparse `66ce7c3013138f05e7789d851ebadd8f5cb686b208084331270b11e82df0d8bc`.
+  Results: `PASS_BUILD_V0AGENT010_FINISH_TARGET_VERIFY`,
+  `PASS_OFFLINE_IMAGE_V0AGENT010_FINISH_TARGET_VERIFY`,
+  `PASS_AGENT0_OFFLINE_TESTS`, `sidebar_agent_onestep_a11y_nodes=ok`, and
+  `agent010_extra_offline_checks=ok`. Local preflight passed the candidate,
+  rollback, verifier, and offline-evidence gates, but skipped live adb state
+  because `bb12d264` was not online. After USB reconnect, flash/read-only
+  results are `PASS_FLASH_V0AGENT010_FINISH_TARGET_VERIFY` and
+  `PASS_READ_ONLY_V0AGENT010_FINISH_TARGET_VERIFY`. Post-flash proof:
+  boot_completed=1, slot `_b`, bootanim stopped, verified boot orange, root
+  available, SELinux Enforcing, Smartisax device APK hash matches, and system
+  WebRTC libs match. The first post-flash Settings task was blocked before any
+  model action by device networking: Wi-Fi disabled, Active default network
+  `none`, IP ping `Network is unreachable`, MiMo DNS `unknown host`, and Agent
+  last reason `provider_network_dns_unavailable`. After network recovery, MiMo
+  reached planning normally. The first rerun paused at
+  `one_step_enter_not_visible` because Sidebar logged `request zoom failed
+  cause keyguard showing`; after UI normalization, the same Settings goal
+  completed in 4/5 steps with Settings foreground, `A11y Targets` at
+  `13 One Step apps / 1 Settings`, `click_node(ncd691c1cce) 100%`, and
+  `finish 100%` ending `complete`. Evidence:
+  `hard-rom/inspect/v0.agent0.10-finish-target-verify/build-v0.agent0.10-finish-target-verify-20260701-203435.txt`,
+  `hard-rom/inspect/v0.agent0.10-finish-target-verify/verify-v0.agent0.10-finish-target-verify-offline-image-20260701-204145.txt`,
+  `hard-rom/inspect/v0.agent0.10-finish-target-verify/preflight-v0.agent0.10-finish-target-verify-20260701-204456.txt`,
+  `hard-rom/inspect/v0.agent0.10-finish-target-verify/flash-v0.agent0.10-finish-target-verify-20260702-140853.txt`,
+  `hard-rom/inspect/v0.agent0.10-finish-target-verify/verify-v0.agent0.10-finish-target-verify-device-read-only-20260702-141359.txt`,
+  `hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-20260702-141444/report.md`,
+  and
+  `hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-rerun-20260702-142354/report.md`.
+  Next repair/test: add Shell Agent panel auto-refresh for running
+  transcript/status, and add One Step keyguard/readiness preflight before
+  `one_step enter`.
+
+previous live Agent guard line: v0.agent0.1-vision-guard
+  flashed to B slot after exact confirmation, booted cleanly, and read-only
+  verified. It starts from live/read-only v0.agent0 and updates Smartisax to
+  v0.7.1/versionCode 52. It keeps the on-device Smartisax Agent MVP inside
+  SmartisaxShell: max 5 observe-plan-execute steps, MiMo V2.5 vision-first
+  planner, DeepSeek v4 flash text/status fallback, mock provider, shared
+  JPEG/Base64 SurfaceControl screenshot observation, local SharedPreferences
+  API-key storage, Shell Agent UI, and token-gated read-only
+  `/api/agent/status`. The allowed action surface is tap, swipe, BACK/HOME key,
+  wait, finish, and ask_user; shell/root/ADB/fastboot/flash/erase/data cleanup
+  stay outside the Agent runtime, and `/api/input` remains absent. It repairs
+  the first Settings-tap false-complete boundary with post-action observations,
+  screenshot fingerprints, `postActionCheck`, `coordinate_edge_guard`,
+  `repeated_tap_no_screen_change`, and
+  `finish_requires_verified_screen_change`. Hashes: APK
+  `3de1cd9605310d4da2316c70066296f796352a0bb09f29ac641f99e3f18ae40e`,
+  system_b `6afaa75773178b2ee613f435817bed4542ada4880e5721f9ff90345de308451f`,
+  sparse `4456d0b9e3d2b05a05bebfca08424a4ee4dd5f61d3240a83a93b2a7dfb9b6458`.
+  Build result is `PASS_BUILD_V0AGENT01_VISION_GUARD`; offline result is
+  `PASS_OFFLINE_IMAGE_V0AGENT01_VISION_GUARD`; live result is
+  `PASS_READ_ONLY_V0AGENT01_VISION_GUARD`; flash result is
+  `PASS_FLASH_V0AGENT01_VISION_GUARD`. Live proof: boot_completed=1, slot `_b`,
+  bootanim stopped, verified boot orange, root available, SELinux Enforcing,
+  Smartisax Shell resumed/focused, display ON/Awake, keyguard not showing,
+  READ_FRAME_BUFFER/CAPTURE_VIDEO_OUTPUT/MANAGE_MEDIA_PROJECTION/WAKE_LOCK
+  granted=true, and device APK/libwebrtc hashes match. Reusing the old local
+  Portal token after reboot timed out on `/api/status`, `/api/agent/status`,
+  and `/api/screen.png`, consistent with explicit-opt-in Portal not
+  autostarting; rerun Portal regression after enabling/pairing Portal. Evidence:
+  `hard-rom/inspect/v0.agent0.1-vision-guard/flash-v0.agent0.1-vision-guard-20260630-185030.txt`,
+  `hard-rom/inspect/v0.agent0.1-vision-guard/boot-wait-v0.agent0.1-vision-guard-20260630-185030.txt`,
+  `hard-rom/inspect/v0.agent0.1-vision-guard/verify-v0.agent0.1-vision-guard-device-read-only-20260630-185541.txt`,
+  and
+  `hard-rom/inspect/v0.agent0.1-vision-guard/post-flash-portal-status-20260630-185646/report.txt`.
+  Previous v0.agent0 MiMo safe-finish smoke passed, while the first constrained
+  Settings tap task was diagnostic FAIL because MiMo returned top-edge y
+  coordinates and the old runtime accepted `finish` while ShellActivity stayed
+  focused. The v0.agent0.1 post-flash Settings task is still not accepted
+  because Settings did not open, but it proves the guard: final state `paused`,
+  step `5/5`, last `max_steps_reached`, ShellActivity still focused, and no
+  false `complete`. Next repair planner context and no-progress loop behavior
+  before another Settings-open acceptance attempt.
+
+previous live Agent line: v0.agent0.2-one-step
+  flashed to B slot after exact confirmation and read-only verified. It updates
+  Smartisax to v0.7.2/versionCode 53 and adds narrow Agent action
+  `one_step enter|exit`. The first safe One Step smoke proved MiMo emits
+  `one_step(enter)` and `one_step(exit)`, but v0.agent0.2 is not accepted for
+  One Step capability: the controller sampled state before the first
+  `IWindowManager.transact(2001)` completed async SidebarService binding, so
+  the result stayed hidden and finish was paused by the guard. Evidence lives
+  under `hard-rom/inspect/v0.agent0.2-one-step/one-step-smoke-20260630-193820/`.
+
+previous live Portal baseline: v0.portal6g-rvfc-media-tail
   flashed to B slot after exact confirmation, booted cleanly, and read-only
   verified. It starts from live/read-only v0.portal6f and preserves H264/default
   codec policy, raw Binder MediaProjection token repair, fresh
@@ -241,20 +340,33 @@ previous accepted TextBoom/OCR base: v0.43b-textboom-csocr-intsig-delete-manifes
 current WebView baseline: v0.35.2-webview-m150-clean-product-residue
   M150 `com.android.webview` is served from `/system/app/webview`; old product WebView residue is removed.
 
-current Smartisax live branch: v0.portal6g-rvfc-media-tail
+current Smartisax live branch: v0.agent0.10-finish-target-verify
   `com.smartisax.browser` registers as a privileged WebView-backed browser/Home
   candidate from `/system/priv-app/SmartisaxShell` and has a guarded local
   Smartisax Shell wireless ADB control entry that works through raw Binder
   transact calls. It also has a Wi-Fi-bound DevicePortalService, enabled from
   the Smartisax UI, serving GET /, POST /api/pair, token-gated
-  GET /api/status, GET /api/screen.png,
+  GET /api/status, GET /api/agent/status, GET /api/screen.png,
   GET /api/media/capabilities, GET /api/video/h264, GET /api/video/mp4,
   POST /api/webrtc/offer, GET/POST /api/webrtc/config,
   GET /api/webrtc/capture/probe,
   GET /api/webrtc/sessions, POST /api/webrtc/close, and GET /api/rtp/h264.
   HTTP POST /api/input is intentionally absent; remote
   control input now belongs to the WebRTC smartisax-input RTCDataChannel. The
-  live-flashed v0.portal6g browser UI is the current read-only verified
+  live-flashed v0.agent0.10 Shell UI is the current read-only verified Agent MVP
+  line on top of v0.agent0.9 and v0.portal6g; it proves the Smartisax
+  AccessibilityService is enabled/bound, keeps the real Accessibility tree plus
+  `click_node` action, keeps the Sidebar dynamic One Step app-node repair,
+  shows `A11y Targets` in status, and adds target-aware finish verification
+  after the target app is already foreground. The previous live v0.agent0.9
+  Settings task proved the Agent can see `14 One Step apps / 1 Settings` and
+  open Settings through `click_node(...)`; the accepted v0.agent0.10 rerun
+  proved the finish gate now completes after Settings is foreground/visible,
+  while also exposing the need for Shell status auto-refresh and One Step
+  keyguard/readiness preflight. Earlier live-flashed
+  v0.agent0.6/v0.agent0.7/v0.agent0.8 Shell UIs proved the accessibility tree,
+  `getWindows()` overlay roots, and Sidebar top-strip app-node repair in that
+  order. v0.portal6g browser UI is the prior read-only verified
   RVFC/media callback tail repair line on top of the 6f presentation-tail
   cadence line, 6e encoder/transport burst repair, 6d display wake guard, 6c
   visible-screenBox repair, and 6b draw-urgent marker boost lines. The previous
@@ -313,39 +425,30 @@ current retained Smartisax sparse images:
   Rollback v0.4 sparse:
   `hard-rom/build/super-otatrust-v0.4-debloat-exact-current.sparse.img`
   sha256 `313ec839f962a6ed5fddadc8c2180f40912b86da4c40f27f90bcb75e2fd4bfc5`.
-  Previous live v0.portal5y sparse:
-  `hard-rom/build/super-otatrust-v0.portal5y-presentation-transport-pacing.sparse.img`
-  sha256 `c20ad88972c3395b848f5941b5bf12f8b5674d00da3cf9ccd6fca673ca28e4dc`.
-  Previous live v0.portal5z sparse:
-  `hard-rom/build/super-otatrust-v0.portal5z-video-primary-roi-probe.sparse.img`
-  sha256 `3a622e32a540c077075d0e9259a6245338e38a24b65342a09c212a6032fda0df`.
-  Previous live v0.portal6a sparse:
-  `hard-rom/build/super-otatrust-v0.portal6a-marker-draw-sync.sparse.img`
-  sha256 `b8d2bbe12c3d889fa83963ea8d8e31e2a47b2a460c075d11b29ba4d1676fcc2a`.
-  Previous live v0.portal6b sparse:
-  `hard-rom/build/super-otatrust-v0.portal6b-draw-urgent-boost.sparse.img`
-  sha256 `057930f125ce07e5fc3c2940af4ac348102df7e8acbfe83d6a25467e4c3ee235`.
-  Previous live v0.portal6c sparse:
-  `hard-rom/build/super-otatrust-v0.portal6c-visible-screenbox.sparse.img`
-  sha256 `df7912827b4201bcff601edcc300fe79654ffdc571dda860272eb6485a247a9a`.
-  Previous live v0.portal6d sparse:
-  `hard-rom/build/super-otatrust-v0.portal6d-display-wake-guard.sparse.img`
-  sha256 `48f3329f3da1496e9c27ce3de7ff2f08fdd4d589f37ee5feaab74b8782bba0e4`.
-  Previous live v0.portal6e sparse:
-  `hard-rom/build/super-otatrust-v0.portal6e-encoder-transport-burst.sparse.img`
-  sha256 `5c1a6d9885dcdff1f9ee0b7277419dc2280b4320cfe3551bd68e901eb4663f83`.
-  Previous live v0.portal6f sparse:
-  `hard-rom/build/super-otatrust-v0.portal6f-presentation-tail-cadence.sparse.img`
-  sha256 `d0bd5eb4653d8e019fdfea6fbe7815895c9ab57b87bc441b38ed7b8112465d9a`.
-  Current live v0.portal6g sparse:
+  Previous live v0.portal6g sparse:
   `hard-rom/build/super-otatrust-v0.portal6g-rvfc-media-tail.sparse.img`
   sha256 `d3a938546f197e54ea1f7c08bf300b8d61bf91b9c389bca92a9ddfa018a038fb`.
-  To recover local free space to 50 GiB, superseded portal sparse images
-  including v0.portal5w and later v0.portal5x, old raw system_b intermediates,
-  regenerated 5z raw/work files, `hard-rom/work/*`, and `hard-rom/extracted`
-  were removed locally. Their scripts, manifests, docs, checksum files, and
-  inspect reports remain; regenerate raw system images from retained sparse
-  images/build scripts if an offline reverify needs them.
+  Previous live v0.agent0.8 sparse:
+  `hard-rom/build/super-otatrust-v0.agent0.8-onestep-a11y-nodes.sparse.img`
+  sha256 `3f0ea7fb8f3bed0dcf9e8c3582e40c02f0b2db59991ef606a887b8d7cd979f8b`.
+  Previous live v0.agent0.9 sparse:
+  `hard-rom/build/super-otatrust-v0.agent0.9-worker-a11y-targets.sparse.img`
+  sha256 `648320622194a61fa0f4c4b9d30f5d395c6f20928e5c53bd98896c4a705a6cfc`.
+  Current live v0.agent0.10 sparse:
+  `hard-rom/build/super-otatrust-v0.agent0.10-finish-target-verify.sparse.img`
+  sha256 `66ce7c3013138f05e7789d851ebadd8f5cb686b208084331270b11e82df0d8bc`.
+  Retained raw system_b images:
+  `hard-rom/build/system-otatrust-v0.agent0.9-worker-a11y-targets.img`
+  sha256 `65867365776dbf8d4c73c1ab26a16f8e9d8bf5e47758909b811b698586cf589f`;
+  `hard-rom/build/system-otatrust-v0.agent0.10-finish-target-verify.img`
+  sha256 `79508a660d2b412fba6eb94582f11aba4947ce4e2fa85e500d33742eb2ad2ca0`.
+  To recover local free space to about 50 GiB on 2026-07-01, removed
+  regenerable `hard-rom/work/*`, superseded Agent sparse images v0.agent0
+  through v0.agent0.7, superseded Portal sparse images v0.portal5y through
+  v0.portal6f, and old raw system_b intermediates. Free space rose from about
+  2.6 GiB to 61 GiB before the v0.agent0.10 rebuild and is about 53 GiB after
+  v0.agent0.10 build/offline/preflight. Scripts, manifests, docs, checksum
+  files, and inspect reports remain for removed variants.
 
 next Smartisax/HandShaker replacement step:
   Run a fresh-code in-app-browser or supported Chromium strict smoke through

@@ -121,6 +121,40 @@ public final class ShellBridge {
         return portalStatusJson("autostart_disabled");
     }
 
+    @JavascriptInterface
+    public String getAgentStatus() {
+        return SmartisaxAgentRuntime.get(context).statusJson().toString();
+    }
+
+    @JavascriptInterface
+    public String saveAgentConfig(String rawConfig) {
+        JSONObject result = new JSONObject();
+        try {
+            JSONObject json = new JSONObject(rawConfig == null ? "{}" : rawConfig);
+            SmartisaxAgentConfig.save(context, json);
+            result.put("ok", true);
+            result.put("action", "agent_config_saved");
+            result.put("status", SmartisaxAgentRuntime.get(context).statusJson());
+        } catch (JSONException e) {
+            try {
+                result.put("ok", false);
+                result.put("error", e.toString());
+            } catch (JSONException ignored) {
+            }
+        }
+        return result.toString();
+    }
+
+    @JavascriptInterface
+    public String startAgent(String goal) {
+        return SmartisaxAgentRuntime.get(context).start(goal).toString();
+    }
+
+    @JavascriptInterface
+    public String stopAgent() {
+        return SmartisaxAgentRuntime.get(context).stop().toString();
+    }
+
     private String portalStatusJson(String action) {
         DevicePortalService.PortalSnapshot snapshot = DevicePortalService.snapshot();
         JSONObject json = new JSONObject();

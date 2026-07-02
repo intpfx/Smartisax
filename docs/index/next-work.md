@@ -2,10 +2,316 @@
 
 This file was split out of the root `README.md` so active task notes can grow without bloating the project entrypoint. Verify against current device/image state before acting.
 
+## Agent Core Direction
+
+Smartisax should grow from the live Portal line into a device-agent runtime.
+The live Agent line is now `v0.agent0.10-finish-target-verify`, a B-slot
+flashed/read-only PASS SmartisaxShell line on top of v0.agent0.9's worker/a11y
+target repair. The Agent path keeps
+the runtime on the R2,
+sends manually started screenshot observations to MiMo V2.5 as the vision-first
+planner, keeps DeepSeek as the text/status fallback, and restricts execution to
+click_node, tap, swipe, BACK/HOME key, wait, finish, ask_user, and the narrow
+Smartisan `one_step enter|exit` semantic action. v0.agent0.5 moved
+stale-coordinate recovery from prompt-only guidance into Runtime: each
+observation carries a 12x12 visual
+signature; if the screen changes materially between planning and execution, the
+runtime skips the stale action and reobserves/replans. If the previous action
+caused a material screen change and the next action hits the edge-coordinate
+guard, the runtime also reobserves before pausing. v0.agent0.6 adds a compact
+Accessibility tree observation and a narrow `click_node` action backed by
+`AccessibilityNodeInfo.performAction(ACTION_CLICK)`. v0.agent0.7 extends that
+tree from active-root-only to active root plus `getWindows()` interactive
+window roots, extends `click_node` lookup across those roots, and makes
+provider planning/network/timeout failures visible in the transcript. The
+v0.agent0.8 line adds One Step enter visible-state recovery and patches
+Sidebar's dynamic top app strip so each bound AppItem exposes an
+Agent-friendly clickable Accessibility node. v0.agent0.9 reconciles dead worker
+status to `error/agent_worker_not_alive` and exposes `accessibilityTargets`
+(`oneStepAppNodeCount`, `settingsNodeCount`, compact samples) in Shell/Portal
+status. Its live Settings task proved the dynamic Settings AppItem is
+Agent-visible and actionable: `A11y Targets` reported
+`14 One Step apps / 1 Settings`, and MiMo executed `click_node(...)` to open
+Settings. v0.agent0.10 implements the finish-gate repair:
+foreground `com.android.settings`, a Settings Accessibility window, or an
+actual Accessibility node whose package is `com.android.settings` can satisfy a
+Settings-open goal instead of pausing at
+`finish_requires_verified_screen_change`. It has passed live flash/read-only
+verification and, after the R2 network was restored, passed the Settings-open
+acceptance rerun. The first network-restored attempt reached MiMo but paused at
+`one_step_enter_not_visible` because Sidebar rejected One Step entry while
+keyguard was still considered showing. After waking/dismissing keyguard,
+returning HOME, forcing One Step exit, and relaunching Shell, the same goal
+completed: One Step became visible, Settings was foreground by 10s,
+`A11y Targets` showed `13 One Step apps / 1 Settings`,
+`click_node(...)` opened the Settings AppItem, and `finish 100%` ended
+`complete`. The
+design background is in `docs/research/smartisax-agent-core-v0.md`.
+
+Implemented local-only/paired diagnostics:
+
+```text
+Smartisax Shell Agent panel
+GET /api/agent/status
+mimo_v25_vision / deepseek_text / mock providers
+shared JPEG/Base64 screen observation helper
+compact Accessibility tree helper
+```
+
+The runtime keeps flash, reboot, erase, cleanup, uninstall, raw root shell, ADB,
+and fastboot outside the agent tool surface. Those remain explicit operator
+workflows under `AGENTS.md`, the project skill, and the hard-ROM evidence loop.
+
+Current Agent evidence:
+`hard-rom/inspect/v0.agent0-vision-loop/build-v0.agent0-vision-loop-20260630-161953.txt`
+and
+`hard-rom/inspect/v0.agent0-vision-loop/verify-v0.agent0-vision-loop-offline-image-20260630-163620.txt`;
+preflight evidence is
+`hard-rom/inspect/v0.agent0-vision-loop/preflight-v0.agent0-vision-loop-20260630-163820.txt`;
+flash/read-only evidence is
+`hard-rom/inspect/v0.agent0-vision-loop/flash-v0.agent0-vision-loop-20260630-164247.txt`
+and
+`hard-rom/inspect/v0.agent0-vision-loop/verify-v0.agent0-vision-loop-device-read-only-20260630-164929.txt`.
+The current guard-build live evidence is
+`hard-rom/inspect/v0.agent0.1-vision-guard/flash-v0.agent0.1-vision-guard-20260630-185030.txt`,
+`hard-rom/inspect/v0.agent0.1-vision-guard/boot-wait-v0.agent0.1-vision-guard-20260630-185030.txt`,
+and
+`hard-rom/inspect/v0.agent0.1-vision-guard/verify-v0.agent0.1-vision-guard-device-read-only-20260630-185541.txt`.
+The v0.agent0.2 live One Step evidence is
+`hard-rom/inspect/v0.agent0.2-one-step/build-v0.agent0.2-one-step-20260630-192040.txt`
+and
+`hard-rom/inspect/v0.agent0.2-one-step/verify-v0.agent0.2-one-step-offline-image-20260630-192343.txt`;
+flash/read-only evidence is
+`hard-rom/inspect/v0.agent0.2-one-step/flash-v0.agent0.2-one-step-20260630-193243.txt`
+and
+`hard-rom/inspect/v0.agent0.2-one-step/verify-v0.agent0.2-one-step-device-read-only-20260630-193754.txt`.
+The v0.agent0.3 live One Step evidence is
+`hard-rom/inspect/v0.agent0.3-one-step-bind-wait/build-v0.agent0.3-one-step-bind-wait-20260630-195448.txt`
+and
+`hard-rom/inspect/v0.agent0.3-one-step-bind-wait/verify-v0.agent0.3-one-step-bind-wait-offline-image-20260630-195752.txt`;
+flash/read-only evidence is
+`hard-rom/inspect/v0.agent0.3-one-step-bind-wait/flash-v0.agent0.3-one-step-bind-wait-20260630-200648.txt`
+and
+`hard-rom/inspect/v0.agent0.3-one-step-bind-wait/verify-v0.agent0.3-one-step-bind-wait-device-read-only-20260630-201158.txt`;
+One Step smoke evidence is
+`hard-rom/inspect/v0.agent0.3-one-step-bind-wait/one-step-smoke-20260630-201232/`.
+The v0.agent0.4 repair candidate evidence is
+`hard-rom/inspect/v0.agent0.4-home-onestep-settings-guard/build-v0.agent0.4-home-onestep-settings-guard-20260630-210029.txt`
+and
+`hard-rom/inspect/v0.agent0.4-home-onestep-settings-guard/verify-v0.agent0.4-home-onestep-settings-guard-offline-image-20260630-210333.txt`.
+Flash/read-only evidence is
+`hard-rom/inspect/v0.agent0.4-home-onestep-settings-guard/flash-v0.agent0.4-home-onestep-settings-guard-20260630-211650.txt`
+and
+`hard-rom/inspect/v0.agent0.4-home-onestep-settings-guard/verify-v0.agent0.4-home-onestep-settings-guard-device-read-only-20260630-212201.txt`;
+Settings diagnostic evidence is
+`hard-rom/inspect/v0.agent0.4-home-onestep-settings-guard/settings-app-task-20260630-212239/`.
+The v0.agent0.5 reobserve candidate evidence is
+`hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/build-v0.agent0.5-reobserve-on-screen-change-20260630-214854.txt`
+and
+`hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/verify-v0.agent0.5-reobserve-on-screen-change-offline-image-20260630-215157.txt`.
+Flash/read-only evidence is
+`hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/flash-v0.agent0.5-reobserve-on-screen-change-20260630-220422.txt`
+and
+`hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/verify-v0.agent0.5-reobserve-on-screen-change-device-read-only-20260630-220932.txt`;
+focus/keyguard evidence is
+`hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/post-flash-focus-v0.agent0.5-reobserve-on-screen-change-20260630-221006.txt`.
+Settings diagnostic evidence is
+`hard-rom/inspect/v0.agent0.5-reobserve-on-screen-change/settings-app-task-20260630-221422/`.
+The v0.agent0.6 accessibility-tree live evidence is
+`hard-rom/inspect/v0.agent0.6-accessibility-tree/build-v0.agent0.6-accessibility-tree-20260701-000041.txt`
+and
+`hard-rom/inspect/v0.agent0.6-accessibility-tree/verify-v0.agent0.6-accessibility-tree-offline-image-20260701-000415.txt`;
+flash/read-only evidence is
+`hard-rom/inspect/v0.agent0.6-accessibility-tree/flash-v0.agent0.6-accessibility-tree-20260701-154742.txt`
+and
+`hard-rom/inspect/v0.agent0.6-accessibility-tree/verify-v0.agent0.6-accessibility-tree-device-read-only-20260701-155253.txt`;
+Accessibility binding evidence is
+`hard-rom/inspect/v0.agent0.6-accessibility-tree/post-flash-accessibility-v0.agent0.6-accessibility-tree-20260701-155309.txt`.
+Settings task diagnostic evidence is
+`hard-rom/inspect/v0.agent0.6-accessibility-tree/settings-task-20260701-160601/report.md`.
+The v0.agent0.7 window/preflight repair candidate evidence is
+`hard-rom/inspect/v0.agent0.7-window-preflight/build-v0.agent0.7-window-preflight-20260701-162941.txt`,
+`hard-rom/inspect/v0.agent0.7-window-preflight/verify-v0.agent0.7-window-preflight-offline-image-20260701-163244.txt`,
+and
+`hard-rom/inspect/v0.agent0.7-window-preflight/preflight-v0.agent0.7-window-preflight-20260701-163520.txt`.
+The confirmed but blocked flash-attempt evidence is
+`hard-rom/inspect/v0.agent0.7-window-preflight/flash-v0.agent0.7-window-preflight-20260701-163916.txt`.
+The successful retry flash/read-only evidence is
+`hard-rom/inspect/v0.agent0.7-window-preflight/flash-v0.agent0.7-window-preflight-20260701-165128.txt`,
+`hard-rom/inspect/v0.agent0.7-window-preflight/boot-wait-v0.agent0.7-window-preflight-20260701-165128.txt`,
+`hard-rom/inspect/v0.agent0.7-window-preflight/verify-v0.agent0.7-window-preflight-device-read-only-20260701-165639.txt`,
+and
+`hard-rom/inspect/v0.agent0.7-window-preflight/post-flash-focus-accessibility-v0.agent0.7-window-preflight-20260701-165715.txt`.
+The v0.agent0.8 One Step accessibility-node candidate evidence is
+`hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/build-v0.agent0.8-onestep-a11y-nodes-20260701-185031.txt`
+and
+`hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/verify-v0.agent0.8-onestep-a11y-nodes-offline-image-20260701-190024.txt`.
+The live v0.agent0.8 flash/read-only/smoke evidence is
+`hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/flash-v0.agent0.8-onestep-a11y-nodes-20260701-191116.txt`,
+`hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/boot-wait-v0.agent0.8-onestep-a11y-nodes-20260701-191116.txt`,
+`hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/verify-v0.agent0.8-onestep-a11y-nodes-device-read-only-20260701-191628.txt`,
+and
+`hard-rom/inspect/v0.agent0.8-onestep-a11y-nodes/one-step-smoke-20260701-191739/report.txt`.
+The live v0.agent0.9 worker/a11y-target evidence is
+`hard-rom/inspect/v0.agent0.9-worker-a11y-targets/build-v0.agent0.9-worker-a11y-targets-20260701-193038.txt`,
+`hard-rom/inspect/v0.agent0.9-worker-a11y-targets/verify-v0.agent0.9-worker-a11y-targets-offline-image-20260701-193733.txt`,
+`hard-rom/inspect/v0.agent0.9-worker-a11y-targets/preflight-v0.agent0.9-worker-a11y-targets-20260701-194145.txt`,
+`hard-rom/inspect/v0.agent0.9-worker-a11y-targets/flash-v0.agent0.9-worker-a11y-targets-20260701-194953.txt`,
+`hard-rom/inspect/v0.agent0.9-worker-a11y-targets/verify-v0.agent0.9-worker-a11y-targets-device-read-only-20260701-195505.txt`,
+`hard-rom/inspect/v0.agent0.9-worker-a11y-targets/one-step-smoke-normalized-20260701-195625/report.txt`,
+and
+`hard-rom/inspect/v0.agent0.9-worker-a11y-targets/settings-task-20260701-195648/report.md`.
+The live v0.agent0.10 finish-target evidence is
+`hard-rom/inspect/v0.agent0.10-finish-target-verify/build-v0.agent0.10-finish-target-verify-20260701-203435.txt`,
+`hard-rom/inspect/v0.agent0.10-finish-target-verify/verify-v0.agent0.10-finish-target-verify-offline-image-20260701-204145.txt`,
+and
+`hard-rom/inspect/v0.agent0.10-finish-target-verify/preflight-v0.agent0.10-finish-target-verify-20260701-204456.txt`;
+flash/read-only evidence is
+`hard-rom/inspect/v0.agent0.10-finish-target-verify/flash-v0.agent0.10-finish-target-verify-20260702-140853.txt`,
+`hard-rom/inspect/v0.agent0.10-finish-target-verify/boot-wait-v0.agent0.10-finish-target-verify-20260702-140853.txt`,
+and
+`hard-rom/inspect/v0.agent0.10-finish-target-verify/verify-v0.agent0.10-finish-target-verify-device-read-only-20260702-141359.txt`;
+initial blocked Settings diagnostic evidence is
+`hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-20260702-141444/report.md`;
+accepted Settings rerun evidence is
+`hard-rom/inspect/v0.agent0.10-finish-target-verify/settings-task-rerun-20260702-142354/report.md`.
+
+Next Agent gate:
+the first MiMo vision smoke has passed with a one-step `finish` action and no
+UI manipulation. The first constrained Settings tap task on v0.agent0 was a
+diagnostic FAIL: MiMo identified the gray gear Settings icon, but returned y
+coordinates that were too high, the runtime injected valid-but-wrong taps, and
+then accepted `finish` even though the foreground app stayed Smartisax Shell.
+The live guard build is now `v0.agent0.1-vision-guard`: Smartisax
+0.7.1/versionCode 52 with post-action observations, screenshot fingerprints,
+coordinate edge guard, repeated no-change tap pause, finish gating after UI
+actions, and richer visible transcript output. Build/offline/live verification
+passed with sparse hash
+`4456d0b9e3d2b05a05bebfca08424a4ee4dd5f61d3240a83a93b2a7dfb9b6458`.
+The post-flash Settings task did not open Settings, but it did prove the guard:
+the run ended `paused`, `5/5`, `max_steps_reached`, with ShellActivity still
+focused and per-step post-check transcript visible instead of a false
+`complete`. `v0.agent0.2-one-step` then proved the model uses `one_step`, but
+the safe "enter One Step then exit it" smoke exposed an execution-layer wait
+bug. `v0.agent0.3-one-step-bind-wait` repaired that path and the clean rerun now
+passes: `one_step(enter)`, `one_step(exit)`, then `finish`, final state
+`complete`. The broader Settings-open task on v0.agent0.3 still did not open
+Settings; it paused at `5/5` with `max_steps_reached` after repeated HOME
+actions, because SmartisaxShell can remain the HOME target.
+`v0.agent0.4-home-onestep-settings-guard` has now been flashed and read-only
+verified: Smartisax 0.7.4/versionCode 55, APK hash
+`d200a807710af02604038050a2d6f460051e19a34e18a5b334f7b65ec4cabd6a`,
+system_b hash `bf4c989ecd162fbcdca4d4122fc376d0444031f0def4ce658b35cad8022d8873`,
+sparse hash `c3aa40da9294a3db7e28aa81e91bfd244b717d11a0c96fd71b1b1b28d2107fc5`,
+flash result `PASS_FLASH_V0AGENT04_HOME_ONESTEP_SETTINGS_GUARD`, and read-only
+result `PASS_READ_ONLY_V0AGENT04_HOME_ONESTEP_SETTINGS_GUARD`. The Settings
+clean rerun opens One Step, then pauses at `coordinate_edge_guard` on
+`tap(9275,250)`.
+
+`v0.agent0.5-reobserve-on-screen-change` has now been flashed and read-only
+verified:
+Smartisax 0.7.5/versionCode 56, APK hash
+`6e1aba0b426957bc88b561dfc4cc40677a8f42c5fde1b908f9896a5a1879e45f`,
+system_b hash `90622eefcf994ebbf5f58aeca9cb4f7bd67b67e9782b7a24d983f8f5de16e8e1`,
+sparse hash `09c157326d12dd95b5b0aaaa7783daebb0292e46cd1fb064923cd33654f17f47`,
+flash result `PASS_FLASH_V0AGENT05_REOBSERVE_ON_SCREEN_CHANGE`, and read-only
+result `PASS_READ_ONLY_V0AGENT05_REOBSERVE_ON_SCREEN_CHANGE`. Post-flash focus
+is Smartisax Shell and `isKeyguardShowing=false`.
+
+The live v0.agent0.5 Settings-open smoke is still diagnostic FAIL, but it
+narrows the failure. MiMo now emits non-edge top-strip taps such as
+`tap(9100,1700)` and `tap(9250,1700)` against the visible One Step Settings
+gear, and the runtime correctly pauses with
+`repeated_tap_no_screen_change` instead of false-completing. A manual
+`input tap 982 398` probe on the apparent gear area also left focus on
+`com.smartisax.browser/.ShellActivity`.
+
+`v0.agent0.6-accessibility-tree` has now been built, offline verified,
+live-preflighted, flashed to B slot, read-only verified, and Accessibility
+probed:
+Smartisax 0.7.6/versionCode 57, APK hash
+`a0109ab1ceaea4c6039eb43227c5c601edb5464bda52f2a7e889c39964387389`,
+system_b hash `143cc0674a8d451d76d63b4c9d61a8bda857310d5d26a6eb84f0ce19ff1269b9`,
+sparse hash `8f9c050815555ca38c0c7aa35fb3ed88497f4680e57ad8e15a3d75072c298fa7`,
+build result `PASS_BUILD_V0AGENT06_ACCESSIBILITY_TREE`, offline result
+`PASS_OFFLINE_IMAGE_V0AGENT06_ACCESSIBILITY_TREE`, and extra checks
+`PASS_AGENT0_OFFLINE_TESTS` / `agent06_extra_offline_checks=ok`. Flash result
+is `PASS_FLASH_V0AGENT06_ACCESSIBILITY_TREE`, and read-only result is
+`PASS_READ_ONLY_V0AGENT06_ACCESSIBILITY_TREE`. Post-flash proof includes
+`sys.boot_completed=1`, slot `_b`, bootanim `stopped`, verified boot `orange`,
+root available, SELinux Enforcing, device APK hash match,
+`accessibility_enabled=1`, enabled service
+`com.smartisax.browser/com.smartisax.browser.SmartisaxAccessibilityService`,
+and `dumpsys accessibility` showing the Smartisax service bound with the
+Smartisax window active/focused. The current flashed Shell header screenshot
+still says `SMARTISAX 0.7.5` despite PackageManager reporting 0.7.6; source
+metadata is corrected to 0.7.6 and will show on-device only after the next
+rebuild/flash.
+
+Latest v0.agent0.6 Settings task diagnostic:
+the MiMo task did not reach a model action because the device had no usable
+Internet/DNS path (`unknown host api.xiaomimimo.com`, `Network is
+unreachable`) and stayed at `running step=0/5`. Manual One Step entry proved
+the top strip is visually present and includes the gear-shaped Settings icon,
+but the current Agent-accessible tree does not expose a Settings `click_node`.
+`uiautomator`/active-root search only found the Agent goal input, while
+`dumpsys accessibility` saw separate unknown overlay windows and
+`dumpsys window` confirmed visible `com.smartisanos.sidebar` top/right
+surfaces.
+
+Previous live v0.agent0.7 line:
+`v0.agent0.7-window-preflight` is built, offline verified, preflighted, flashed,
+and read-only verified. A confirmed flash attempt was first blocked before
+mutation because the R2 was not visible over ADB or fastboot; after USB
+reconnect, the confirmed retry flashed successfully. It updates Smartisax to
+v0.7.7/versionCode 58, collects
+Accessibility active root plus `getWindows()` interactive-window roots, extends
+`click_node` lookup across those roots, writes a visible `planning` transcript
+entry before provider calls, and pauses with normalized provider network/DNS/
+timeout reasons instead of silently remaining at `running step=0/5`. APK hash
+is `68b9cc0da7fd8e8d03ac4606fb9dd46329993af05b92896890d787db5317a74b`,
+system_b hash is
+`4c1cee130f776f3fe83340dbef7592cc56ea4e37446aefa548f5cf3f378bc892`, and sparse
+hash is `d16518056abea641cf51e8d944eb517a00dfdbd3d4ba7ef44a5cbad30400c7cc`.
+ADB was still offline during preflight, so live state was skipped and no device
+mutation happened. After exact confirmation, the flash helper then failed at
+`adb reboot bootloader` with `device 'bb12d264' not found`, before any
+`fastboot flash`, `fastboot erase misc`, or reboot-from-fastboot step. The
+successful retry flashed sparse `super` chunks 1/9 through 9/9, erased `misc`,
+rebooted, reached `sys.boot_completed=1` on slot `_b`, and passed
+`PASS_READ_ONLY_V0AGENT07_WINDOW_PREFLIGHT`. Post-flash focus is Smartisax
+Shell, `isKeyguardShowing=false`, and the Smartisax Accessibility service is
+enabled.
+
+Latest live v0.agent0.7 Settings/getWindows diagnostic:
+after the USB reconnect, a clean Settings task reached MiMo and produced
+`one_step(enter) 95%`, but paused at `one_step_enter_not_visible`. During that
+task, WindowManager listed Sidebar windows, while One Step globals stayed
+`side_bar_zoom_type=-1` and `sidebar_switch_status=0`, so Accessibility only
+showed StatusBar plus Smartisax. A direct manual enter also did not change the
+globals until the UI state was normalized by collapsing statusbar, dismissing
+keyguard, going HOME, restarting ShellActivity, then issuing exit+enter
+WindowManager transacts. In that normalized visible state, `dumpsys
+accessibility` exposed two One Step `UNKNOWN_-1` overlay windows, and the
+Smartisax Agent panel reported `One Step=visible right` plus
+`A11y=91 nodes / 4 roots / 3 windows`. This proves v0.agent0.7 `getWindows()`
+can see visible One Step overlay roots, but those roots still do not expose a
+usable `Settings`/`设置`/`com.android.settings` node for `click_node`.
+
+Next gate: repair the operator experience around the accepted path. The Shell
+Agent panel should auto-refresh running transcript/status so a live task does
+not look stuck until manual Refresh/Stop, and One Step entry should preflight or
+normalize keyguard/readiness before invoking `one_step enter`. Keep Portal
+WebRTC DataChannel regression as a separate follow-up gate after explicitly
+enabling/pairing Portal again.
+
 ## Active Work Pointers
 
-The active live Portal ROM line is
-`v0.portal6g-rvfc-media-tail`. It was flashed to B slot after exact
+The active live ROM line is
+`v0.agent0.10-finish-target-verify`; the previous live Agent line is
+`v0.agent0.9-worker-a11y-targets`, and the previous live Portal
+performance line is
+`v0.portal6g-rvfc-media-tail`, which was flashed to B slot after exact
 confirmation, boots cleanly, and read-only verifies. The 6g live line retains
 `v0.usb2` USB/CD-ROM cleanup,
 `v0.kg1-smartisax-skip-keyguard` PackageManager/framework behavior,

@@ -139,6 +139,13 @@ research/smartisax-device-portal-design.md
   and live-preflighted but not flashed. File APIs, WebRTC/H.264 streaming,
   MediaProjection, and TNT reuse remain later gates.
 
+research/smartisax-agent-core-v0.md
+  Smartisax Agent Core design plus the v0.agent0 implementation update. It keeps
+  the phone-side runtime owned by Smartisax, treats outside agent frameworks as
+  replaceable planners, records MiMo V2.5 vision-first / DeepSeek text fallback
+  provider scope, and keeps flash/root/ADB/fastboot/data cleanup outside the
+  default agent surface.
+
 research/usb-mass-storage-source-audit.md
   Focused audit for the Mac-visible Smartisan transfer-tool virtual disk after
   HandShaker APK deletion. It proves the disk is vendor USB gadget

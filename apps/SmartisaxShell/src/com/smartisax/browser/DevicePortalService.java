@@ -54,8 +54,8 @@ public final class DevicePortalService extends Service {
     public static final String ACTION_STOP = "com.smartisax.browser.portal.STOP";
     public static final String EXTRA_START_REASON = "com.smartisax.browser.portal.START_REASON";
     public static final int PORT = 37601;
-    private static final String PORTAL_VERSION = "0.6.33";
-    private static final String PORTAL_VARIANT = "v0.portal6g-rvfc-media-tail";
+    private static final String PORTAL_VERSION = "0.7.10";
+    private static final String PORTAL_VARIANT = "v0.agent0.10-finish-target-verify";
     private static final String PORTAL_WEBRTC = "native-libwebrtc-dtls-srtp-screen";
     private static final String PORTAL_PLAYBACK = "native-webrtc-default";
     private static final String PREFS = "smartisax_portal";
@@ -357,6 +357,14 @@ public final class DevicePortalService extends Service {
                     writeJson(socket, 200, "OK", statusJson());
                     return;
                 }
+                if ("GET".equals(request.method) && "/api/agent/status".equals(request.path)) {
+                    if (!authorized(request)) {
+                        writeJson(socket, 401, "Unauthorized", errorJson("unauthorized"));
+                        return;
+                    }
+                    writeJson(socket, 200, "OK", SmartisaxAgentRuntime.get(service).statusJson());
+                    return;
+                }
                 if ("GET".equals(request.method) && "/api/media/capabilities".equals(request.path)) {
                     if (!authorized(request)) {
                         writeJson(socket, 401, "Unauthorized", errorJson("unauthorized"));
@@ -541,6 +549,8 @@ public final class DevicePortalService extends Service {
                     service.getContentResolver(), "adb_wifi_enabled", 0) == 1);
             json.put("screen", "privileged-surfacecontrol-png");
             json.put("display", displayJson());
+            json.put("agent", SmartisaxAgentRuntime.get(service).statusJson());
+            json.put("agentStatus", "/api/agent/status");
             json.put("input", "webrtc-datachannel-input");
             json.put("inputTransport", "RTCDataChannel");
             json.put("inputChannel", "smartisax-input");
@@ -712,39 +722,15 @@ public final class DevicePortalService extends Service {
         }
 
         private JSONObject displayJson() throws JSONException {
-            JSONObject json = new JSONObject();
-            Point size = realDisplaySize();
-            json.put("width", size.x);
-            json.put("height", size.y);
-            json.put("rotation", displayRotation());
-            return json;
+            return SmartisaxScreenCapture.displayJson(service);
         }
 
         private Point realDisplaySize() {
-            Point size = new Point();
-            try {
-                WindowManager windowManager = (WindowManager) service.getSystemService(WINDOW_SERVICE);
-                Display display = windowManager == null ? null : windowManager.getDefaultDisplay();
-                if (display != null) {
-                    display.getRealSize(size);
-                }
-            } catch (RuntimeException ignored) {
-            }
-            if (size.x <= 0 || size.y <= 0) {
-                size.x = 1080;
-                size.y = 2340;
-            }
-            return size;
+            return SmartisaxScreenCapture.realDisplaySize(service);
         }
 
         private int displayRotation() {
-            try {
-                WindowManager windowManager = (WindowManager) service.getSystemService(WINDOW_SERVICE);
-                Display display = windowManager == null ? null : windowManager.getDefaultDisplay();
-                return display == null ? 0 : display.getRotation();
-            } catch (RuntimeException ignored) {
-                return 0;
-            }
+            return SmartisaxScreenCapture.displayRotation(service);
         }
 
         private JSONArray encoderCapabilitiesJson() throws JSONException {
@@ -843,23 +829,7 @@ public final class DevicePortalService extends Service {
         }
 
         private byte[] screenshotPng() throws IOException {
-            Bitmap bitmap = screenshotBitmap();
-            if (bitmap == null) {
-                throw new IOException("surfacecontrol_screenshot_returned_null");
-            }
-            Bitmap pngBitmap = bitmap;
-            if (bitmap.getConfig() == Bitmap.Config.HARDWARE) {
-                pngBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, false);
-            }
-            ByteArrayOutputStream out = new ByteArrayOutputStream(1024 * 1024);
-            if (!pngBitmap.compress(Bitmap.CompressFormat.PNG, 100, out)) {
-                throw new IOException("bitmap_png_compress_failed");
-            }
-            byte[] bytes = out.toByteArray();
-            if (!isPng(bytes)) {
-                throw new IOException("surfacecontrol_screenshot_not_png size=" + bytes.length);
-            }
-            return bytes;
+            return SmartisaxScreenCapture.capturePng(service);
         }
 
         private byte[] h264Video(HttpRequest request) throws IOException {
@@ -1550,26 +1520,7 @@ public final class DevicePortalService extends Service {
         }
 
         private Bitmap screenshotBitmap() throws IOException {
-            try {
-                Point size = realDisplaySize();
-                int rotation = displayRotation();
-                Class<?> surfaceControl = Class.forName("android.view.SurfaceControl");
-                try {
-                    Method screenshot = surfaceControl.getDeclaredMethod(
-                            "screenshot", Rect.class, int.class, int.class, boolean.class, int.class);
-                    return bitmapFromSurfaceResult(
-                            screenshot.invoke(null, new Rect(), size.x, size.y, false, rotation));
-                } catch (NoSuchMethodException ignored) {
-                    Method screenshot = surfaceControl.getDeclaredMethod(
-                            "screenshot", Rect.class, int.class, int.class, int.class);
-                    return bitmapFromSurfaceResult(
-                            screenshot.invoke(null, new Rect(), size.x, size.y, rotation));
-                }
-            } catch (ReflectiveOperationException e) {
-                throw new IOException("surfacecontrol_screenshot_reflection_failed", e);
-            } catch (RuntimeException e) {
-                throw new IOException("surfacecontrol_screenshot_runtime_failed", e);
-            }
+            return SmartisaxScreenCapture.captureBitmap(service);
         }
 
         private Bitmap bitmapFromSurfaceResult(Object result) throws IOException {

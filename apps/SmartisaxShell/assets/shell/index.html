@@ -10,7 +10,7 @@
     <main class="surface">
       <section class="topbar">
         <div>
-          <p class="eyebrow">Smartisax 0.6.7</p>
+          <p class="eyebrow">Smartisax 0.7.10</p>
           <h1>Browser shell</h1>
         </div>
         <button id="reloadStatus" type="button" aria-label="Refresh capability status">Refresh</button>
@@ -31,6 +31,44 @@
       <section class="panel">
         <h2>Runtime</h2>
         <dl id="statusList"></dl>
+      </section>
+
+      <section class="panel">
+        <div class="panelHead">
+          <h2>Agent</h2>
+          <div class="actions">
+            <button type="button" data-agent-action="refresh">Refresh</button>
+            <button type="button" data-agent-action="save">Save</button>
+            <button type="button" data-agent-action="start">Start</button>
+            <button type="button" data-agent-action="stop">Stop</button>
+          </div>
+        </div>
+        <div class="agentForm">
+          <label>
+            <span>Provider</span>
+            <select id="agentProvider" aria-label="Agent provider">
+              <option value="auto">Auto</option>
+              <option value="mimo_v25_vision">MiMo V2.5 Vision</option>
+              <option value="deepseek_text">DeepSeek Text</option>
+              <option value="mock">Mock</option>
+            </select>
+          </label>
+          <label>
+            <span>MiMo key</span>
+            <input id="mimoKeyInput" type="password" autocomplete="off" spellcheck="false" aria-label="MiMo API key" placeholder="Preserve saved key">
+          </label>
+          <label>
+            <span>DeepSeek key</span>
+            <input id="deepSeekKeyInput" type="password" autocomplete="off" spellcheck="false" aria-label="DeepSeek API key" placeholder="Preserve saved key">
+          </label>
+          <label class="wide">
+            <span>Goal</span>
+            <textarea id="agentGoalInput" rows="3" spellcheck="false" aria-label="Agent goal"></textarea>
+          </label>
+        </div>
+        <dl id="agentStatus"></dl>
+        <ol id="agentTranscript" class="transcript"></ol>
+        <p id="agentLog" class="logline"></p>
       </section>
 
       <section class="panel">
